@@ -1,6 +1,6 @@
 import { asyncHandler } from '../utils/asyncHandler.js';
 import { ApiError } from '../utils/ApiError.js';
-import { User } from '../models/user.model.js';
+import { User } from '../models/user.models.js';
 import { uploadOnCloudinary } from '../utils/cloudinary.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 
@@ -8,7 +8,8 @@ import { ApiResponse } from '../utils/ApiResponse.js';
 const registerUser = asyncHandler(async (req, res) => {
     //get user details from front-end or postman
     const { username, email, password, fullname } = req.body;
-    console.log("email: ", email);
+    console.log("request body", req.body);
+    console.log("request files", req.files);
     //validation
     if (
         [username, email, password, fullname].some((field) => field?.trim() === "")
@@ -16,16 +17,23 @@ const registerUser = asyncHandler(async (req, res) => {
         throw new ApiError(400, "All fields are required");
     }
     //check if user exists
-    const existedUser = User.findOne({
+    const existedUser = await User.findOne({
         $or: [{ username }, { email }]
     })
-
+    console.log("existed user", existedUser || "no user found")
     if (existedUser) {
         throw new ApiError(409, "User already exists");
     }
     //check for images,check for avatar
-    const avatarLocalPath = req.files?.avatar[0]?.path;
-    const coverImageLocalPath = req.files?.coverImage[0]?.path;
+    let avatarLocalPath, coverImageLocalPath;
+    if (req.files) {
+        if (req.files.avatar && req.files.avatar.length > 0) {
+            avatarLocalPath = req.files.avatar[0]?.path;
+        }
+        if (req.files.coverImage && req.files.coverImage.length > 0) {
+            coverImageLocalPath = req.files.coverImage[0]?.path;
+        }
+    }
 
     //upload to cloudinary,avatar
     if (!avatarLocalPath) {
@@ -33,6 +41,7 @@ const registerUser = asyncHandler(async (req, res) => {
     }
     const avatar = await uploadOnCloudinary(avatarLocalPath);
     const coverImage = await uploadOnCloudinary(coverImageLocalPath);
+    console.log(avatar, coverImage);
     if (!avatar) {
         throw new ApiError(500, "Failed to upload avatar");
     }
@@ -46,7 +55,7 @@ const registerUser = asyncHandler(async (req, res) => {
         coverImage: coverImage?.url || "",
     })
     //remove password and refresh token fields from response
-    const createdUser = await User.findById(user._id).select("-password -refreshToken");
+    const createdUser = await User.findById(user._id)?.select("-password -refreshToken");
     //check for response
     if (!createdUser) {
         throw new ApiError(500, "Failed to create user");
