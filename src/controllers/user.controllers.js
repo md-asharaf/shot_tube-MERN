@@ -10,7 +10,6 @@ const generateTokens = async (userId) => {
         const accessToken = await user.generateAccessToken();
         const refreshToken = await user.generateRefreshToken();
         user.refreshToken = refreshToken;
-        user.accessToken = accessToken;
         await user.save({ validateBeforeSave: false });
         return { accessToken, refreshToken };
     } catch (error) {
@@ -21,8 +20,6 @@ const generateTokens = async (userId) => {
 const registerUser = asyncHandler(async (req, res) => {
     //get user details from front-end or postman
     const { username, email, password, fullname } = req.body;
-    console.log("request body", req.body);
-    console.log("request files", req.files);
     //validation
     if (
         [username, email, password, fullname].some((field) => field?.trim() === "")
@@ -33,7 +30,6 @@ const registerUser = asyncHandler(async (req, res) => {
     const existedUser = await User.findOne({
         $or: [{ username }, { email }]
     })
-    console.log("existed user", existedUser || "no user found")
     if (existedUser) {
         throw new ApiError(409, "User already exists");
     }
@@ -54,7 +50,6 @@ const registerUser = asyncHandler(async (req, res) => {
     }
     const avatar = await uploadOnCloudinary(avatarLocalPath);
     const coverImage = await uploadOnCloudinary(coverImageLocalPath);
-    console.log(avatar, coverImage);
     if (!avatar) {
         throw new ApiError(500, "Failed to upload avatar");
     }
@@ -83,8 +78,11 @@ const loginUser = asyncHandler(async (req, res) => {
     //get user details from front-end or postman
     const { username, email, password } = req.body;
     //validate details
-    if ((!username && !email) || !password) {
-        throw new ApiError(400, "Username or Email and password are required");
+    if (!username && !email) {
+        throw new ApiError(400, "either username or email is required")
+    }
+    if (!password) {
+        throw new ApiError(400, "password is required")
     }
     //check if user exists
     const existedUser = await User.findOne({ $or: [{ username }, { email }] });
@@ -114,7 +112,7 @@ const loginUser = asyncHandler(async (req, res) => {
 })
 
 const logoutUser = asyncHandler(async (req, res) => {
-    await User.findByIdAndDelete(req.user._id, {
+    await User.findByIdAndUpdate(req.user._id, {
         $set: {
             refreshToken: undefined
         }
@@ -128,4 +126,4 @@ const logoutUser = asyncHandler(async (req, res) => {
         clearCookie("accessToken", options).clearCookie("refreshToken", options).json(new ApiResponse(200, {}, "User logged out successfully"))
 })
 
-export { registerUser };
+export { registerUser, loginUser, logoutUser };
