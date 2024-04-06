@@ -225,4 +225,76 @@ const updateCoverImage = asyncHandler(async (req, res) => {
 
 })
 
-export { registerUser, loginUser, logoutUser, refreshAcessToken, updateAccountDetails, getCurrentUser, changeCurrentPassword, updateAvatar, updateCoverImage };
+const getUserProfileDetails = asyncHandler(async (req, res) => {
+    const username = req?.params;
+    if (!username) {
+        throw new ApiError(400, "can not find user")
+    }
+    const channel = await User.aggregate([
+        {
+            $match: {
+                username
+            }
+        },
+        {
+            $lookup: {
+                from: "subscriptions",
+                localField: "_id",
+                foreignField: "channel",
+                as: "subscribers"
+            }
+        },
+        {
+            $lookup: {
+                from: "subscriptions",
+                localField: "_id",
+                foreignField: "subscriber",
+                as: "subscribedTo"
+            }
+        },
+        {
+            $addFields: {
+                subscriberCount: { $size: "$subscribers" },
+                subscribedToCount: { $size: "$subscribedTo" },
+                isSubscribed: {
+                    $condition: {
+                        if: { $in: [req.user?._id, "$subscribers.subscriber"] },
+                        then: true,
+                        else: false
+                    }
+                }
+            }
+        },
+        {
+            $project: {
+                fullname: 1,
+                username: 1,
+                avatar: 1,
+                coverImage: 1,
+                subscribedToCount: 1,
+                subscriberCount: 1,
+                isSubscribed: 1
+            }
+        },
+    ]);
+    console.log(channel)
+
+    if (!channel?.length) {
+        throw new ApiError(404, "Channel not found")
+    }
+    return res.status(200).json(new ApiResponse(200, channel[0], "Channel found"));
+})
+
+const getWatchHistory = asyncHandler(async (req, res) => {
+    const username = req?.params?.username;
+    if (!username) {
+        throw new ApiError(400, "Username is required")
+    }
+    const user = await User.findOne({ username });
+    if (!user) {
+        throw new ApiError(404, "User not found")
+    }
+    return res.status(200).json(new ApiResponse(200, user.watchHistory, "Watch History found"))
+})
+
+export { registerUser, loginUser, logoutUser, refreshAcessToken, updateAccountDetails, getCurrentUser, changeCurrentPassword, updateAvatar, updateCoverImage, getUserProfileDetails, getWatchHistory };
