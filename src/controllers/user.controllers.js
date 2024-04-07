@@ -115,8 +115,8 @@ const loginUser = asyncHandler(async (req, res) => {
 
 const logoutUser = asyncHandler(async (req, res) => {
     await User.findByIdAndUpdate(req.user._id, {
-        $set: {
-            refreshToken: undefined
+        $unset: {
+            refreshToken: 1
         }
     })
     const options = {
@@ -156,14 +156,18 @@ const refreshAcessToken = asyncHandler(async (req, res) => {
 
 const changeCurrentPassword = asyncHandler(async (req, res) => {
     const { password, newPassword, confirmPassword } = req.body;
+
     if (!(newPassword === confirmPassword)) {
         throw new ApiError(400, "New password and confirm password do not match")
     }
-    if (!newPassword.trim()) {
+    if (password == newPassword) {
+        throw new ApiError(400, "New password cannot be the same as current password")
+    }
+    if (!newPassword?.trim()) {
         throw new ApiError(400, "New password is required,cannot be empty")
     }
     const user = await User.findById(req.user?._id);
-    const isPasswordCorrect = await user.isPasswordCorrect(password);
+    const isPasswordCorrect = await user?.isPasswordCorrect(password);
     if (!isPasswordCorrect) {
         throw new ApiError(400, "Invalid current password")
     }
@@ -174,7 +178,7 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
 })
 
 const getCurrentUser = asyncHandler(async (req, res) => {
-    return res.status(200).json(new ApiResponse(200, req.user, "Cureent User found"))
+    return res.status(200).json(new ApiResponse(200, req.user, "Current User found"))
 })
 
 const updateAccountDetails = asyncHandler(async (req, res) => {
@@ -209,15 +213,15 @@ const updateAvatar = asyncHandler(async (req, res) => {
 
 const updateCoverImage = asyncHandler(async (req, res) => {
     const coverImageLocalPath = req.file?.path;
-    if (!avatarLocalPath) {
+    if (!coverImageLocalPath) {
         throw new ApiError(400, "cover image is required")
     }
     const coverImage = await uploadOnCloudinary(coverImageLocalPath);
-    if (!avatar || !avatar.url) {
+    if (!coverImage || !coverImage.url) {
         throw new ApiError(500, "Failed to upload cover image")
     }
-    const user = await User.findById(req.user?._id).select("-password -refreshToken");;
-    const public_id = user.coverImage.public_id;
+    const user = await User.findById(req.user?._id).select("-password -refreshToken");
+    const public_id = user?.coverImage?.public_id || "";
     user.coverImage = coverImage;
     user.save({ validateBeforeSave: false });
     await deleteFromCloudinary(public_id);
@@ -226,7 +230,8 @@ const updateCoverImage = asyncHandler(async (req, res) => {
 })
 
 const getUserProfileDetails = asyncHandler(async (req, res) => {
-    const username = req?.params;
+    const { username } = req?.params;
+    console.log(username)
     if (!username) {
         throw new ApiError(400, "can not find user")
     }
@@ -257,7 +262,7 @@ const getUserProfileDetails = asyncHandler(async (req, res) => {
                 subscriberCount: { $size: "$subscribers" },
                 subscribedToCount: { $size: "$subscribedTo" },
                 isSubscribed: {
-                    $condition: {
+                    $cond: {
                         if: { $in: [req.user?._id, "$subscribers.subscriber"] },
                         then: true,
                         else: false
@@ -286,13 +291,15 @@ const getUserProfileDetails = asyncHandler(async (req, res) => {
 })
 
 const getWatchHistory = asyncHandler(async (req, res) => {
-    const username = req?.params;
+    const { username } = req?.params;
     if (!username) {
         throw new ApiError(400, "Username is required")
     }
     const user = await User.aggregate([
         {
-            $match: username
+            $match: {
+                username
+            }
         },
         {
             $lookup: {
@@ -329,7 +336,7 @@ const getWatchHistory = asyncHandler(async (req, res) => {
             }
         }
     ])
-
+    console.log(user)
     return res.status(200).json(new ApiResponse(200, user[0]?.watchHistory, "Watch history found"))
 })
 
