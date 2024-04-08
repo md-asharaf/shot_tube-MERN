@@ -7,12 +7,16 @@ const videoSchema = new Schema({
         required: true
     },
     thumbNail: {
-        type: String,
+        type: String,//cloudinary url
         required: true
     },
     title: {
         type: String,
         required: true
+    },
+    description: {
+        type: String,
+        default: ""
     },
     duration: {
         type: Number,
@@ -26,7 +30,7 @@ const videoSchema = new Schema({
         type: Boolean,
         default: true
     },
-    owner: {
+    userId: {
         type: Schema.Types.ObjectId,
         ref: "User"
     }

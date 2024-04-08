@@ -5,6 +5,7 @@ import { deleteFromCloudinary, uploadOnCloudinary } from '../utils/cloudinary.js
 import { ApiResponse } from '../utils/ApiResponse.js';
 import jwt from 'jsonwebtoken';
 
+//function to generate and inject refresh and access tokens for current user
 const generateTokens = async (userId) => {
     try {
         const user = await User.findById(userId);
@@ -17,7 +18,7 @@ const generateTokens = async (userId) => {
         throw new ApiError(500, "something went wrong while generating tokens")
     }
 }
-
+//controller to register a user
 const registerUser = asyncHandler(async (req, res) => {
     //get user details from front-end or postman
     const { username, email, password, fullname } = req.body;
@@ -75,7 +76,7 @@ const registerUser = asyncHandler(async (req, res) => {
         new ApiResponse(200, createdUser, "User created successfully")
     )
 })
-
+//controller to login a user
 const loginUser = asyncHandler(async (req, res) => {
     //get user details from front-end or postman
     const { username, email, password } = req.body;
@@ -112,7 +113,7 @@ const loginUser = asyncHandler(async (req, res) => {
             refreshToken,
         }, "user logged in successfully"))
 })
-
+//controller to logout a user
 const logoutUser = asyncHandler(async (req, res) => {
     await User.findByIdAndUpdate(req.user._id, {
         $unset: {
@@ -127,7 +128,7 @@ const logoutUser = asyncHandler(async (req, res) => {
     return res.status(200).
         clearCookie("accessToken", options).clearCookie("refreshToken", options).json(new ApiResponse(200, {}, "User logged out successfully"))
 })
-
+//controller to refresh users's access token
 const refreshAcessToken = asyncHandler(async (req, res) => {
     const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken;
     if (!incomingRefreshToken) {
@@ -153,7 +154,7 @@ const refreshAcessToken = asyncHandler(async (req, res) => {
             refreshToken,
         }, "Access Token refreshed"))
 })
-
+//controller to change current password of a user
 const changeCurrentPassword = asyncHandler(async (req, res) => {
     const { password, newPassword, confirmPassword } = req.body;
 
@@ -176,11 +177,11 @@ const changeCurrentPassword = asyncHandler(async (req, res) => {
 
     return res.status(200).json(new ApiResponse(200, {}, "Password changed successfully"))
 })
-
+//controller to get current user
 const getCurrentUser = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, req.user, "Current User found"))
 })
-
+//controller to update account details of a user
 const updateAccountDetails = asyncHandler(async (req, res) => {
     const { email, fullname } = req.body;
     const user = await User.findByIdAndUpdate(req.user?._id, {
@@ -193,7 +194,7 @@ const updateAccountDetails = asyncHandler(async (req, res) => {
     })?.select("-password -refreshToken");
     return res.status(200).json(new ApiResponse(200, user, "Account details updated successfully"))
 })
-
+//controller to update avatar of a user
 const updateAvatar = asyncHandler(async (req, res) => {
     const avatarLocalPath = req.file?.path;
     if (!avatarLocalPath) {
@@ -210,7 +211,7 @@ const updateAvatar = asyncHandler(async (req, res) => {
     await deleteFromCloudinary(public_id);
     return res.status(200).json(new ApiResponse(200, user, "Avatar updated successfully"))
 })
-
+//controller to update cover image of a user
 const updateCoverImage = asyncHandler(async (req, res) => {
     const coverImageLocalPath = req.file?.path;
     if (!coverImageLocalPath) {
@@ -228,7 +229,7 @@ const updateCoverImage = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, user, "cover image updated successfully"))
 
 })
-
+//controller to get user profile details
 const getUserProfileDetails = asyncHandler(async (req, res) => {
     const { username } = req?.params;
     console.log(username)
@@ -289,7 +290,7 @@ const getUserProfileDetails = asyncHandler(async (req, res) => {
     }
     return res.status(200).json(new ApiResponse(200, channel[0], "Channel found"));
 })
-
+// controller to get watch history of a user
 const getWatchHistory = asyncHandler(async (req, res) => {
     const { username } = req?.params;
     if (!username) {
