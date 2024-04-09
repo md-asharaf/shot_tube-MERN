@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
-import Comment from "../models/comment.models.js";
+import { Comment } from "../models/comment.models.js";
 
 //controller to get all comments of a video
 const getAllVideoComments = asyncHandler(async (req, res) => {

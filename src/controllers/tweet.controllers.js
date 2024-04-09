@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
-import Tweet from "../models/tweet.models.js";
+import { Tweet } from "../models/tweet.models.js";
 
 //controller to create a tweet
 const createTweet = asyncHandler(async (req, res) => {

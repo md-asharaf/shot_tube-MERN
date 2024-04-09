@@ -4,13 +4,13 @@ import { verifyJWT } from "../middlewares/auth.middlewares.js";
 
 const router = Router();
 
-router.route("").post(verifyJWT);
+router.use(verifyJWT);
 
 router.route("/:commentId/toggle-like").post(toggleCommentLike);
 
-router.route("/:videoId/add-comment").post(toggleVideoLike);
+router.route("/:videoId/toggle-like").post(toggleVideoLike);
 
-router.route("/:tweetId/delete-comment").post(toggleTweetLike);
+router.route("/:tweetId/toggle-like").post(toggleTweetLike);
 
 router.route("/liked-videos").get(getLikedVideos);
 

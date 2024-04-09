@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
-import Like from "../models/like.models.js";
+import { Like } from "../models/like.models.js";
 
 // controller to toggle like on a comment
 const toggleCommentLike = asyncHandler(async (req, res) => {

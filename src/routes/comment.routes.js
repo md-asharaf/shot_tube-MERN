@@ -4,9 +4,9 @@ import { verifyJWT } from "../middlewares/auth.middlewares.js";
 
 const router = Router();
 
-router.route("").post(verifyJWT);
+router.use(verifyJWT);
 
-router.route("/:videoId/comments").get(getAllVideoComments);
+router.route("/:videoId").get(getAllVideoComments);
 
 router.route("/:videoId/add-comment").post(addComment);
 
