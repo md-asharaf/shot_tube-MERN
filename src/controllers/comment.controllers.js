@@ -27,7 +27,7 @@ const getAllVideoComments = asyncHandler(async (req, res) => {
     return res.status(200).json(new ApiResponse(200, comments, "Comments fetched successfully"))
 })
 //controller to create a comment
-const createComment = asyncHandler(async (req, res) => {
+const addComment = asyncHandler(async (req, res) => {
     const { content } = req.body;
     const { videoId } = req.params;
 
@@ -51,7 +51,7 @@ const createComment = asyncHandler(async (req, res) => {
 })
 //controller to delete a comment
 const deleteComment = asyncHandler(async (req, res) => {
-    const { commentId } = req.body;
+    const { commentId } = req.params;
     if (!commentId) {
         return new ApiError(400, "Comment ID is required")
     }
@@ -64,7 +64,8 @@ const deleteComment = asyncHandler(async (req, res) => {
 })
 //controller to update a comment
 const updateComment = asyncHandler(async (req, res) => {
-    const { content, commentId } = req.body;
+    const { content } = req.body;
+    const { commentId } = req.params;
     if (!commentId || !content) {
         return new ApiError(400, "comment ID and content both are required")
     }
@@ -78,4 +79,4 @@ const updateComment = asyncHandler(async (req, res) => {
 
 
 
-export { createComment, deleteComment, getAllVideoComments, updateComment }
+export { addComment, deleteComment, getAllVideoComments, updateComment }

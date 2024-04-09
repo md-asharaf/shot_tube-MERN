@@ -39,13 +39,13 @@ const updateTweet = asyncHandler(async (req, res) => {
         return new ApiError(400, "content is required")
     }
     const tweet = await Tweet.findByIdAndUpdate(tweetId, {
-        {
-            $set: {
-                content
-            }
+        $set: {
+            content
         }
+    }, {
+        new: true
     })
-return res.status(200).json(new ApiResponse(200, tweet, "Tweet updated successfully"))
+    return res.status(200).json(new ApiResponse(200, tweet, "Tweet updated successfully"))
 })
 //controller to delete a tweet  
 const deleteTweet = asyncHandler(async (req, res) => {
