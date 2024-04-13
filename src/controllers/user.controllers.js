@@ -5,6 +5,8 @@ import { deleteFromCloudinary, uploadOnCloudinary } from '../utils/cloudinary.js
 import { ApiResponse } from '../utils/ApiResponse.js';
 import jwt from 'jsonwebtoken';
 
+/********************DEBUGGING COMPLETED********************/
+
 //function to generate and inject refresh and access tokens for current user
 const generateTokens = async (userId) => {
     try {
@@ -78,6 +80,9 @@ const registerUser = asyncHandler(async (req, res) => {
 })
 //controller to login a user
 const loginUser = asyncHandler(async (req, res) => {
+    if (req.cookies?.accessToken || req.cookies?.refreshToken) {
+        throw new ApiError(400, "User already logged in")
+    }
     //get user details from front-end or postman
     const { username, email, password } = req.body;
     //validate details
@@ -115,7 +120,7 @@ const loginUser = asyncHandler(async (req, res) => {
 })
 //controller to logout a user
 const logoutUser = asyncHandler(async (req, res) => {
-    await User.findByIdAndUpdate(req.user._id, {
+    await User.findByIdAndUpdate(req.user?._id, {
         $unset: {
             refreshToken: 1
         }
@@ -143,6 +148,7 @@ const refreshAcessToken = asyncHandler(async (req, res) => {
         throw new ApiError(400, "refresh token is expired or used")
     }
     const { accessToken, refreshToken } = generateTokens(user._id);
+    await loginUser(user)
     const options = {
         httpOnly: true,
         secure: true
@@ -200,14 +206,14 @@ const updateAvatar = asyncHandler(async (req, res) => {
     if (!avatarLocalPath) {
         throw new ApiError(400, "Avatar is required")
     }
-    const avatar = await uploadOnCloudinary(avatarLocalPath);
+    const avatar = await uploadOnCloudinary(avatarLocalPath, "image");
     if (!avatar || !avatar.url) {
         throw new ApiError(500, "Failed to upload avatar")
     }
     const user = await User.findById(req.user?._id).select("-password -refreshToken");
     const public_id = user.avatar.public_id;
     user.avatar = avatar;
-    user.save({ validateBeforeSave: false });
+    await user.save({ validateBeforeSave: false });
     await deleteFromCloudinary(public_id);
     return res.status(200).json(new ApiResponse(200, user, "Avatar updated successfully"))
 })
@@ -217,7 +223,7 @@ const updateCoverImage = asyncHandler(async (req, res) => {
     if (!coverImageLocalPath) {
         throw new ApiError(400, "cover image is required")
     }
-    const coverImage = await uploadOnCloudinary(coverImageLocalPath);
+    const coverImage = await uploadOnCloudinary(coverImageLocalPath, "image");
     if (!coverImage || !coverImage.url) {
         throw new ApiError(500, "Failed to upload cover image")
     }
@@ -246,7 +252,7 @@ const getUserProfileDetails = asyncHandler(async (req, res) => {
             $lookup: {
                 from: "subscriptions",
                 localField: "_id",
-                foreignField: "channel",
+                foreignField: "channelId",
                 as: "subscribers"
             }
         },
@@ -254,7 +260,7 @@ const getUserProfileDetails = asyncHandler(async (req, res) => {
             $lookup: {
                 from: "subscriptions",
                 localField: "_id",
-                foreignField: "subscriber",
+                foreignField: "subscriberId",
                 as: "subscribedTo"
             }
         },

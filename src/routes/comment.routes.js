@@ -8,10 +8,10 @@ router.use(verifyJWT);
 
 router.route("/:videoId").get(getAllVideoComments);
 
-router.route("/:videoId/add-comment").post(addComment);
+router.route("/:videoId/add").post(addComment);
 
-router.route("/:commentId/delete-comment").delete(deleteComment);
+router.route("/:commentId/delete").delete(deleteComment);
 
-router.route("/:commentId/update-comment").patch(updateComment);
+router.route("/:commentId/update").patch(updateComment);
 
 export default router;

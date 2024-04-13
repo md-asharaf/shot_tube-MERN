@@ -5,15 +5,13 @@ import {
 } from "../controllers/playlist.controllers.js"
 const router = Router();
 
-router.use(verifyJWT);
-
-router.route("/create").post(createPlaylist);
 router.route("/:userId").get(getUserPlaylists);
-router.route("/:userId/:playlistId").get(getPlaylistById);
-router.route("/:playlistId/update").patch(updatePlaylist);
-router.route("/:playlistId/add-video").patch(addVideoToPlaylist);
-router.route("/:playlistId/delete").delete(deletePlaylist);
-router.route("/:playlistId/remove-video").patch(removeVideoFromPlaylist);
+router.route("/:playlistId").get(getPlaylistById);
+router.route("/create").post(verifyJWT, createPlaylist);
+router.route("/:playlistId/update").patch(verifyJWT, updatePlaylist);
+router.route("/:playlistId/add-video").patch(verifyJWT, addVideoToPlaylist);
+router.route("/:playlistId/delete").delete(verifyJWT, deletePlaylist);
+router.route("/:playlistId/:videoId/remove").patch(verifyJWT, removeVideoFromPlaylist);
 
 
 export default router;

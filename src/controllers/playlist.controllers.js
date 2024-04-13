@@ -62,7 +62,7 @@ const getUserPlaylists = asyncHandler(async (req, res) => {
 })
 //controller to get a playlist by id
 const getPlaylistById = asyncHandler(async (req, res) => {
-    const { playlistId, userId } = req.params
+    const { playlistId } = req.params
     // const playlist = await PlayList.findById(playlistId).populate({
     //     path: "videos",
     //     populate: {
@@ -75,7 +75,6 @@ const getPlaylistById = asyncHandler(async (req, res) => {
         {
             $match: {
                 _id: playlistId,
-                userId
             }
         },
         {
@@ -140,15 +139,21 @@ const removeVideoFromPlaylist = asyncHandler(async (req, res) => {
 })
 //controller to delete a playlist
 const deletePlaylist = asyncHandler(async (req, res) => {
-    const { playlistId } = req.params;
-    await PlayList.findByIdAndDelete(playlistId);
-    return res.status(200).json(new ApiResponse(200, {}, "Playlist deleted successfully"));
+    try {
+        const { playlistId } = req.params;
+        await PlayList.findByIdAndDelete(playlistId);
+        return res.status(200).json(new ApiResponse(200, {}, "Playlist deleted successfully"));
+    } catch (error) {
+        console.log("ERROR: ", error?.message)
+    }
 })
 // controller to update the name or description or both of a playlist
 const updatePlaylist = asyncHandler(async (req, res) => {
     const { playlistId } = req.params
     const { name, description } = req.body
-    if (!name && !description) throw new ApiError(400, "Name or description is required");
+    if (!name && !description) {
+        throw new ApiError(400, "Name or description is required");
+    }
     const playlist = await PlayList.findByIdAndUpdate(playlistId, {
         $set: {
             name,
@@ -157,6 +162,9 @@ const updatePlaylist = asyncHandler(async (req, res) => {
     }, {
         new: true
     });
+    if (!playlist) {
+        throw new ApiError(404, "Playlist not found");
+    }
     return res.status(200).json(new ApiResponse(200, playlist, "Playlist updated successfully"));
 })
 
