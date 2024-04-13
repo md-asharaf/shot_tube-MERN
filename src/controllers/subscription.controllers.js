@@ -6,7 +6,7 @@ import { Subscription } from "../models/subscription.models.js";
 // controller to toggle subscription to a channel
 const toggleSubscription = asyncHandler(async (req, res) => {
     const { channelId } = req.params;
-    const subscriberId = req.user._id;
+    const subscriberId = req.user?._id;
     if (!channelId || !subscriberId) {
         throw new ApiError(400, "Channel Id and subscriber Id are required")
     }
@@ -63,7 +63,7 @@ const getSubscribers = asyncHandler(async (req, res) => {
 
 // controller to return channel list to which user has subscribed
 const getSubscribedChannels = asyncHandler(async (req, res) => {
-    const subscriberId = req.user._id;
+    const subscriberId = req.user?._id;
     if (!subscriberId) {
         throw new ApiError(400, "Subscriber Id is required");
     }

@@ -219,6 +219,10 @@ const updateAvatar = asyncHandler(async (req, res) => {
 })
 //controller to update cover image of a user
 const updateCoverImage = asyncHandler(async (req, res) => {
+    const userId = req.user?._id;
+    if (!userId) {
+        throw new ApiError(400, "User id is required")
+    }
     const coverImageLocalPath = req.file?.path;
     if (!coverImageLocalPath) {
         throw new ApiError(400, "cover image is required")
@@ -227,8 +231,11 @@ const updateCoverImage = asyncHandler(async (req, res) => {
     if (!coverImage || !coverImage.url) {
         throw new ApiError(500, "Failed to upload cover image")
     }
-    const user = await User.findById(req.user?._id).select("-password -refreshToken");
-    const public_id = user?.coverImage?.public_id || "";
+    const user = await User.findById(userId).select("-password -refreshToken");
+    if (!user) {
+        throw new ApiError(404, "User not found")
+    }
+    const public_id = user.coverImage?.public_id || "";
     user.coverImage = coverImage;
     user.save({ validateBeforeSave: false });
     await deleteFromCloudinary(public_id);
@@ -237,8 +244,7 @@ const updateCoverImage = asyncHandler(async (req, res) => {
 })
 //controller to get user profile details
 const getUserProfileDetails = asyncHandler(async (req, res) => {
-    const { username } = req?.params;
-    console.log(username)
+    const { username } = req.params;
     if (!username) {
         throw new ApiError(400, "can not find user")
     }
@@ -298,14 +304,14 @@ const getUserProfileDetails = asyncHandler(async (req, res) => {
 })
 // controller to get watch history of a user
 const getWatchHistory = asyncHandler(async (req, res) => {
-    const { username } = req?.params;
-    if (!username) {
+    const userId = req.user?._id;
+    if (!userId) {
         throw new ApiError(400, "Username is required")
     }
     const user = await User.aggregate([
         {
             $match: {
-                username
+                _id: userId
             }
         },
         {
@@ -343,7 +349,6 @@ const getWatchHistory = asyncHandler(async (req, res) => {
             }
         }
     ])
-    console.log(user)
     return res.status(200).json(new ApiResponse(200, user[0]?.watchHistory, "Watch history found"))
 })
 

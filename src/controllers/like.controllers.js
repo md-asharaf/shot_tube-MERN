@@ -5,11 +5,16 @@ import { Like } from "../models/like.models.js";
 
 // controller to toggle like on a comment
 const toggleCommentLike = asyncHandler(async (req, res) => {
+    //get comment id from request params
     const { commentId } = req.params;
-    const userId = req.user._id;
+    //get user id from request user object
+    const userId = req.user?._id;
+    //check if comment id is provided
     if (!commentId) throw new ApiError(400, "Comment id is required");
+    //find if user has liked the comment
     const like = await Like.findOne({ commentId, userId })
     let response;
+    //if user has liked the comment, delete the like, else create a like
     if (like) {
         response = await Like.findByIdAndDelete(like._id)
     } else {
@@ -25,7 +30,7 @@ const toggleCommentLike = asyncHandler(async (req, res) => {
 // controller to toggle like on a video
 const toggleVideoLike = asyncHandler(async (req, res) => {
     const { videoId } = req.params;
-    const userId = req.user._id;
+    const userId = req.user?._id;
     if (!videoId) throw new ApiError(400, "Video id is required");
     const like = await Like.findOne({ videoId, userId });
     let response;
@@ -44,7 +49,7 @@ const toggleVideoLike = asyncHandler(async (req, res) => {
 // controller to toggle like on a tweet
 const toggleTweetLike = asyncHandler(async (req, res) => {
     const { tweetId } = req.params;
-    const userId = req.user._id;
+    const userId = req.user?._id;
     if (!tweetId) throw new ApiError(400, "Comment id is required");
     const tweet = await Like.findOne({ tweetId, userId })
     let response;
@@ -62,7 +67,7 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
 })
 // controller to get all liked videos of a user
 const getLikedVideos = asyncHandler(async (req, res) => {
-    const userId = req.user._id;
+    const userId = req.user?._id;
     const like = await Like.aggregate([
         {
             $match: {

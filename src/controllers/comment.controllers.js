@@ -2,13 +2,19 @@ import { asyncHandler } from "../utils/asyncHandler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 import { Comment } from "../models/comment.models.js";
+import { Video } from "../models/video.models.js";
 import mongoose, { Schema } from "mongoose";
+
 //controller to get all comments of a video
 const getAllVideoComments = asyncHandler(async (req, res) => {
     const { videoId } = req.params;
     const { page = 1, limit = 10 } = req.query;
     if (!videoId) {
         throw new ApiError(400, "Video ID is required")
+    }
+    const video = await Video.findById(videoId);
+    if (!video) {
+        throw new ApiError(404, "Invalid video ID provided")
     }
     //construct aggregate first
     const aggregate = Comment.aggregate([
@@ -50,19 +56,28 @@ const getAllVideoComments = asyncHandler(async (req, res) => {
 })
 //controller to create a comment
 const addComment = asyncHandler(async (req, res) => {
+    //get content and video id from request body and params
     const { content } = req.body;
     const { videoId } = req.params;
+    const userId = req.user?._id;
+    //check if content and video id are provided
     if (!content || !videoId) {
         throw new ApiError(400, "Content and Video ID are required")
     }
-
+    //check if video exists
+    const video = await Video.findById(videoId);
+    if (!video) {
+        throw new ApiError(404, "Invalid video ID provided")
+    }
+    //create a comment
     const comment = await Comment.create(
         {
             content,
             videoId,
-            userId: req.user._id
+            userId
         }
     )
+    //check if comment is created
     if (!comment) {
         throw new ApiError(500, "Comment could not be created")
     }
@@ -71,12 +86,15 @@ const addComment = asyncHandler(async (req, res) => {
 })
 //controller to delete a comment
 const deleteComment = asyncHandler(async (req, res) => {
+    //get comment id from request params and user id from request user
     const { commentId } = req.params;
-    const userId = req.user._id;
+    const userId = req.user?._id;
+    //check if comment id is provided
     if (!commentId) {
         throw new ApiError(400, "Comment ID is required")
     }
-    const comment = await Comment.findOneAndDelete({ _id: commentId, userId })
+    //find comment by id and user id
+    const comment = await Comment.findOneAndDelete({ _id: commentId, userId });
     if (!comment) {
         throw new ApiError(404, "Comment not found or you are not authorized to delete it")
     }
@@ -84,19 +102,18 @@ const deleteComment = asyncHandler(async (req, res) => {
 })
 //controller to update a comment
 const updateComment = asyncHandler(async (req, res) => {
+    //get comment id, content and user id from request params, body and user
     const { content } = req.body;
     const { commentId } = req.params;
-    const userId = req.user._id;
+    const userId = req.user?._id;
+    //check if comment id and content are provided
     if (!commentId || !content) {
         throw new ApiError(400, "comment ID and content both are required")
     }
 
     //find comment by id and user id
-    const comment = await Comment.findById(commentId);
-
-    // console.log(comment)
+    const comment = await Comment.findById({ _id: commentId, userId });
     if (!comment) {
-        console.log("comment not found")
         throw new ApiError(404, "Comment not found or you are not authorized to update it")
     }
 
