@@ -244,7 +244,7 @@ const updateCoverImage = asyncHandler(async (req, res) => {
 })
 //controller to get user profile details
 const getUserProfileDetails = asyncHandler(async (req, res) => {
-    const { username } = req.params;
+    const { username } = req.params || req.user;
     if (!username) {
         throw new ApiError(400, "can not find user")
     }

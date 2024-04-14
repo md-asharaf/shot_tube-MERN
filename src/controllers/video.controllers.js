@@ -59,10 +59,14 @@ const publishVideo = asyncHandler(async (req, res) => {
 const deleteVideo = asyncHandler(async (req, res) => {
     //get video id from request params
     const { videoId } = req.params;
+    const userId = req.user?._id;
     //find video by id
     const video = await Video.findById(videoId);
     if (!video) {
         throw new ApiError(400, "invalid videoId")
+    }
+    if (video.userId.toString() !== userId.toString()) {
+        throw new ApiError(400, "You are not authorized to delete this video")
     }
     //delete video from cloudinary
     await deleteFromCloudinary(video.videoFile.public_id);
@@ -74,40 +78,48 @@ const deleteVideo = asyncHandler(async (req, res) => {
 
 // controller to update a video
 const updateVideo = asyncHandler(async (req, res) => {
-    //get video id from request params 
-    const { videoId } = req.params;
-    //get title, description and thumbnail from request body
-    const { title, description } = req.body;
-    const localThumbnailPath = req.file?.path || "";
-    //check if title or description or thumbnail is provided
-    if (!title && !description && !localThumbnailPath) {
-        throw new ApiError(400, "Please provide title or description or thumbnail")
-    }
-    //find video by id
-    const video = await Video.findById(videoId);
-    if (!video) {
-        throw new ApiError(500, "Failed to update video")
-    }
-    //update video
-    if (title) video.title = title;
-    if (description) video.description = description;
-    //upload thumbnail if provided
-    if (localThumbnailPath) {
-        //upload thumbnail on cloudinary
-        const thumbNail = await uploadOnCloudinary(localThumbnailPath, "image");
-
-        if (!thumbNail) {
-            throw new ApiError(500, "Failed to upload thumbnail")
+    try {
+        //get video id from request params 
+        const { videoId } = req.params;
+        const userId = req.user?._id;
+        //get title, description and thumbnail from request body
+        const { title, description } = req.body;
+        const localThumbnailPath = req.file?.path || "";
+        //check if title or description or thumbnail is provided
+        if (!title && !description && !localThumbnailPath) {
+            throw new ApiError(400, "Please provide title or description or thumbnail")
         }
-        let oldThumbNail = video.thumbNail;
-        //update thumbnail
-        video.thumbNail = thumbNail;
-        //delete old thumbnail from cloudinary
-        await deleteFromCloudinary(oldThumbNail.public_id)
+        //find video by id
+        const video = await Video.findById(videoId);
+        if (!video) {
+            throw new ApiError(500, "Invalid videoId")
+        }
+        if (video.userId.toString() !== userId.toString()) {
+            throw new ApiError(400, "You are not authorized to update this video")
+        }
+        //update video
+        if (title) video.title = title;
+        if (description) video.description = description;
+        //upload thumbnail if provided
+        if (localThumbnailPath) {
+            //upload thumbnail on cloudinary
+            const thumbNail = await uploadOnCloudinary(localThumbnailPath, "image");
+
+            if (!thumbNail) {
+                throw new ApiError(500, "Failed to upload thumbnail")
+            }
+            let oldThumbNail = video.thumbNail;
+            //update thumbnail
+            video.thumbNail = thumbNail;
+            //delete old thumbnail from cloudinary
+            await deleteFromCloudinary(oldThumbNail.public_id)
+        }
+        //save video
+        await video.save({ validateBeforeSave: false });
+        return res.status(200).json(new ApiResponse(200, video, "Video updated successfully"))
+    } catch (error) {
+        console.log("ERROR: ", error.message)
     }
-    //save video
-    await video.save({ validateBeforeSave: false });
-    return res.status(200).json(new ApiResponse(200, video, "Video updated successfully"))
 })
 // controller to toggle publish status of a video
 const togglePublishStatus = asyncHandler(async (req, res) => {

@@ -25,7 +25,7 @@ const createPlaylist = asyncHandler(async (req, res) => {
 //controller to get all playlists of a user
 const getUserPlaylists = asyncHandler(async (req, res) => {
     //get user id from request params
-    const { userId } = req.params;
+    const userId = req.params?.userId || req.user?._id;
     //find all playlists of a user
     const playlists = await PlayList.aggregate([
         {
@@ -125,9 +125,8 @@ const getPlaylistById = asyncHandler(async (req, res) => {
 })
 //controller to add a video to a playlist
 const addVideoToPlaylist = asyncHandler(async (req, res) => {
-    //get playlist id and video id from request params and body
-    const { playlistId } = req.params
-    const videoId = req.body.videoId;
+    //get playlist id and video id from request params
+    const { playlistId, videoId } = req.params
     //check if playlistId and videoId are provided
     if (!playlistId || !videoId) {
         throw new ApiError(400, "PlaylistId and videoId are required");

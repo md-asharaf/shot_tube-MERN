@@ -28,17 +28,15 @@ const updateTweet = asyncHandler(async (req, res) => {
     if (!content || !tweetId) {
         throw new ApiError(400, "Content and tweetId are required")
     }
-    const tweet = await Tweet.findOne({ _id: tweetId, userId });
+    const tweet = await Tweet.findById(tweetId);
     if (!tweet) {
-        throw new ApiError(404, "Tweet not found or you are not authorized to update it")
+        throw new ApiError(404, "Tweet not found")
     }
-    const updatedTweet = await Tweet.findByIdAndUpdate(tweet._id, {
-        $set: {
-            content
-        }
-    }, {
-        new: true
-    })
+    if (tweet.userId.toString() !== userId.toString()) {
+        throw new ApiError(400, "You are not authorized to update this tweet")
+    }
+    tweet.content = content;
+    const updatedTweet = await tweet.save({ validateBeforeSave: false });
     return res.status(200).json(new ApiResponse(200, updatedTweet, "Tweet updated successfully"))
 })
 //controller to delete a tweet  
@@ -48,7 +46,13 @@ const deleteTweet = asyncHandler(async (req, res) => {
     if (!tweetId || !userId) {
         throw new ApiError(400, "Tweet id and User id are required")
     }
-    const tweet = await Tweet.findOne({ _id: tweetId, userId });
+    const tweet = await Tweet.findById(tweetId);
+    if (!tweet) {
+        throw new ApiError(404, "Tweet not found")
+    }
+    if (tweet.userId.toString() !== userId.toString()) {
+        throw new ApiError(400, "You are not authorized to delete this tweet")
+    }
     const isDeleted = await Tweet.findByIdAndDelete(tweet._id);
     if (!isDeleted) {
         throw new ApiError(500, "Failed to delete tweet");
@@ -58,7 +62,7 @@ const deleteTweet = asyncHandler(async (req, res) => {
 
 //controller to get all tweets of a user
 const getUserTweets = asyncHandler(async (req, res) => {
-    const userId = req.params.userId || req.user?._id;
+    const userId = req.params?.userId || req.user?._id;
     if (!userId) {
         throw new ApiError(400, "User id is required")
     }

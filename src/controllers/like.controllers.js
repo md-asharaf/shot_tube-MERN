@@ -68,6 +68,7 @@ const toggleTweetLike = asyncHandler(async (req, res) => {
 // controller to get all liked videos of a user
 const getLikedVideos = asyncHandler(async (req, res) => {
     const userId = req.user?._id;
+    if (!userId) throw new ApiError(400, "User id is required");
     const like = await Like.aggregate([
         {
             $match: {

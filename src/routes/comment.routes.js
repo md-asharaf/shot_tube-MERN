@@ -4,14 +4,12 @@ import { verifyJWT } from "../middlewares/auth.middlewares.js";
 
 const router = Router();
 
-router.use(verifyJWT);
-
 router.route("/:videoId").get(getAllVideoComments);
 
-router.route("/:videoId/add").post(addComment);
+router.route("/:videoId/add").post(verifyJWT, addComment);
 
-router.route("/:commentId/delete").delete(deleteComment);
+router.route("/:commentId/delete").delete(verifyJWT, deleteComment);
 
-router.route("/:commentId/update").patch(updateComment);
+router.route("/:commentId/update").patch(verifyJWT, updateComment);
 
 export default router;
