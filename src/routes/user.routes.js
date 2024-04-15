@@ -1,4 +1,4 @@
-import { registerUser, loginUser, logoutUser, refreshAcessToken, updateAvatar, changeCurrentPassword, getCurrentUser, updateAccountDetails, updateCoverImage, getUserProfileDetails, getWatchHistory } from "../controllers/user.controllers.js"
+import { UserC, Auth } from "../controllers/user.controllers.js"
 import { Router } from "express";
 import { upload } from "../middlewares/multer.middlewares.js";
 import { verifyJWT } from "../middlewares/auth.middlewares.js";
@@ -15,27 +15,27 @@ router.route("/register").post(
             maxCount: 1
         }
     ]),
-    registerUser
+    Auth.registerUser
 )
 
-router.route("/login").post(loginUser);
+router.route("/login").post(Auth.loginUser);
 
-router.route("/logout").post(verifyJWT, logoutUser);
+router.route("/logout").post(verifyJWT, Auth.logoutUser);
 
-router.route("/refresh-token").post(refreshAcessToken);
+router.route("/refresh-token").post(Auth.refreshAcessToken);
 
-router.route("/account/change-password").patch(verifyJWT, changeCurrentPassword);
+router.route("/account/change-password").patch(verifyJWT, UserC.changeCurrentPassword);
 
-router.route("/current-user").get(verifyJWT, getCurrentUser);
+router.route("/current-user").get(verifyJWT, UserC.getCurrentUser);
 
-router.route("/account/update").patch(verifyJWT, updateAccountDetails);
+router.route("/account/update").patch(verifyJWT, UserC.updateAccountDetails);
 
-router.route("/account/update-avatar").patch(verifyJWT, upload.single("avatar"), updateAvatar);
+router.route("/update-avatar").patch(verifyJWT, upload.single("avatar"), UserC.updateAvatar);
 
-router.route("/account/update-cover-image").patch(verifyJWT, upload.single("coverImage"), updateCoverImage);
+router.route("/update-cover-image").patch(verifyJWT, upload.single("coverImage"), UserC.updateCoverImage);
 
-router.route("/channel/:username").get(getUserProfileDetails)
+router.route("/channel/:username").get(verifyJWT, UserC.getUserProfileDetails)
 
-router.route("/watch-history").get(verifyJWT, getWatchHistory)
+router.route("/watch-history").get(verifyJWT, UserC.getWatchHistory)
 
 export default router;
