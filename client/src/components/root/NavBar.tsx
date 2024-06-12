@@ -21,7 +21,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { shortName, useSuccess } from "@/lib/utils";
 import VideoUpload from "./VideoUpload";
 import { toggleVideoModal } from "@/provider/ui.slice";
-import authService from "@/services/auth.services";
+import authServices from "@/services/auth.services";
 
 const NavBar = () => {
     const navigate = useNavigate();
@@ -33,7 +33,7 @@ const NavBar = () => {
     );
     const isSuccess = useSuccess(navigate);
     const onLogout = async () => {
-        const res = await authService.logout();
+        const res = await authServices.logout();
         if (isSuccess(res)) {
             dispatch(logout());
             navigate("/");

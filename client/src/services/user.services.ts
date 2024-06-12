@@ -1,9 +1,9 @@
 import Axios from "../config/request";
 
 class UserService {
-    async getUser(username: string) {
-        return await Axios.get(`users/channel/${username}`);
-    }
+    getUser = async (username: string) =>
+        await Axios.get(`users/channel/${username}`);
+    getCurrentUser = async () => await Axios.get("/users/current-user");
 }
 
 export default new UserService();

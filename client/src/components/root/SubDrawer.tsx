@@ -10,7 +10,7 @@ interface ISubDrawer {
 }
 const SubDrawer: React.FC<ISubDrawer> = ({ options, isSmall = false }) => {
     return (
-        <div className={`flex-col cursor-pointer ${isSmall && "w-11"}`}>
+        <div className={`flex-col cursor-pointer`}>
             {options?.map((option, index) => (
                 <Link
                     to={option.route}

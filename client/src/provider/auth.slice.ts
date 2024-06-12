@@ -1,13 +1,16 @@
 import { IAction, IAuthData } from "@/interfaces";
 import { createSlice } from "@reduxjs/toolkit";
-const rawAuthData = localStorage.getItem("auth_data");
-let authData: IAuthData | null = null;
-if (rawAuthData) {
-    authData = JSON.parse(rawAuthData);
-}
+import userServices from "@/services/user.services";
+
+// const rawAuthData = localStorage.getItem("auth_data");
+// let authData: IAuthData | null = null;
+// if (rawAuthData) {
+//     authData = JSON.parse(rawAuthData);
+// }
+const currentUser = (await userServices.getCurrentUser())?.data;
 const initialState = {
-    status: authData?.status || false,
-    userData: authData?.userData || null,
+    status: currentUser ? true : false,
+    userData: currentUser,
 };
 
 const authSlice = createSlice({
@@ -15,22 +18,15 @@ const authSlice = createSlice({
     initialState,
     reducers: {
         login: (state: IAuthData, action: IAction) => {
-            const newState = {
-                status: true,
-                userData: action.payload,
-            };
-            localStorage.setItem("auth_data", JSON.stringify(newState));
-            state.status = newState.status;
-            state.userData = newState.userData;
+            const userData = action.payload;
+            // localStorage.setItem("auth_data", JSON.stringify(newState));
+            state.status = true;
+            state.userData = userData;
         },
         logout: (state: IAuthData) => {
-            const newState = {
-                status: false,
-                userData: null,
-            };
-            localStorage.setItem("auth_data", JSON.stringify(newState));
-            state.status = newState.status;
-            state.userData = newState.userData;
+            // localStorage.setItem("auth_data", JSON.stringify(newState));
+            state.status = false;
+            state.userData = null;
         },
     },
 });

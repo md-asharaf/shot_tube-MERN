@@ -5,14 +5,14 @@ import { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/provider";
 import SubDrawer from "./SubDrawer";
-import subscriptionService from "@/services/subscription.services";
+import subscriptionServices from "@/services/subscription.services";
 
 const BigDrawer = () => {
     const authStatus = useSelector((state: RootState) => state.auth.status);
     const userData = useSelector((state: RootState) => state.auth.userData);
     const [data, setData] = useState([]);
     const fetchAndSetChannels = async () => {
-        const res = await subscriptionService.getSubscribedChannels(
+        const res = await subscriptionServices.getSubscribedChannels(
             userData._id
         );
         if (res?.data) setData(res.data.subscribedChannels);

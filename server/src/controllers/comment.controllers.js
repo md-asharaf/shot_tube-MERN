@@ -4,6 +4,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { Comment } from "../models/comment.models.js";
 import { Video } from "../models/video.models.js";
 import mongoose from "mongoose";
+import { Like } from "../models/like.models.js";
 
 class CommentC {
     //controller to get all comments of a video
@@ -44,7 +45,7 @@ class CommentC {
                 $project: {
                     content: 1,
                     createdAt: 1,
-                    creator: 1,
+                    creator: 1
                 }
 
             }

@@ -1,14 +1,15 @@
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { IUser, IVideoData } from "@/interfaces";
-import userService from "@/services/user.services";
-import videoService from "@/services/video.services";
+import userServices from "@/services/user.services";
+videoServices
 import VideoCard from "@/components/root/VideoCard";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, toggleMenu } from "@/provider";
 import DefaultAvatarImage from "@/assets/images/profile.png";
 import DefaultCoverImage from "@/assets/images/coverImage.jpg";
 import VideoTitle from "@/components/root/VideoTitle";
+import videoServices from "@/services/video.services";
 const Channel = () => {
     const dispatch = useDispatch();
     const userData = useSelector((state: RootState) => state.auth.userData);
@@ -16,13 +17,13 @@ const Channel = () => {
     const [user, setUser] = useState<IUser>({} as IUser);
     const [videos, setVideos] = useState<IVideoData[]>([]);
     const fetchAndSetUser = async () => {
-        const res = await userService.getUser(username);
+        const res = await userServices.getUser(username);
         if (res?.data) {
             setUser(res.data);
         }
     };
     const fetchAndSetVideos = async () => {
-        const res = await videoService.getAllVideosByUser(user._id);
+        const res = await videoServices.getAllVideosByUser(user._id);
         if (res?.data) {
             setVideos(res.data);
         }

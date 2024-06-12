@@ -42,7 +42,7 @@ export interface IVideoForm {
     thumbnail: FileList;
 }
 export interface IFile {
-    id?: string;
+    _id?: string;
     url: string;
     public_id: string;
 }

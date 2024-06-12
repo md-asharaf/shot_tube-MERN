@@ -1,17 +1,17 @@
 import { useEffect, useState } from "react";
 import VideoCard from "@/components/root/VideoCard";
-import videoService from "@/services/video.services";
 import { useDispatch } from "react-redux";
 import { ApiResponse, IVideoData } from "@/interfaces";
 import { handleResponse } from "@/lib/utils";
 import { Link } from "react-router-dom";
 import VideoTitle from "@/components/root/VideoTitle";
+import videoServices from "@/services/video.services";
 const Home = () => {
     const dispatch = useDispatch();
     const [videos, setVideos] = useState<IVideoData[]>([]);
     const isSuccess = (res: ApiResponse) => handleResponse(res, dispatch);
     const fetchAndSetVideos = async () => {
-        const res = await videoService.getAll();
+        const res = await videoServices.getAll();
         if (isSuccess(res)) {
             setVideos(res.data);
         }

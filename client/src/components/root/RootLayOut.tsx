@@ -4,6 +4,8 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/provider";
 import BigDrawer from "./BigDrawer";
 import SmallDrawer from "./SmallDrawer";
+// import { ScrollArea } from "@/components/ui/scroll-area";
+
 const RootLayOut = () => {
     const isMenuOpen = useSelector((state: RootState) => state.ui.isMenuOpen);
     return (
@@ -19,7 +21,7 @@ const RootLayOut = () => {
                         <BigDrawer />
                     </div>
                 ) : (
-                    <div className="w-20 hidden sm:block">
+                    <div className="w-11 hidden sm:block">
                         <SmallDrawer />
                     </div>
                 )}

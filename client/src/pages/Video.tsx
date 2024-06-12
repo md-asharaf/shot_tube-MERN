@@ -2,7 +2,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { MdOutlinePlaylistAdd } from "react-icons/md";
 import { RiDeleteBin6Line } from "react-icons/ri";
-import { BiDislike, BiLike } from "react-icons/bi";
+import { BiLike } from "react-icons/bi";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -12,7 +12,7 @@ import { formatDistanceToNow } from "date-fns";
 import DefaultProfileImage from "@/assets/images/profile.png";
 import videoService from "@/services/video.services";
 import commentService from "@/services/comment.services";
-import subscriptionService from "@/services/subscription.services";
+import subscriptionServices from "@/services/subscription.services";
 import likeService from "@/services/like.services";
 import { useSuccess } from "@/lib/utils";
 const Video = () => {
@@ -25,10 +25,20 @@ const Video = () => {
     const [video, setVideo] = useState<IVideoData | null>(null);
     const [comments, setComments] = useState<IComment[]>([]);
     const [comment, setComment] = useState<string>("");
+    const [liked, setLiked] = useState<boolean[]>([]);
+
     const [cancelCommentButton, setCancelCommentButton] =
         useState<boolean>(false);
     const isSuccess = useSuccess(dispatch); //custom hook
-    const addToPlaylist = async () => {};
+    const toggleAddPlaylist = async () => {};
+    const toggleCommentLike = async (commentId: string, index: number) => {
+        const res = await likeService.toggleCommentLike(commentId);
+        if (isSuccess(res)) {
+            setLiked((prev) =>
+                prev.map((like, i) => (i === index ? !like : like))
+            );
+        }
+    };
     const toggleVideoLike = async () => {
         const res = await likeService.toggleVideoLike(videoId);
         if (isSuccess(res)) {
@@ -50,7 +60,7 @@ const Video = () => {
         }
     };
     const toggleSubscribe = async () => {
-        const res = await subscriptionService.toggleSubscription(
+        const res = await subscriptionServices.toggleSubscription(
             video.creator._id
         );
         if (isSuccess(res)) {
@@ -58,13 +68,25 @@ const Video = () => {
             fetchAndSetSubscribersCount();
         }
     };
+    const fetchAndSetLiked = async () => {
+        let likes: boolean[] = [];
+        for (let i = 0; i < comments.length; i++) {
+            const res = await likeService.isLiked(comments[i]._id, "comment");
+            if (isSuccess(res)) {
+                likes.push(res.data);
+            }
+        }
+        setLiked(likes);
+    };
     const fetchAndSetIsLiked = async () => {
         const res = await likeService.isLiked(videoId, "video");
         if (isSuccess(res)) setIsLiked(res.data);
     };
     const fetchAndSetComments = async () => {
         const res = await commentService.getComments(videoId);
-        if (isSuccess(res)) setComments(res.data.docs);
+        if (isSuccess(res)) {
+            setComments(res.data.docs);
+        }
     };
     const fetchAndSetVideo = async () => {
         const res = await videoService.getAVideo(videoId);
@@ -73,15 +95,20 @@ const Video = () => {
         }
     };
     const fetchAndSetIsSubscribed = async () => {
-        const res = await subscriptionService.isSubscribed(video.creator._id);
+        const res = await subscriptionServices.isSubscribed(video.creator._id);
         if (isSuccess(res)) setIsSubscribed(res.data.isSubscribed);
     };
     const fetchAndSetSubscribersCount = async () => {
-        const res = await subscriptionService.getSubscribersCount(
+        const res = await subscriptionServices.getSubscribersCount(
             video.creator._id
         );
         if (isSuccess(res)) setSubscribersCount(res.data);
     };
+    useEffect(() => {
+        if (comments.length > 0) {
+            fetchAndSetLiked();
+        }
+    }, [comments]);
 
     useEffect(() => {
         if (videoId) {
@@ -115,23 +142,28 @@ const Video = () => {
                     <h1 className="font-bold text-xl">{video.title}</h1>
                     <div className="flex justify-between">
                         <div className="flex gap-x-4 items-center">
-                            <img
-                                src={
-                                    video.creator.avatar?.url ||
-                                    DefaultProfileImage
-                                }
-                                className="rounded-full object-cover h-12 w-12"
-                            />
-                            <div className="flex flex-col gap-y-1 items-start">
-                                <Link to={`/channel/${video.creator.username}`}>
+                            <Link
+                                to={`/${video.creator.username}/channel`}
+                                className="flex gap-x-4 items-center"
+                            >
+                                <img
+                                    src={
+                                        video.creator.avatar?.url ||
+                                        DefaultProfileImage
+                                    }
+                                    className="rounded-full object-cover h-12 w-12"
+                                />
+                                <div className="flex flex-col gap-y-1 items-start">
                                     <div className="font-bold">
                                         {video.creator.fullname}
                                     </div>
-                                </Link>
-                                <div className="text-gray-500  text-sm">
-                                    {`${subscribersCount} subscribers`}
+
+                                    <div className="text-gray-500  text-sm">
+                                        {`${subscribersCount} subscribers`}
+                                    </div>
                                 </div>
-                            </div>
+                            </Link>
+
                             <Button
                                 disabled={!user.status}
                                 variant="default"
@@ -149,11 +181,7 @@ const Video = () => {
                         <div className="flex gap-2 items-center">
                             <Button
                                 disabled={!user.status}
-                                className={`${
-                                    isLiked
-                                        ? "text-blue-500 bg-gray-500"
-                                        : "hover:bg-blue-500"
-                                }`}
+                                className={`${isLiked && "text-blue-500"}`}
                                 variant="outline"
                                 onClick={toggleVideoLike}
                             >
@@ -162,7 +190,7 @@ const Video = () => {
                             <Button
                                 disabled={!user.status}
                                 variant="outline"
-                                onClick={addToPlaylist}
+                                onClick={toggleAddPlaylist}
                             >
                                 <MdOutlinePlaylistAdd className="text-2xl" />
                             </Button>
@@ -223,50 +251,52 @@ const Video = () => {
                         <div className="w-full border-b-2 border-gray-300 mb-8 mt-4"></div>
 
                         <div className="flex flex-col space-y-4">
-                            {comments.map((comment, index) => (
+                            {comments.map((coment, index) => (
                                 <div
                                     key={index}
                                     className="flex space-x-4 items-start"
                                 >
                                     <img
                                         src={
-                                            comment.creator.avatar?.url ||
+                                            coment.creator.avatar?.url ||
                                             DefaultProfileImage
                                         }
                                         className="rounded-full h-10 w-10"
                                     />
                                     <div>
                                         <div>
-                                            <span className="text-[16px]">{`@${comment.creator.username} `}</span>
+                                            <span className="text-[16px]">{`@${coment.creator.username} `}</span>
                                             <span className="text-gray-500 font-light text-[13px]">
                                                 {formatDistanceToNow(
-                                                    new Date(comment.createdAt),
+                                                    new Date(coment.createdAt),
                                                     { addSuffix: true }
                                                 ).replace("about ", "")}
                                             </span>
                                         </div>
-                                        <div>{comment.content}</div>
+                                        <div>{coment.content}</div>
                                         {user.status && (
                                             <div className="space-x-2 flex items-center">
                                                 <Button
+                                                    onClick={() =>
+                                                        toggleCommentLike(
+                                                            coment._id,
+                                                            index
+                                                        )
+                                                    }
                                                     variant="ghost"
-                                                    className="rounded-full text-lg p-2"
+                                                    className={`rounded-full text-lg p-2 ${
+                                                        liked[index] &&
+                                                        "text-blue-500"
+                                                    }`}
                                                 >
                                                     <BiLike />
                                                 </Button>
-                                                <Button
-                                                    variant="ghost"
-                                                    className="rounded-full text-lg p-2"
-                                                >
-                                                    <BiDislike />
-                                                </Button>
                                                 {user.userData.username ===
-                                                    comment.creator
-                                                        .username && (
+                                                    coment.creator.username && (
                                                     <Button
                                                         onClick={() =>
                                                             deleteComment(
-                                                                comment._id
+                                                                coment._id
                                                             )
                                                         }
                                                         variant="ghost"

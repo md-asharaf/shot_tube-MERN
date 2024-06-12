@@ -6,7 +6,7 @@ const router = Router();
 
 router.use(verifyJWT);
 
-router.post("/:commentId/toggle-comment-lke", LikeC.toggleCommentLike);
+router.post("/:commentId/toggle-comment-like", LikeC.toggleCommentLike);
 
 router.post("/:videoId/toggle-video-like", LikeC.toggleVideoLike);
 
