@@ -11,6 +11,7 @@ import LikedVideos from "./pages/LikedVideos";
 import MyVideos from "./pages/MyVideos";
 import WatchLater from "./pages/WatchLater";
 import PlayLists from "./pages/PlayLists";
+import Playlist from "./pages/Playlist";
 
 function App() {
     return (
@@ -31,6 +32,10 @@ function App() {
                     <Route path="/my-videos" element={<MyVideos />} />
                     <Route path="/watch-later" element={<WatchLater />} />
                     <Route path="/playlists" element={<PlayLists />} />
+                    <Route
+                        path="/playlist/:playlistId"
+                        element={<Playlist />}
+                    />
                 </Route>
             </Routes>
         </BrowserRouter>

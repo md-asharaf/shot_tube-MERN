@@ -14,7 +14,7 @@ const SmallDrawer = () => {
         },
     ];
     return (
-        <div className="ml-5 w-full">
+        <div className="w-full">
             <SubDrawer options={options} isSmall />
         </div>
     );

@@ -1,12 +1,6 @@
 import { IAction, IAuthData } from "@/interfaces";
 import { createSlice } from "@reduxjs/toolkit";
 import userServices from "@/services/user.services";
-
-// const rawAuthData = localStorage.getItem("auth_data");
-// let authData: IAuthData | null = null;
-// if (rawAuthData) {
-//     authData = JSON.parse(rawAuthData);
-// }
 const currentUser = (await userServices.getCurrentUser())?.data;
 const initialState = {
     status: currentUser ? true : false,

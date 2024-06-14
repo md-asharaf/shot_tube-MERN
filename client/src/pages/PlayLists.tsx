@@ -25,22 +25,21 @@ const PlayLists = () => {
     }, [user]);
 
     return (
-        <Link to="/playlists/videos">
-            <div className="px-2">
-                <h1 className="text-4xl font-bold">Playlists</h1>
-                <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
-                    {playlists.map((playlist, index) => (
-                        <div
-                            key={index}
-                            className="space-y-2 rounded-xl p-2 hover:bg-gray-400"
-                        >
-                            <PlaylistCard {...playlist} />
-                            <PlaylistTitle {...playlist} />
-                        </div>
-                    ))}
-                </div>
+        <div className="px-2">
+            <h1 className="text-4xl font-bold">Playlists</h1>
+            <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+                {playlists.map((playlist, index) => (
+                    <Link
+                        to={`/playlist/${playlist._id}`}
+                        key={index}
+                        className="space-y-2 rounded-xl p-2 hover:bg-gray-400"
+                    >
+                        <PlaylistCard {...playlist} />
+                        <PlaylistTitle {...playlist} />
+                    </Link>
+                ))}
             </div>
-        </Link>
+        </div>
     );
 };
 

@@ -6,7 +6,7 @@ import Auth from "../controllers/auth.controllers.js";
 
 export const verifyJWT = asyncHandler(async (req, res, next) => {
     const { accessToken, refreshToken } = req.cookies;
-    const helper = async (token) => {
+    const verifyRefreshToken = async (token) => {
         if (!token) {
             throw new ApiError(401, "both tokes are missing,please login to continue")
         }
@@ -26,7 +26,7 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
         }
     }
     if (!accessToken) {
-        await helper(refreshToken);
+        await verifyRefreshToken(refreshToken);
     }
     try {
         const decodedToken = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
@@ -34,6 +34,6 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
         req.user = user;
         next();
     } catch (error) {
-        await helper(refreshToken);
+        await verifyRefreshToken(refreshToken);
     }
 });

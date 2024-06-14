@@ -91,56 +91,67 @@ class PlayListC {
     getPlaylistById = asyncHandler(async (req, res) => {
         //get playlist id from request params
         const { playlistId } = req.params
-        const playlist = await PlayList.findById(playlistId).populate({
-            path: "videos",
-            populate: {
-                path: "userId",
-                select: "fullname"
-            }
-        })
-        /*
-            aggregate query to get playlist by id
-            const playlist = await PlayList.aggregate([
-                {
-                    $match: {
-                        _id: playlistId,
-                    }
-                },
-                {
-                    $lookup: {
-                        from: "videos",
-                        localField: "videos",
-                        foreignField: "_id",
-                        as: "videos",
-                        pipeline: [
-                            {
-                                $lookup: {
-                                    from: "users",
-                                    localField: "userId",
-                                    foreignField: "_id",
-                                    as: "owner",
-                                    pipeline: [
-                                        {
-                                            $project: {
-                                                fullname: 1
-                                            }
-                                        }
-                                    ]
-                                }
-                            },
-                            {
-                                $addFields: {
-                                    owner: {
-                                        $first: "$owner"
-                                    }
+        // const playlist = await PlayList.findById(playlistId).populate({
+        //     path: "videos",
+        //     populate: {
+        //         path: "userId",
+        //         select: "fullname"
+        //     }
+        // })
+        const playlist = await PlayList.aggregate([
+            {
+                $match: {
+                    _id: new mongoose.Types.ObjectId(playlistId),
+                }
+            },
+            {
+                $lookup: {
+                    from: "videos",
+                    localField: "videos",
+                    foreignField: "_id",
+                    as: "videos",
+                    pipeline: [
+                        {
+                            $lookup: {
+                                from: "users",
+                                localField: "userId",
+                                foreignField: "_id",
+                                as: "creator"
+                            }
+                        },
+                        {
+                            $addFields: {
+                                creator: {
+                                    $first: "$creator"
                                 }
                             }
-                        ]
+                        }, {
+                            $project: {
+                                userId: 0
+                            }
+                        }
+                    ]
+                }
+            }, {
+                $lookup: {
+                    from: "users",
+                    localField: "userId",
+                    foreignField: "_id",
+                    as: "creator"
+                }
+            }, {
+                $addFields: {
+                    creator: {
+                        $first: "$creator"
                     }
                 }
-            ]);
-         */
-        return res.status(200).json(new ApiResponse(200, playlist, "Playlist fetched successfully"));
+            }, {
+                $project: {
+                    userId: 0
+                }
+            }
+        ]);
+        return res.status(200).json(new ApiResponse(200, playlist[0], "Playlist fetched successfully"));
     })
     //controller to add a video to a playlist
     addVideoToPlaylist = asyncHandler(async (req, res) => {

@@ -17,11 +17,11 @@ const RootLayOut = () => {
             </header>
             <div className="flex pt-20 space-x-4">
                 {isMenuOpen ? (
-                    <div className="w-44 hidden sm:block">
+                    <div className="hidden sm:block">
                         <BigDrawer />
                     </div>
                 ) : (
-                    <div className="w-11 hidden sm:block">
+                    <div className="hidden sm:block">
                         <SmallDrawer />
                     </div>
                 )}
