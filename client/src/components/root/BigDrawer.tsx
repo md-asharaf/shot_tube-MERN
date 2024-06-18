@@ -143,7 +143,7 @@ const BigDrawer = () => {
         },
     ];
     return (
-        <div className="w-full pl-6">
+        <div className="w-full">
             <div>
                 <SubDrawer options={options1} />
             </div>

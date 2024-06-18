@@ -1,9 +1,9 @@
 import { Button } from "@/components/ui/button";
 import { MdOutlinePlaylistAdd } from "react-icons/md";
 import { BiLike } from "react-icons/bi";
-import { useEffect, useRef, useState } from "react";
+import { useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { RootState } from "@/provider";
 import { IVideoData } from "@/interfaces";
 import { formatDistanceToNow } from "date-fns";
@@ -11,7 +11,6 @@ import DefaultProfileImage from "@/assets/images/profile.png";
 import videoService from "@/services/video.services";
 import subscriptionServices from "@/services/subscription.services";
 import likeService from "@/services/like.services";
-import { useSuccess } from "@/lib/utils";
 import {
     Popover,
     PopoverContent,
@@ -19,91 +18,96 @@ import {
 } from "@/components/ui/popover";
 import SaveToPlaylist from "./SaveToPlaylist";
 import Comments from "@/components/root/Comments";
-import { useMutation } from "@tanstack/react-query";
+import { useQuery, useMutation, useQueryClient } from "@tanstack/react-query";
 import playlistServices from "@/services/playlist.services";
+
 const Video = () => {
-    const dispatch = useDispatch();
     const { videoId } = useParams();
     const user = useSelector((state: RootState) => state.auth);
-    const [isSubscribed, setIsSubscribed] = useState<boolean>(false);
-    const [isLiked, setIsLiked] = useState<boolean>(false);
-    const [subscribersCount, setSubscribersCount] = useState<number>(0);
-    const [video, setVideo] = useState<IVideoData | null>(null);
-    const [playlistIds, setPlaylistIds] = useState<string>("");
-    const successfull = useSuccess(dispatch); //custom hook
-    const toggleAddPlaylist = async () => {};
+    const [playlistIds, setPlaylistIds] = useState<string[]>([]);
 
-    const toggleVideoLike = async () => {
-        const res = await likeService.toggleVideoLike(videoId);
-        if (successfull(res)) {
-            setIsLiked((prev) => !prev);
-        }
-    };
-    const toggleSubscribe = async () => {
-        const res = await subscriptionServices.toggleSubscription(
-            video.creator._id
-        );
-        if (successfull(res)) {
-            setIsSubscribed((prev) => !prev);
-            fetchAndSetSubscribersCount();
-        }
-    };
+    const queryClient = useQueryClient();
 
-    const fetchAndSetIsLiked = async () => {
-        const res = await likeService.isLiked(videoId, "video");
-        if (successfull(res)) setIsLiked(res.data);
-    };
-
-    const fetchAndSetVideo = async () => {
-        const res = await videoService.getAVideo(videoId);
-        if (successfull(res)) {
-            setVideo(res.data);
-        }
-    };
-    const fetchAndSetIsSubscribed = async () => {
-        const res = await subscriptionServices.isSubscribed(video.creator._id);
-        if (successfull(res)) setIsSubscribed(res.data.isSubscribed);
-    };
-    const fetchAndSetSubscribersCount = async () => {
-        const res = await subscriptionServices.getSubscribersCount(
-            video.creator._id
-        );
-        if (successfull(res)) setSubscribersCount(res.data);
-    };
-    const addToPlaylist = async (playlistId: string) => {
-        const res = await playlistServices.addVideoToPlaylist(
-            videoId,
-            playlistId
-        );
-        if (successfull(res)) {
-            return res.data;
-        }
-    };
-    const addToPlaylistMutation = useMutation({
-        mutationFn: addToPlaylist,
+    const {
+        data: video,
+        isLoading: isVideoLoading,
+        error: videoError,
+    } = useQuery({
+        queryKey: ["video", videoId],
+        queryFn: () => videoService.getAVideo(videoId),
+        enabled: !!videoId,
+        select: (res): IVideoData => res.data,
     });
-    useEffect(() => {
-        if (videoId) {
-            fetchAndSetVideo();
-        }
-    }, [videoId]);
 
-    useEffect(() => {
-        if (video) {
-            fetchAndSetSubscribersCount();
-        }
-    }, [video]);
+    const { data: isLiked, error: isLikedError } = useQuery({
+        queryKey: ["isLiked", videoId],
+        queryFn: () => likeService.isLiked(videoId, "video"),
+        enabled: !!video && user.status,
+        select: (res): boolean => res.data,
+    });
 
-    useEffect(() => {
-        if (video && user.status) {
-            fetchAndSetIsLiked();
-            fetchAndSetIsSubscribed();
-        }
-    }, [video, user.status]);
-    const ref = useRef(null);
-    if (!video) return <div>Loading...</div>;
+    const { data: isSubscribed, error: isSubscribedError } = useQuery({
+        queryKey: ["isSubscribed", video?.creator._id],
+        queryFn: () => subscriptionServices.isSubscribed(video.creator._id),
+        enabled: !!video && user.status,
+        select: (res) => res.data.isSubscribed,
+    });
+
+    const { data: subscribersCount, error: subscribersCountError } = useQuery({
+        queryKey: ["subscribersCount", video?.creator._id],
+        queryFn: () =>
+            subscriptionServices.getSubscribersCount(video.creator._id),
+        enabled: !!video,
+        select: (res) => res.data,
+    });
+
+    const toggleVideoLikeMutation = useMutation({
+        mutationFn: () => likeService.toggleLike(videoId, "video"),
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ["isLiked", videoId],
+            });
+        },
+    });
+
+    const toggleSubscribeMutation = useMutation({
+        mutationFn: () =>
+            subscriptionServices.toggleSubscription(video.creator._id),
+        onSuccess: () => {
+            queryClient.invalidateQueries({
+                queryKey: ["isSubscribed", video.creator._id],
+            });
+            queryClient.invalidateQueries({
+                queryKey: ["subscribersCount", video.creator._id],
+            });
+        },
+    });
+
+    const addToPlaylistMutation = useMutation({
+        mutationFn: (playlistId: string) =>
+            playlistServices.addVideoToPlaylist(videoId, playlistId),
+        onSuccess: (res) => {
+            return res.data;
+        },
+    });
+
+    const toggleAddPlaylist = () => {
+        playlistIds.map((playlistId) =>
+            addToPlaylistMutation.mutate(playlistId)
+        );
+    };
+
+    if (isVideoLoading) return <div>Loading...</div>;
+    if (
+        videoError ||
+        isLikedError ||
+        isSubscribedError ||
+        subscribersCountError
+    )
+        return <div>Error loading video</div>;
+
     return (
-        <div className="p-2 space-y-4 lg:w-4/5 xl:w-2/3">
+        <div className="space-y-4 lg:w-4/5 xl:w-2/3">
             <div className="flex flex-col space-y-2">
                 <video
                     autoPlay
@@ -144,7 +148,7 @@ const Video = () => {
                                     ? "bg-zinc-300 hover:bg-zinc-400"
                                     : "bg-gray-500 hover:bg-gray-600"
                             } shadow-none text-black rounded-3xl`}
-                            onClick={toggleSubscribe}
+                            onClick={() => toggleSubscribeMutation.mutate()}
                         >
                             {isSubscribed ? "Subscribed" : "Subscribe"}
                         </Button>
@@ -155,14 +159,14 @@ const Video = () => {
                             disabled={!user.status}
                             className={`${isLiked && "text-blue-500"}`}
                             variant="outline"
-                            onClick={toggleVideoLike}
+                            onClick={() => toggleVideoLikeMutation.mutate()}
                         >
                             <BiLike className="text-2xl" />
                         </Button>
                         <Popover
                             onOpenChange={(open) => {
                                 if (!open) {
-                                    addToPlaylistMutation.mutate(playlistIds);
+                                    toggleAddPlaylist();
                                 }
                             }}
                         >
@@ -170,7 +174,6 @@ const Video = () => {
                                 <Button
                                     disabled={!user.status}
                                     variant="outline"
-                                    onClick={toggleAddPlaylist}
                                 >
                                     <MdOutlinePlaylistAdd className="text-2xl" />
                                 </Button>

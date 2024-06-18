@@ -12,25 +12,17 @@ import { useSuccess } from "@/lib/utils";
 import { BiLike } from "react-icons/bi";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import { IComment } from "@/interfaces";
+
 const Comments = ({ videoId }) => {
     const dispatch = useDispatch();
+    const successfull = useSuccess(dispatch);
     const success = useSuccess(dispatch);
     const user = useSelector((state: RootState) => state.auth);
     const [content, setContent] = useState<string>("");
-    const fetchComments = async (): Promise<IComment[]> => {
+    const fetchComments = async () => {
         const res = await commentServices.getComments(videoId);
         return res.data.docs;
     };
-    const {
-        data: comments,
-        isError,
-        isLoading,
-        error,
-        refetch: refetchComments,
-    } = useQuery({
-        queryKey: ["comments", videoId],
-        queryFn: fetchComments,
-    });
     const fetchCommentsLike = async () => {
         const likes: boolean[] = await Promise.all(
             comments.map(async (comment) => {
@@ -42,51 +34,81 @@ const Comments = ({ videoId }) => {
         );
         return likes;
     };
-    const {
-        data: liked,
-        refetch: refetchCommentsLike,
-        isError: is_Error,
-        error: error_Like,
-        isLoading: is_Loading,
-    } = useQuery({
-        queryKey: ["commentsLike"],
-        queryFn: fetchCommentsLike,
-    });
-    const toggleCommentLike = async (commentId: string) => {
-        const res = await likeServices.toggleCommentLike(commentId);
-        if (success(res)) {
-            refetchCommentsLike();
-        }
-    };
-    const deleteComment = async (commentId: string) => {
-        const res = await commentServices.deleteComment(commentId);
-        if (success(res)) {
-            refetchComments();
-        }
-    };
-    const addComment = async () => {
+    const addCommentMutation = async (content: string) => {
         const res = await commentServices.comment(videoId, content);
-        if (success(res)) {
-            setContent("");
-            refetchComments();
-        }
+        successfull(res);
     };
-    const toggleCommentLikeMutation = useMutation({
-        mutationKey: ["toggleCommentLike"],
-        mutationFn: toggleCommentLike,
-    });
-    const addCommentMutation = useMutation({
-        mutationFn: addComment,
-        mutationKey: ["addComment"],
-    });
-    const deleteCommentMutation = useMutation({
-        mutationKey: ["deleteComment"],
-        mutationFn: deleteComment,
+    const deleteCommentMutation = async (commentId: string) => {
+        const res = await commentServices.deleteComment(commentId);
+        successfull(res);
+    };
+    const toggleCommentLikeMutation = async (commentId: string) => {
+        const res = await likeServices.toggleLike(commentId, "comment");
+        successfull(res);
+    };
+    const {
+        data: comments,
+        isError: commentsError,
+        isLoading: commentsLoading,
+        error: commentsErrorObj,
+        refetch: refetchComments,
+    } = useQuery<IComment[], Error>({
+        queryKey: ["comments", videoId],
+        queryFn: fetchComments,
+        enabled: !!videoId,
     });
 
-    if (isLoading || is_Loading) return <div>Loading...</div>;
-    if (isError || is_Error)
-        return <div>ERROR: {error?.message || error_Like.message}</div>;
+    const {
+        data: liked,
+        isError: likedError,
+        isLoading: likedLoading,
+        error: likedErrorObj,
+        refetch: refetchCommentsLike,
+    } = useQuery<boolean[], Error>({
+        queryKey: ["commentsLike", videoId],
+        queryFn: fetchCommentsLike,
+        enabled: !!comments, // Ensure this query runs only when `comments` is available
+    });
+
+    const { mutate: addComment } = useMutation<void, Error, string>({
+        mutationFn: addCommentMutation,
+        onSuccess: () => {
+            setContent("");
+            refetchComments();
+        },
+        onError: (error: Error) => {
+            console.error("Error adding comment:", error);
+        },
+    });
+
+    const { mutate: toggleCommentLike } = useMutation<void, Error, string>({
+        mutationFn: toggleCommentLikeMutation,
+        onSuccess: () => {
+            refetchCommentsLike();
+        },
+        onError: (error) => {
+            console.error("Error toggling comment like:", error);
+        },
+    });
+
+    const { mutate: deleteComment } = useMutation<void, Error, string>({
+        mutationFn: deleteCommentMutation,
+        onSuccess: () => {
+            refetchComments();
+        },
+        onError: (error: Error) => {
+            console.error("Error deleting comment:", error);
+        },
+    });
+
+    if (commentsLoading || likedLoading) return <div>Loading...</div>;
+    if (commentsError || likedError)
+        return (
+            <div>
+                ERROR: {commentsErrorObj?.message || likedErrorObj?.message}
+            </div>
+        );
+
     return (
         <>
             <div className="font-bold text-2xl text-zinc-600">{`${comments.length} Comments`}</div>
@@ -98,7 +120,6 @@ const Comments = ({ videoId }) => {
                     />
                     <Input
                         disabled={!user.status}
-                        // onFocus={() => setCancelCommentButton(true)}
                         value={content}
                         onChange={(e) => setContent(e.target.value)}
                         placeholder="Add a public comment..."
@@ -109,7 +130,6 @@ const Comments = ({ videoId }) => {
                             disabled={!content}
                             onClick={() => {
                                 setContent("");
-                                // setCancelCommentButton(false);
                             }}
                             variant="destructive"
                         >
@@ -117,7 +137,7 @@ const Comments = ({ videoId }) => {
                         </Button>
                         <Button
                             disabled={!content}
-                            onClick={() => addCommentMutation.mutate()}
+                            onClick={() => addComment(content)}
                             variant="outline"
                             className="hover:bg-blue-500 hover:text-white"
                         >
@@ -152,9 +172,7 @@ const Comments = ({ videoId }) => {
                                     <div className="space-x-2 flex items-center">
                                         <Button
                                             onClick={() =>
-                                                toggleCommentLikeMutation.mutate(
-                                                    comment._id
-                                                )
+                                                toggleCommentLike(comment._id)
                                             }
                                             variant="ghost"
                                             className={`rounded-full text-lg p-2 ${
@@ -167,9 +185,7 @@ const Comments = ({ videoId }) => {
                                             comment.creator.username && (
                                             <Button
                                                 onClick={() =>
-                                                    deleteCommentMutation.mutate(
-                                                        comment._id
-                                                    )
+                                                    deleteComment(comment._id)
                                                 }
                                                 variant="ghost"
                                                 className="rounded-full text-lg p-2"

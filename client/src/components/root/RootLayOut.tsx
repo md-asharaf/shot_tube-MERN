@@ -15,13 +15,13 @@ const RootLayOut = () => {
                     <NavBar />
                 </nav>
             </header>
-            <div className="flex pt-20 space-x-4">
+            <div className="flex py-20 pr-4 space-x-4 h-screen w-screen">
                 {isMenuOpen ? (
-                    <div className="hidden sm:block">
+                    <div className="pl-6 min-w-44 hidden sm:block overflow-auto">
                         <BigDrawer />
                     </div>
                 ) : (
-                    <div className="hidden sm:block">
+                    <div className="min-w-12 hidden sm:block overflow-auto">
                         <SmallDrawer />
                     </div>
                 )}

@@ -33,7 +33,7 @@ const Playlist = () => {
     );
     return (
         <div className="px-2 text-black flex space-x-1 relative w-full">
-            <div className="w-[27.5%] bg-gray-200 p-5 space-y-3 rounded-xl fixed left-48">
+            <div className="w-1/4 bg-gray-200 p-5 space-y-3 rounded-xl overflow-auto">
                 <img
                     src={playlist.videos[0].thumbnail.url}
                     alt="Playlist Thumbnail"
@@ -56,7 +56,7 @@ const Playlist = () => {
                 <p className="text-sm">{playlist.description}</p>
             </div>
 
-            <div className="grid grid-rows-7 gap-4 w-2/3 absolute right-0">
+            <div className="grid grid-rows-7 gap-2 w-3/4 overflow-auto">
                 {playlist.videos?.map((video, index) => (
                     <div
                         key={video._id}
@@ -67,7 +67,7 @@ const Playlist = () => {
                             <img
                                 src={video.thumbnail.url}
                                 alt="Video Thumbnail"
-                                className="w-full rounded-lg"
+                                className="w-full h-[10vh] rounded-lg"
                             />
                             <span className="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white px-2 text-xs">
                                 {video.duration}

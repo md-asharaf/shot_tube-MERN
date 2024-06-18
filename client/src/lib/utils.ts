@@ -15,17 +15,12 @@ export function shortName(name: string | undefined) {
     }
     return splitName[0][0].toUpperCase();
 }
-export const handleResponse = (
-    res: ApiResponse,
-    dispatch: Dispatch<UnknownAction>
-) => {
-    console.log("Response message:: ", res.message);
-    if (res.status === 401) {
-        dispatch(logout());
-        return false;
-    }
-    return res.success;
-};
 export const useSuccess =
-    (dispatch: Dispatch<UnknownAction>) => (res: ApiResponse) =>
-        handleResponse(res, dispatch);
+    (dispatch: Dispatch<UnknownAction>) => (res: ApiResponse) => {
+        console.log("Response message:: ", res.message);
+        if (res.status === 401) {
+            dispatch(logout());
+            return false;
+        }
+        return res?.success;
+    };
