@@ -19,7 +19,7 @@ const Channel = () => {
         return res.data;
     };
     const fetchUserVideos = async () => {
-        const res = await videoServices.getAllVideosByUser(user?._id);
+        const res = await videoServices.allVideosByUser(user?._id);
         return res.data;
     };
     // Fetch user data

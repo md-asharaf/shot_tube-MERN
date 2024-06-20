@@ -1,33 +1,48 @@
 import { IoHomeOutline } from "react-icons/io5";
 import { MdOutlineSubscriptions } from "react-icons/md";
 import { SiYoutubeshorts } from "react-icons/si";
-import { useEffect, useState } from "react";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/provider";
 import SubDrawer from "./SubDrawer";
 import subscriptionServices from "@/services/subscription.services";
+import { useSuccess } from "@/lib/utils";
+import { useQuery } from "@tanstack/react-query";
 
 const BigDrawer = () => {
-    const authStatus = useSelector((state: RootState) => state.auth.status);
-    const userData = useSelector((state: RootState) => state.auth.userData);
-    const [data, setData] = useState([]);
-    const fetchAndSetChannels = async () => {
-        const res = await subscriptionServices.getSubscribedChannels(
-            userData._id
-        );
-        if (res?.data) setData(res.data.subscribedChannels);
+    const dispatch = useDispatch();
+    const userId = useSelector((state: RootState) => state.auth.userData?._id);
+    const username = useSelector(
+        (state: RootState) => state.auth.userData?.username
+    );
+    const successfull = useSuccess(dispatch);
+    const fetchChannels = async () => {
+        const res = await subscriptionServices.getSubscribedChannels(userId);
+        if (successfull(res)) {
+            return res.data.subscribedChannels;
+        }
     };
-    useEffect(() => {
-        if (!userData) return;
-        fetchAndSetChannels();
-    }, [userData]);
+    const {
+        data: channels,
+        isError,
+        error,
+        isLoading,
+    } = useQuery({
+        queryKey: ["channels"],
+        queryFn: fetchChannels,
+        enabled: !!userId,
+    });
+
     const options1 = [
         { name: "Home", icon: <IoHomeOutline />, route: "/" },
-        { name: "Shorts", icon: <SiYoutubeshorts />, route: "/shorts" },
+        {
+            name: "Shorts",
+            icon: <SiYoutubeshorts />,
+            route: "/empty",
+        },
         {
             name: "Subscriptions",
             icon: <MdOutlineSubscriptions />,
-            route: "/subscriptions",
+            route: "/empty",
         },
     ];
     const options2 = [
@@ -47,7 +62,7 @@ const BigDrawer = () => {
                     </svg>
                 </div>
             ),
-            route: `/${userData?.username}/channel`,
+            route: `/${username}/channel`,
         },
         {
             name: "History",
@@ -103,7 +118,7 @@ const BigDrawer = () => {
                     </svg>
                 </div>
             ),
-            route: `/my-videos`,
+            route: `/empty`,
         },
         {
             name: "Watch later",
@@ -142,12 +157,14 @@ const BigDrawer = () => {
             route: `/liked-videos`,
         },
     ];
+    if (isLoading) return <div>Loading...</div>;
+    if (isError) return <div>Error: {error.message}</div>;
     return (
         <div className="w-full">
             <div>
                 <SubDrawer options={options1} />
             </div>
-            {authStatus && (
+            {userId && (
                 <>
                     <hr className="my-3" />
                     <p className="ml-2 mb-2 text-sm font-bold text-black">
@@ -156,14 +173,14 @@ const BigDrawer = () => {
                     <div>
                         <SubDrawer options={options2} />
                     </div>
-                    {data.length > 0 && (
+                    {channels.length > 0 && (
                         <>
                             <hr className="my-3" />
                             <p className="ml-2 mb-2 text-sm font-bold text-black">
                                 Subscriptions
                             </p>
                             <div>
-                                <SubDrawer options={data} />
+                                <SubDrawer options={channels} />
                             </div>
                         </>
                     )}

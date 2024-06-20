@@ -1,29 +1,35 @@
 import { IPlaylist } from "@/interfaces";
 import { RootState } from "@/provider";
-import { useEffect, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useSuccess } from "@/lib/utils";
 import PlaylistCard from "@/components/root/PlaylistCard";
-import PlaylistTitle from "@/components/root/PlaylistTitle";
+import VideoTitle2 from "@/components/root/VideoTitle2";
 import { Link } from "react-router-dom";
 import playlistServices from "@/services/playlist.services";
+import { useQuery } from "@tanstack/react-query";
 
 const PlayLists = () => {
     const dispatch = useDispatch();
-    const user = useSelector((state: RootState) => state.auth);
-    const [playlists, setPLaylists] = useState<IPlaylist[]>([]);
-    const isSuccess = useSuccess(dispatch);
-    const fetchAndSetPlaylists = async () => {
-        const res = await playlistServices.getPlaylists(user.userData._id);
-        if (isSuccess(res)) {
-            setPLaylists(res.data);
+    const userId = useSelector((state: RootState) => state.auth.userData?._id);
+    const successfull = useSuccess(dispatch);
+    const fetchPlaylists = async () => {
+        const res = await playlistServices.getPlaylists(userId);
+        if (successfull(res)) {
+            return res.data;
         }
     };
-    useEffect(() => {
-        if (!user) return;
-        fetchAndSetPlaylists();
-    }, [user]);
-
+    const {
+        data: playlists,
+        isError,
+        error,
+        isLoading,
+    } = useQuery<IPlaylist[]>({
+        queryKey: ["playlists", userId],
+        queryFn: fetchPlaylists,
+        enabled: !!userId,
+    });
+    if (isLoading) return <div>Loading...</div>;
+    if (isError) return <div>Error: {error.message}</div>;
     return (
         <div className="px-2">
             <h1 className="text-4xl font-bold">Playlists</h1>
@@ -35,7 +41,7 @@ const PlayLists = () => {
                         className="space-y-2 rounded-xl p-2 hover:bg-gray-400"
                     >
                         <PlaylistCard {...playlist} />
-                        <PlaylistTitle {...playlist} />
+                        <VideoTitle2 {...playlist} />
                     </Link>
                 ))}
             </div>

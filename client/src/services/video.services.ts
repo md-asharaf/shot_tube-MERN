@@ -3,10 +3,11 @@ import Axios from "@/config/request";
 class VideoSevice {
     upload = async (data: FormData) =>
         await Axios.post("/videos/publish", data);
-    getAll = async () => await Axios.get("/videos");
-    getAVideo = async (videoId: string) =>
+    allVideos = async () => await Axios.get("/videos");
+    singleVideo = async (videoId: string) =>
         await Axios.get(`/videos/${videoId}`);
-    getAllVideosByUser = async (userId: string) =>
+    allVideosByUser = async (userId: string) =>
         await Axios.get(`/videos/${userId}/videos`);
+    likedVideos = async () => await Axios.get("/likes/liked-videos");
 }
 export default new VideoSevice();

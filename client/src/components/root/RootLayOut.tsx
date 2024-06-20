@@ -4,12 +4,11 @@ import { useSelector } from "react-redux";
 import { RootState } from "@/provider";
 import BigDrawer from "./BigDrawer";
 import SmallDrawer from "./SmallDrawer";
-// import { ScrollArea } from "@/components/ui/scroll-area";
 
 const RootLayOut = () => {
     const isMenuOpen = useSelector((state: RootState) => state.ui.isMenuOpen);
     return (
-        <div>
+        <div className="h-screen w-screen">
             <header>
                 <nav>
                     <NavBar />

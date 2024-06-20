@@ -6,11 +6,15 @@ import { MdOutlineSubscriptions } from "react-icons/md";
 const SmallDrawer = () => {
     const options = [
         { name: "Home", icon: <IoHomeOutline />, route: "/" },
-        { name: "Shorts", icon: <SiYoutubeshorts />, route: "/shorts" },
+        {
+            name: "Shorts",
+            icon: <SiYoutubeshorts />,
+            route: window.location.href,
+        },
         {
             name: "Subscriptions",
             icon: <MdOutlineSubscriptions />,
-            route: "/subscriptions",
+            route: window.location.href,
         },
     ];
     return (

@@ -1,7 +1,7 @@
 import { IPlaylist } from "@/interfaces";
 import { useNavigate } from "react-router-dom";
 
-const PlaylistTitle: React.FC<IPlaylist> = (playlist) => {
+const VideoTitle2: React.FC<IPlaylist> = (playlist) => {
     const navigate = useNavigate();
     return (
         <div className="grid h-1/3 cursor-pointer">
@@ -20,4 +20,4 @@ const PlaylistTitle: React.FC<IPlaylist> = (playlist) => {
     );
 };
 
-export default PlaylistTitle;
+export default VideoTitle2;

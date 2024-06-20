@@ -1,4 +1,4 @@
-import { useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import playlistServices from "@/services/playlist.services";
 import { useSuccess } from "@/lib/utils";
@@ -9,19 +9,21 @@ const Playlist = () => {
     const dispatch = useDispatch();
     const { playlistId } = useParams();
     const success = useSuccess(dispatch);
+    const fetchPlaylist = async () => {
+        const res = await playlistServices.getPlaylist(playlistId);
+        if (success(res)) {
+            return res.data;
+        }
+    };
     const {
         data: playlist,
         isError,
         isLoading,
         error,
-    } = useQuery({
+    } = useQuery<IPlaylist>({
         queryKey: ["playlist", playlistId],
-        queryFn: async (): Promise<IPlaylist> => {
-            const res = await playlistServices.getPlaylist(playlistId);
-            if (success(res)) {
-                return res.data;
-            }
-        },
+        queryFn: fetchPlaylist,
+        enabled: !!playlistId,
     });
     if (isLoading) return <div>Loading...</div>;
     if (isError) {
@@ -32,12 +34,12 @@ const Playlist = () => {
         0
     );
     return (
-        <div className="px-2 text-black flex space-x-1 relative w-full">
-            <div className="w-1/4 bg-gray-200 p-5 space-y-3 rounded-xl overflow-auto">
+        <div className="text-black flex space-x-1 w-full">
+            <div className="min-w-[300px] bg-gray-200 p-5 space-y-3 rounded-xl overflow-auto">
                 <img
                     src={playlist.videos[0].thumbnail.url}
                     alt="Playlist Thumbnail"
-                    className="rounded-lg"
+                    className="w-full rounded-lg"
                 />
                 <h1 className="text-[2em] font-bold">{playlist.name}</h1>
                 <p>{playlist.creator?.fullname}</p>
@@ -56,31 +58,30 @@ const Playlist = () => {
                 <p className="text-sm">{playlist.description}</p>
             </div>
 
-            <div className="grid grid-rows-7 gap-2 w-3/4 overflow-auto">
+            <div className="grid grid-rows-7 gap-2 overflow-auto">
                 {playlist.videos?.map((video, index) => (
-                    <div
-                        key={video._id}
-                        className="flex space-x-4 items-center p-2 hover:bg-gray-300 rounded-lg"
-                    >
-                        <div>{index + 1}</div>
-                        <div className="relative w-40 mr-5">
-                            <img
-                                src={video.thumbnail.url}
-                                alt="Video Thumbnail"
-                                className="w-full h-[10vh] rounded-lg"
-                            />
-                            <span className="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white px-2 text-xs">
-                                {video.duration}
-                            </span>
+                    <Link to={`/videos/${video._id}`} key={video._id}>
+                        <div className="flex space-x-4 items-center p-2 hover:bg-gray-300 rounded-lg">
+                            <div>{index + 1}</div>
+                            <div className="relative">
+                                <img
+                                    src={video.thumbnail.url}
+                                    alt="Video Thumbnail"
+                                    className="w-40 h-20 rounded-lg"
+                                />
+                                <span className="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white px-2 text-xs">
+                                    {video.duration}
+                                </span>
+                            </div>
+                            <div>
+                                <h3></h3>
+                                <h3 className="text-lg mb-2">{video.title}</h3>
+                                <p className="text-gray-400">
+                                    {`${video.creator.fullname} • ${video.views} views • 3 years ago`}
+                                </p>
+                            </div>
                         </div>
-                        <div>
-                            <h3></h3>
-                            <h3 className="text-lg mb-2">{video.title}</h3>
-                            <p className="text-gray-400">
-                                {`${video.creator.fullname} • ${video.views} views • 3 years ago`}
-                            </p>
-                        </div>
-                    </div>
+                    </Link>
                 ))}
             </div>
         </div>

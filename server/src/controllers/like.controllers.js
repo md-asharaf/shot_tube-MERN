@@ -72,7 +72,7 @@ class LikeC {
     // controller to get all liked videos of a user
     getLikedVideos = asyncHandler(async (req, res) => {
         const userId = req.user._id;
-        const likedVideos = await Like.aggregate([
+        const result = await Like.aggregate([
             {
                 $match: {
                     userId: new mongoose.Types.ObjectId(userId),
@@ -92,27 +92,17 @@ class LikeC {
                                 from: "users",
                                 localField: "userId",
                                 foreignField: "_id",
-                                as: "owner",
-                                pipeline: [
-                                    {
-                                        $project: {
-                                            username: 1,
-                                            fullname: 1,
-                                            avatar: 1,
-                                            _id: 0
-                                        }
-                                    }
-                                ]
+                                as: "creator"
                             }
-                        },
-                        {
+                        }, {
                             $addFields: {
-                                owner: { $first: "$owner" }
+                                creator: {
+                                    $first: "$creator"
+                                }
                             }
-                        },
-                        {
+                        }, {
                             $project: {
-                                owner: 1,
+                                userId: 0,
                             }
                         }
                     ]
@@ -122,18 +112,19 @@ class LikeC {
                 $addFields: {
                     video: {
                         $first: "$video"
+                    },
+                    creator: {
+                        $first: "$creator"
                     }
                 }
-            },
-            {
+            }, {
                 $project: {
-                    _id: 0,
                     video: 1,
                 }
             }
         ]);
-
-        return res.status(200).json(new ApiResponse(200, likedVideos.map(video => video.video), "Success"))
+        const likedVideos = result.map(obj => obj.video)
+        return res.status(200).json(new ApiResponse(200, likedVideos, "Success"))
     })
 
     isLiked = asyncHandler(async (req, res) => {

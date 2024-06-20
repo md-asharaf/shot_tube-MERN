@@ -12,6 +12,7 @@ import MyVideos from "./pages/MyVideos";
 import WatchLater from "./pages/WatchLater";
 import PlayLists from "./pages/PlayLists";
 import Playlist from "./pages/Playlist";
+import Empty from "./components/root/Empty";
 
 function App() {
     return (
@@ -36,6 +37,7 @@ function App() {
                         path="/playlist/:playlistId"
                         element={<Playlist />}
                     />
+                    <Route path="/empty" element={<Empty />} />
                 </Route>
             </Routes>
         </BrowserRouter>
