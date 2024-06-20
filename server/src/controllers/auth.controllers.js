@@ -82,8 +82,10 @@ class Auth {
         const loggedInUser = await User.findById(existedUser._id).select("-password -refreshToken");
         const options = {
             httpOnly: true,
-            secure: true
+            secure: true,
+            maxAge: 7 * 24 * 60 * 60 * 1000
         }
+
         return res
             .cookie("accessToken", accessToken, options).cookie("refreshToken", refreshToken, options).json(new ApiResponse(200, {
                 user: loggedInUser,
