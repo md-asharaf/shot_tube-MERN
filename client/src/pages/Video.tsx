@@ -22,6 +22,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import playlistServices from "@/services/playlist.services";
 import { useSuccess } from "@/lib/utils";
 import userServices from "@/services/user.services";
+import videoServices from "@/services/video.services";
 
 const Video = () => {
     const dispatch = useDispatch();
@@ -134,8 +135,17 @@ const Video = () => {
         mutationKey: ["add-to-watch-history", videoId, userId],
         mutationFn: addToWatchHistoryMutation,
     });
+    const increaseViews = async () =>
+        await videoServices.incrementViews(videoId);
+    const { mutate: incrementViews } = useMutation({
+        mutationFn: increaseViews,
+    });
     useEffect(() => {
-        if (video) setTimeout(addToWatchHistory, 5000);
+        if (video)
+            setTimeout(() => {
+                addToWatchHistory();
+                incrementViews();
+            }, 5000);
     }, [video]);
 
     if (isLoading) return <div>Loading...</div>;

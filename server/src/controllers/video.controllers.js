@@ -130,7 +130,7 @@ class VideoC {
         //get video id from request params
         const { videoId } = req.params;
         //find video by id 
-        const video = await Video.findByIdAndUpdate(videoId);
+        const video = await Video.findById(videoId);
         if (!video) {
             throw new ApiError(404, "Video not found")
         }
@@ -241,7 +241,13 @@ class VideoC {
             console.log("ERROR: ", error.message)
         }
     })
-
+    increaseViews = asyncHandler(async (req, res) => {
+        const { videoId } = req.params;
+        const video = await Video.findById(videoId);
+        video.views++;
+        await video.save({ validateBeforeSave: false })
+        return res.status(200).json(new ApiResponse(200, video, "successfully video's views increased"))
+    })
 }
 
 export default new VideoC();

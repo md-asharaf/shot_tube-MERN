@@ -54,9 +54,6 @@ class Auth {
     })
     //controller to login a user
     loginUser = asyncHandler(async (req, res) => {
-        if (req.cookies?.accessToken || req.cookies?.refreshToken) {
-            throw new ApiError(400, "please log out first")
-        }
         //get user details from front-end or postman
         const { email, password } = req.body;
         //validate details
@@ -85,7 +82,6 @@ class Auth {
             secure: true,
             maxAge: 7 * 24 * 60 * 60 * 1000
         }
-
         return res
             .cookie("accessToken", accessToken, options).cookie("refreshToken", refreshToken, options).json(new ApiResponse(200, {
                 user: loggedInUser,

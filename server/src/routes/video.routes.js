@@ -18,6 +18,7 @@ router.post("/publish", verifyJWT, upload.fields([
         maxCount: 1
     }
 ]), VideoC.publishVideo);
+router.post("/:videoId/increase", VideoC.increaseViews)
 router.get("/:userId/videos", VideoC.getUserVideos);
 
 router.delete("/:videoId/delete", verifyJWT, VideoC.deleteVideo);

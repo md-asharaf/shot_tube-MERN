@@ -1,32 +1,28 @@
 import { IAuthData } from "@/interfaces";
 import { createSlice } from "@reduxjs/toolkit";
-import userServices from "@/services/user.services";
-let currentUser = null;
-const fetchCurrentUser = async () => {
-    const res = await userServices.getCurrentUser();
-    if (res.data) {
-        currentUser = res.data;
-    }
-};
-fetchCurrentUser();
-console.log("CURRENTUSER: ", currentUser);
+const auth = JSON.parse(localStorage.getItem("auth_data"));
 const initialState: IAuthData = {
-    status: currentUser ? true : false,
-    userData: currentUser,
+    status: auth?.status || false,
+    userData: auth?.userData || null,
 };
-
 const authSlice = createSlice({
     name: "auth",
     initialState,
     reducers: {
         login: (state, action) => {
             const userData = action.payload;
-            // localStorage.setItem("auth_data", JSON.stringify(newState));
+            localStorage.setItem(
+                "auth_data",
+                JSON.stringify({ status: true, userData })
+            );
             state.status = true;
             state.userData = userData;
         },
         logout: (state) => {
-            // localStorage.setItem("auth_data", JSON.stringify(newState));
+            localStorage.setItem(
+                "auth_data",
+                JSON.stringify({ status: false, userData: null })
+            );
             state.status = false;
             state.userData = null;
         },

@@ -9,5 +9,7 @@ class VideoSevice {
     allVideosByUser = async (userId: string) =>
         await Axios.get(`/videos/${userId}/videos`);
     likedVideos = async () => await Axios.get("/likes/liked-videos");
+    incrementViews = async (videoId: string) =>
+        await Axios.post(`/videos/${videoId}/increase`);
 }
 export default new VideoSevice();
