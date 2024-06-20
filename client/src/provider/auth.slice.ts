@@ -8,6 +8,7 @@ const fetchCurrentUser = async () => {
         currentUser = res.data;
     }
 };
+fetchCurrentUser();
 console.log("CURRENTUSER: ", currentUser);
 const initialState: IAuthData = {
     status: currentUser ? true : false,
