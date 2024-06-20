@@ -15,7 +15,8 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
             const { accessToken, refreshToken } = await Auth.generateTokens(decodedToken._id);
             const options = {
                 httpOnly: true,
-                secure: true
+                secure: true,
+                maxAge: 7 * 24 * 60 * 60 * 1000
             }
             req.user = await User.findById(decodedToken._id);
             res.cookie("accessToken", accessToken, options).cookie("refreshToken", refreshToken, options);

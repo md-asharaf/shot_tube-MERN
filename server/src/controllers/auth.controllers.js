@@ -118,7 +118,8 @@ class Auth {
             }
             const options = {
                 httpOnly: true,
-                secure: true
+                secure: true,
+                maxAge: 7 * 24 * 60 * 60 * 1000
             }
             const { accessToken, refreshToken } = this.generateTokens(user._id);
             return res
