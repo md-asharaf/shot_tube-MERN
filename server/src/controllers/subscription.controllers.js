@@ -98,12 +98,15 @@ class SubscriptionC {
                     name: {
                         $first: "$name.fullname"
                     },
+                    username: {
+                        $first: "$name.username"
+                    }
                 }
             },
             {
                 $project: {
                     name: 1,
-                    _id: 0
+                    username: 1,
                 }
             }
         ]);

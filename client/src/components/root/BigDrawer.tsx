@@ -7,7 +7,10 @@ import SubDrawer from "./SubDrawer";
 import subscriptionServices from "@/services/subscription.services";
 import { useSuccess } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
-
+interface IChannel {
+    name: string;
+    username: string;
+}
 const BigDrawer = () => {
     const dispatch = useDispatch();
     const userId = useSelector((state: RootState) => state.auth.userData?._id);
@@ -26,7 +29,7 @@ const BigDrawer = () => {
         isError,
         error,
         isLoading,
-    } = useQuery({
+    } = useQuery<IChannel[]>({
         queryKey: ["channels"],
         queryFn: fetchChannels,
         enabled: !!userId,
@@ -159,6 +162,10 @@ const BigDrawer = () => {
     ];
     if (isLoading) return <div>Loading...</div>;
     if (isError) return <div>Error: {error.message}</div>;
+    const data = channels.map((channel) => ({
+        ...channel,
+        route: `/${channel.username}/channel`,
+    }));
     return (
         <div className="w-full">
             <div>
@@ -180,7 +187,7 @@ const BigDrawer = () => {
                                 Subscriptions
                             </p>
                             <div>
-                                <SubDrawer options={channels} />
+                                <SubDrawer options={data} />
                             </div>
                         </>
                     )}
