@@ -6,7 +6,11 @@ const PlaylistCard: React.FC<IPlaylist> = (playlist) => {
     return (
         <div className="relative h-2/3">
             <img
-                src={playlist.videos[0].thumbnail.url}
+                src={
+                    playlist.videos.length > 0
+                        ? playlist.videos[0].thumbnail.url
+                        : ""
+                }
                 alt="Video thumbnail"
                 className="w-full h-full rounded-xl"
             />

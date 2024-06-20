@@ -12,8 +12,10 @@ import { useSuccess } from "@/lib/utils";
 import { BiLike } from "react-icons/bi";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import { IComment } from "@/interfaces";
+import { useNavigate } from "react-router-dom";
 
 const Comments = ({ videoId }) => {
+    const navigate = useNavigate();
     const dispatch = useDispatch();
     const successfull = useSuccess(dispatch);
     const success = useSuccess(dispatch);
@@ -155,11 +157,23 @@ const Comments = ({ videoId }) => {
                                     comment.creator.avatar?.url ||
                                     DefaultProfileImage
                                 }
-                                className="rounded-full h-10 w-10"
+                                className="rounded-full h-10 w-10 cursor-pointer"
+                                onClick={() =>
+                                    navigate(
+                                        `/${comment.creator.username}/channel`
+                                    )
+                                }
                             />
                             <div>
                                 <div>
-                                    <span className="text-[16px]">{`@${comment.creator.username} `}</span>
+                                    <span
+                                        onClick={() =>
+                                            navigate(
+                                                `/${comment.creator.username}/channel`
+                                            )
+                                        }
+                                        className="text-[16px] cursor-pointer"
+                                    >{`@${comment.creator.username} `}</span>
                                     <span className="text-gray-500 font-light text-[13px]">
                                         {formatDistanceToNow(
                                             new Date(comment.createdAt),

@@ -1,7 +1,7 @@
 import { Button } from "@/components/ui/button";
 import { MdOutlinePlaylistAdd } from "react-icons/md";
 import { BiLike } from "react-icons/bi";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/provider";
@@ -16,11 +16,12 @@ import {
     PopoverContent,
     PopoverTrigger,
 } from "@/components/ui/popover";
-import SaveToPlaylist from "./SaveToPlaylist";
+import SaveToPlaylist from "../components/root/SaveToPlaylist";
 import Comments from "@/components/root/Comments";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import playlistServices from "@/services/playlist.services";
 import { useSuccess } from "@/lib/utils";
+import userServices from "@/services/user.services";
 
 const Video = () => {
     const dispatch = useDispatch();
@@ -74,13 +75,13 @@ const Video = () => {
             return res.data;
         }
     };
+    const { mutate: add } = useMutation({
+        mutationFn: addVideoToPlaylist,
+        mutationKey: ["add-to-playlist", videoId],
+    });
     const addToPlaylists = async () => {
         await Promise.all(
             playlistIds.map((playlistId) => {
-                const { mutate: add } = useMutation({
-                    mutationFn: addVideoToPlaylist,
-                    mutationKey: ["add-to-playlist", videoId, playlistId],
-                });
                 add(playlistId);
             })
         );
@@ -125,6 +126,17 @@ const Video = () => {
         mutationFn: toggleSubscribeMutation,
         mutationKey: ["toggleSubscribe", video?.creator._id, userId],
     });
+    const addToWatchHistoryMutation = async () => {
+        const res = await userServices.addToWatchHistory(videoId);
+        successfull(res);
+    };
+    const { mutate: addToWatchHistory } = useMutation({
+        mutationKey: ["add-to-watch-history", videoId, userId],
+        mutationFn: addToWatchHistoryMutation,
+    });
+    useEffect(() => {
+        if (video) setTimeout(addToWatchHistory, 5000);
+    }, [video]);
 
     if (isLoading) return <div>Loading...</div>;
     if (isError) return <div>Error: {error.message}</div>;

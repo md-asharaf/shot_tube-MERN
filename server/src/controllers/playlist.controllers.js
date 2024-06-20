@@ -12,7 +12,7 @@ class PlayListC {
         //get user id from request user object
         const userId = req.user?._id;
         //check if name and description are provided
-        if (!name || !description) throw new ApiError(400, "Name and description are required");
+        if (!name) throw new ApiError(400, "Name and description are required");
         //create playlist
         const playlist = await PlayList.create({
             name,

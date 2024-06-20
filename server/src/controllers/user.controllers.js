@@ -146,6 +146,17 @@ class UserC {
         }
         return res.status(200).json(new ApiResponse(200, channel[0], "Channel found"));
     })
+    addVideoToWatchHistory = asyncHandler(async (req, res) => {
+        const { videoId } = req.params;
+        const user = await User.findById(req.user?._id);
+        if (user.watchHistory.includes(videoId)) {
+            return res.status(200).json(new ApiResponse(200, {}, "Video already in watch history"))
+        }
+        user.watchHistory.push(videoId);
+        await user.save({ validateBeforeSave: false });
+
+        return res.status(200).json(new ApiResponse(200, {}, "Video added to watch history"))
+    })
     // controller to get watch history of a user
     getWatchHistory = asyncHandler(async (req, res) => {
         const userId = req.user?._id;
@@ -170,7 +181,7 @@ class UserC {
                                 from: "users",
                                 localField: "userId",
                                 foreignField: "_id",
-                                as: "owner",
+                                as: "creator",
                                 pipeline: [
                                     {
                                         $project: {
@@ -184,8 +195,8 @@ class UserC {
                         },
                         {
                             $addFields: {
-                                owner: {
-                                    $first: "$owner"
+                                creator: {
+                                    $first: "$creator"
                                 }
                             }
                         }
@@ -195,6 +206,10 @@ class UserC {
         ])
         return res.status(200).json(new ApiResponse(200, user[0]?.watchHistory, "Watch history found"))
     })
-
+    clearWatchHistory = asyncHandler(async (req, res) => {
+        const userId = req.user?._id;
+        const user = await User.findByIdAndUpdate(userId, { $set: { watchHistory: [] } }, { new: true });
+        return res.status(200).json(new ApiResponse(200, user, "Watch history cleared"))
+    })
 }
 export default new UserC();

@@ -9,7 +9,7 @@ router.post("/register", Auth.registerUser)
 
 router.post("/login", Auth.loginUser);
 router.post("/refresh-token", Auth.refreshTokens);
-
+router.post("/watch-history/:videoId/add", verifyJWT, UserC.addVideoToWatchHistory)
 router.get("/logout", Auth.logoutUser);
 
 router.get("/current-user", verifyJWT, UserC.getCurrentUser);
@@ -25,6 +25,7 @@ router.patch("/account/update", verifyJWT, UserC.updateAccountDetails);
 router.patch("/update-avatar", verifyJWT, upload.single("avatar"), UserC.updateAvatar);
 
 router.patch("/update-cover-image", verifyJWT, upload.single("coverImage"), UserC.updateCoverImage);
+router.delete("/watch-history/clear", verifyJWT, verifyJWT, UserC.clearWatchHistory)
 
 
 export default router;

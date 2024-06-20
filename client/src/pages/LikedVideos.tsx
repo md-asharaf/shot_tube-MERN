@@ -36,7 +36,7 @@ const LikedVideos = () => {
     console.log(videos);
     return (
         <div className="px-2 text-black flex space-x-1 relative w-full">
-            <div className="w-1/4 bg-gray-200 p-5 space-y-3 rounded-xl overflow-auto">
+            <div className="w-[300px] bg-gray-200 p-5 space-y-3 rounded-xl overflow-auto">
                 <img
                     src={videos[0].thumbnail.url}
                     alt="Playlist Thumbnail"

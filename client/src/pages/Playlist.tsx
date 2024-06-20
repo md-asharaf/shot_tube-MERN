@@ -29,13 +29,15 @@ const Playlist = () => {
     if (isError) {
         return <div>ERROR: {error.message}</div>;
     }
-    const totalViews = playlist.videos?.reduce(
+    if (playlist.videos.length === 0)
+        return <div>No videos in this playlist</div>;
+    const totalViews = playlist.videos.reduce(
         (prev, curr) => prev + curr.views,
         0
     );
     return (
         <div className="text-black flex space-x-1 w-full">
-            <div className="min-w-[300px] bg-gray-200 p-5 space-y-3 rounded-xl overflow-auto">
+            <div className="w-[300px] bg-gray-200 p-5 space-y-3 rounded-xl overflow-auto">
                 <img
                     src={playlist.videos[0].thumbnail.url}
                     alt="Playlist Thumbnail"
@@ -74,7 +76,6 @@ const Playlist = () => {
                                 </span>
                             </div>
                             <div>
-                                <h3></h3>
                                 <h3 className="text-lg mb-2">{video.title}</h3>
                                 <p className="text-gray-400">
                                     {`${video.creator.fullname} • ${video.views} views • 3 years ago`}

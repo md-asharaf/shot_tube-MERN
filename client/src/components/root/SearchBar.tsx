@@ -23,6 +23,7 @@ const SearchBar = () => {
                 <MdOutlineClear />
             </button>
             <button
+                disabled={!input}
                 onClick={() => alert(`You searched for ${input}`)}
                 className="rounded-r-full border-[1px] border-[#3D3D3D] w-20 p-3 bg-[#3D3D3D] overflow-hidden"
             >
