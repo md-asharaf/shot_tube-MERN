@@ -84,7 +84,7 @@ const NavBar = () => {
                         </DropdownMenuTrigger>
                         <DropdownMenuContent className="mr-2">
                             {userData && (
-                                <Link to={`/channel/${userData?.username}`}>
+                                <Link to={`/${userData?.username}/channel`}>
                                     <DropdownMenuItem>
                                         <Profile {...userData} />
                                     </DropdownMenuItem>

@@ -162,7 +162,7 @@ const BigDrawer = () => {
     ];
     if (isLoading) return <div>Loading...</div>;
     if (isError) return <div>Error: {error.message}</div>;
-    const data = channels.map((channel) => ({
+    const data = channels?.map((channel) => ({
         ...channel,
         route: `/${channel.username}/channel`,
     }));

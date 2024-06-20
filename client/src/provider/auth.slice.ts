@@ -1,7 +1,14 @@
 import { IAuthData } from "@/interfaces";
 import { createSlice } from "@reduxjs/toolkit";
 import userServices from "@/services/user.services";
-const currentUser = (await userServices.getCurrentUser())?.data;
+let currentUser = null;
+const fetchCurrentUser = async () => {
+    const res = await userServices.getCurrentUser();
+    if (res.data) {
+        currentUser = res.data;
+    }
+};
+console.log("CURRENTUSER: ", currentUser);
 const initialState: IAuthData = {
     status: currentUser ? true : false,
     userData: currentUser,
