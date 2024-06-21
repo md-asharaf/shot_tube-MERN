@@ -1,8 +1,9 @@
 import { IAuthData } from "@/interfaces";
 import { createSlice } from "@reduxjs/toolkit";
+const auth = JSON.parse(localStorage.getItem("auth_data"));
 const initialState: IAuthData = {
-    status: false,
-    userData: null,
+    status: auth?.status || false,
+    userData: auth?.userData || null,
 };
 
 const authSlice = createSlice({
@@ -10,7 +11,6 @@ const authSlice = createSlice({
     initialState,
     reducers: {
         login: (state, action) => {
-            console.log("I AM IN LOGIN REDUCER");
             const userData = action.payload;
             localStorage.setItem(
                 "auth_data",
@@ -20,7 +20,6 @@ const authSlice = createSlice({
             state.userData = userData;
         },
         logout: (state) => {
-            console.log("I AM IN LOGOUT REDUCER");
             localStorage.setItem(
                 "auth_data",
                 JSON.stringify({ status: false, userData: null })
