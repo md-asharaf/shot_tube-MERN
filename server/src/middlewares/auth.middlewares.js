@@ -16,7 +16,8 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
             const options = {
                 httpOnly: true,
                 secure: true,
-                maxAge: 24 * 60 * 60 * 1000, // 1 day
+                maxAge: 24 * 60 * 60 * 1000,
+                sameSite: "none"// 1 day
                 // set to your Vercel base URL with leading dot for subdomains
             };
             req.user = await User.findById(decodedToken._id);

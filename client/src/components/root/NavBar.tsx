@@ -22,12 +22,20 @@ import { shortName, useSuccess } from "@/lib/utils";
 import VideoUpload from "./VideoUpload";
 import { toggleVideoModal } from "@/provider/ui.slice";
 import authServices from "@/services/auth.services";
+import { useEffect, useState } from "react";
 
 const NavBar = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const authStatus = useSelector((state: RootState) => state.auth.status);
-    const userData = useSelector((state: RootState) => state.auth.userData);
+    const [authStatus, setAuthStatus] = useState<boolean>(false);
+    const [userData, setUserData] = useState(null);
+    useEffect(() => {
+        const authData = JSON.parse(localStorage.getItem("auth_data"));
+        setUserData(authData.userData);
+        setAuthStatus(authData.status);
+    }, []);
+    // const authStatus = useSelector((state: RootState) => state.auth.status);
+    // const userData = useSelector((state: RootState) => state.auth.userData);
     const videoModal = useSelector(
         (state: RootState) => state.ui.isVideoModalOpen
     );

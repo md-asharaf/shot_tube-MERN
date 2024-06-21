@@ -81,7 +81,8 @@ class Auth {
         const options = {
             httpOnly: true,
             secure: true,
-            maxAge: 24 * 60 * 60 * 1000, // 7 days
+            maxAge: 24 * 60 * 60 * 1000,
+            sameSite: "none" // 7 days
             // set to your Vercel base URL with leading dot for subdomains
         };
         return res
@@ -96,7 +97,8 @@ class Auth {
         const options = {
             httpOnly: true,
             secure: true,
-            maxAge: 24 * 60 * 60 * 1000, // 7 days
+            maxAge: 24 * 60 * 60 * 1000,
+            sameSite: "none" // 7 days
             // set to your Vercel base URL with leading dot for subdomains
         };
         return res.status(200).clearCookie("accessToken", options).clearCookie("refreshToken", { ...options, maxAge: 10 * 24 * 60 * 100 }).json(new ApiResponse(200, null, "User logged out successfully"))
@@ -119,7 +121,8 @@ class Auth {
             const options = {
                 httpOnly: true,
                 secure: true,
-                maxAge: 24 * 60 * 60 * 1000, // 7 days
+                maxAge: 24 * 60 * 60 * 1000,
+                sameSite: "none"// 7 days
                 // set to your Vercel base URL with leading dot for subdomains
             };
             const { accessToken, refreshToken } = this.generateTokens(user._id);
