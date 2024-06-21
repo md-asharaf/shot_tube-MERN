@@ -22,7 +22,7 @@ import { shortName, useSuccess } from "@/lib/utils";
 import VideoUpload from "./VideoUpload";
 import { toggleVideoModal } from "@/provider/ui.slice";
 import authServices from "@/services/auth.services";
-import { useEffect, useState } from "react";
+// import { useEffect, useState } from "react";
 
 const NavBar = () => {
     const navigate = useNavigate();
