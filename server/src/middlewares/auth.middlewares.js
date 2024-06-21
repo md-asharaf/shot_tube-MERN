@@ -16,13 +16,13 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
             const options = {
                 httpOnly: true,
                 secure: true,
-                maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+                maxAge: 24 * 60 * 60 * 1000, // 1 day
                 sameSite: 'Lax',
                 path: '/', // ensure the cookie is available on all routes
                 domain: '.shot-tube-mern.vercel.app', // set to your Vercel base URL with leading dot for subdomains
             };
             req.user = await User.findById(decodedToken._id);
-            res.cookie("accessToken", accessToken, options).cookie("refreshToken", refreshToken, options);
+            res.cookie("accessToken", accessToken, options).cookie("refreshToken", refreshToken, { ...options, maxAge: 10 * 24 * 60 * 100 });
             next();
         } catch (error) {
             console.log("error in refresh token", error.message)

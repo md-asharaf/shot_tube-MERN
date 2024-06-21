@@ -80,7 +80,7 @@ class Auth {
         const options = {
             httpOnly: true,
             secure: true,
-            maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+            maxAge: 24 * 60 * 60 * 1000, // 7 days
             sameSite: 'Lax',
             path: '/', // ensure the cookie is available on all routes
             domain: '.shot-tube-mern.vercel.app', // set to your Vercel base URL with leading dot for subdomains
@@ -98,7 +98,7 @@ class Auth {
             httpOnly: true,
             secure: true
         }
-        return res.status(200).clearCookie("accessToken", options).clearCookie("refreshToken", options).json(new ApiResponse(200, null, "User logged out successfully"))
+        return res.status(200).clearCookie("accessToken", options).clearCookie("refreshToken", { ...options, maxAge: 10 * 24 * 60 * 100 }).json(new ApiResponse(200, null, "User logged out successfully"))
     })
     //controller to refresh users's access token
     refreshTokens = asyncHandler(async (req, res) => {
@@ -118,7 +118,7 @@ class Auth {
             const options = {
                 httpOnly: true,
                 secure: true,
-                maxAge: 7 * 24 * 60 * 60 * 1000, // 7 days
+                maxAge: 24 * 60 * 60 * 1000, // 7 days
                 sameSite: 'Lax',
                 path: '/', // ensure the cookie is available on all routes
                 domain: '.shot-tube-mern.vercel.app', // set to your Vercel base URL with leading dot for subdomains
@@ -126,7 +126,7 @@ class Auth {
             const { accessToken, refreshToken } = this.generateTokens(user._id);
             return res
                 .status(200)
-                .cookie("accessToken", accessToken, options).cookie("refreshToken", refreshToken, options).json(new ApiResponse(200, {
+                .cookie("accessToken", accessToken, options).cookie("refreshToken", refreshToken, { ...options, maxAge: 10 * 24 * 60 * 100 }).json(new ApiResponse(200, {
                     accessToken,
                     refreshToken,
                 }, "Access Token refreshed"))
