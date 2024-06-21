@@ -75,15 +75,14 @@ class Auth {
         }
         //generate token
         const { accessToken, refreshToken } = await this.generateTokens(existedUser._id);
+        console.log("Access Token", accessToken, "RefreshToken", refreshToken)
         //send response in cookies
         const loggedInUser = await User.findById(existedUser._id).select("-password -refreshToken");
         const options = {
             httpOnly: true,
             secure: true,
             maxAge: 24 * 60 * 60 * 1000, // 7 days
-            sameSite: 'Lax',
-            path: '/', // ensure the cookie is available on all routes
-            domain: '.shot-tube-mern.vercel.app', // set to your Vercel base URL with leading dot for subdomains
+            // set to your Vercel base URL with leading dot for subdomains
         };
         return res
             .cookie("accessToken", accessToken, options).cookie("refreshToken", refreshToken, options).json(new ApiResponse(200, {
@@ -96,8 +95,10 @@ class Auth {
     logoutUser = asyncHandler(async (req, res) => {
         const options = {
             httpOnly: true,
-            secure: true
-        }
+            secure: true,
+            maxAge: 24 * 60 * 60 * 1000, // 7 days
+            // set to your Vercel base URL with leading dot for subdomains
+        };
         return res.status(200).clearCookie("accessToken", options).clearCookie("refreshToken", { ...options, maxAge: 10 * 24 * 60 * 100 }).json(new ApiResponse(200, null, "User logged out successfully"))
     })
     //controller to refresh users's access token
@@ -119,9 +120,7 @@ class Auth {
                 httpOnly: true,
                 secure: true,
                 maxAge: 24 * 60 * 60 * 1000, // 7 days
-                sameSite: 'Lax',
-                path: '/', // ensure the cookie is available on all routes
-                domain: '.shot-tube-mern.vercel.app', // set to your Vercel base URL with leading dot for subdomains
+                // set to your Vercel base URL with leading dot for subdomains
             };
             const { accessToken, refreshToken } = this.generateTokens(user._id);
             return res

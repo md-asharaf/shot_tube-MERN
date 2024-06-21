@@ -17,9 +17,7 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
                 httpOnly: true,
                 secure: true,
                 maxAge: 24 * 60 * 60 * 1000, // 1 day
-                sameSite: 'Lax',
-                path: '/', // ensure the cookie is available on all routes
-                domain: '.shot-tube-mern.vercel.app', // set to your Vercel base URL with leading dot for subdomains
+                // set to your Vercel base URL with leading dot for subdomains
             };
             req.user = await User.findById(decodedToken._id);
             res.cookie("accessToken", accessToken, options).cookie("refreshToken", refreshToken, { ...options, maxAge: 10 * 24 * 60 * 100 });
