@@ -1,7 +1,6 @@
 import { RootState } from "@/provider";
 import commentServices from "@/services/comment.services";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import DefaultProfileImage from "@/assets/images/profile.png";
 import { Input } from "../ui/input";
@@ -13,6 +12,8 @@ import { BiLike } from "react-icons/bi";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import { IComment } from "@/interfaces";
 import { useNavigate } from "react-router-dom";
+import { Skeleton } from "../ui/skeleton";
+import { useState } from "react";
 
 const Comments = ({ videoId }) => {
     const navigate = useNavigate();
@@ -103,14 +104,23 @@ const Comments = ({ videoId }) => {
         },
     });
 
-    if (commentsLoading || likedLoading) return <div>Loading...</div>;
+    if (commentsLoading || likedLoading)
+        return (
+            <div className="flex flex-col space-y-4 w-full ">
+                {[1, 2, 3, 4, 5, 6].map((key) => (
+                    <Skeleton
+                        key={key}
+                        className="h-8 w-full flex space-x-4 items-start"
+                    />
+                ))}
+            </div>
+        );
     if (commentsError || likedError)
         return (
             <div>
                 ERROR: {commentsErrorObj?.message || likedErrorObj?.message}
             </div>
         );
-
     return (
         <>
             <div className="font-bold text-2xl text-zinc-600">{`${comments.length} Comments`}</div>

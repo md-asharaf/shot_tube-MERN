@@ -7,6 +7,8 @@ import SubDrawer from "./SubDrawer";
 import subscriptionServices from "@/services/subscription.services";
 import { useSuccess } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
+import { Skeleton } from "@/components/ui/skeleton";
+
 interface IChannel {
     name: string;
     username: string;
@@ -160,7 +162,6 @@ const BigDrawer = () => {
             route: `/liked-videos`,
         },
     ];
-    if (isLoading) return <div>Loading...</div>;
     if (isError) return <div>Error: {error.message}</div>;
     const data = channels?.map((channel) => ({
         ...channel,
@@ -180,16 +181,20 @@ const BigDrawer = () => {
                     <div>
                         <SubDrawer options={options2} />
                     </div>
-                    {channels.length > 0 && (
-                        <>
-                            <hr className="my-3" />
-                            <p className="ml-2 mb-2 text-sm font-bold text-black">
-                                Subscriptions
-                            </p>
-                            <div>
-                                <SubDrawer options={data} />
-                            </div>
-                        </>
+                    {isLoading ? (
+                        <Skeleton className="h-4 w-full" />
+                    ) : (
+                        channels.length > 0 && (
+                            <>
+                                <hr className="my-3" />
+                                <p className="ml-2 mb-2 text-sm font-bold text-black">
+                                    Subscriptions
+                                </p>
+                                <div>
+                                    <SubDrawer options={data} />
+                                </div>
+                            </>
+                        )
                     )}
                 </>
             )}
