@@ -76,10 +76,10 @@ const Video = () => {
             return res.data;
         }
     };
-    const { mutate: add } = useMutation({
-        mutationFn: addVideoToPlaylist,
-        mutationKey: ["add-to-playlist", videoId],
-    });
+    const addToWatchHistoryMutation = async () => {
+        const res = await userServices.addToWatchHistory(videoId);
+        successfull(res);
+    };
     const addToPlaylists = async () => {
         await Promise.all(
             playlistIds.map((playlistId) => {
@@ -87,6 +87,16 @@ const Video = () => {
             })
         );
     };
+    const increaseViews = async () =>
+        await videoServices.incrementViews(videoId);
+    const { mutate: incrementViews } = useMutation({
+        mutationFn: increaseViews,
+    });
+    const { mutate: add } = useMutation({
+        mutationFn: addVideoToPlaylist,
+        mutationKey: ["add-to-playlist", videoId],
+    });
+
     const {
         data: video,
         isLoading,
@@ -127,25 +137,18 @@ const Video = () => {
         mutationFn: toggleSubscribeMutation,
         mutationKey: ["toggleSubscribe", video?.creator._id, userId],
     });
-    const addToWatchHistoryMutation = async () => {
-        const res = await userServices.addToWatchHistory(videoId);
-        successfull(res);
-    };
+
     const { mutate: addToWatchHistory } = useMutation({
         mutationKey: ["add-to-watch-history", videoId, userId],
         mutationFn: addToWatchHistoryMutation,
     });
-    const increaseViews = async () =>
-        await videoServices.incrementViews(videoId);
-    const { mutate: incrementViews } = useMutation({
-        mutationFn: increaseViews,
-    });
+
     useEffect(() => {
         if (video)
             setTimeout(() => {
                 addToWatchHistory();
                 incrementViews();
-            }, 5000);
+            }, 10000);
     }, [video]);
 
     if (isLoading) return <div>Loading...</div>;
