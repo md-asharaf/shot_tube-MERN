@@ -1,7 +1,7 @@
 import axios from "axios";
 import { defaultConfig, jsonConfig, formdataConfig } from ".";
 const axio = axios.create({
-    baseURL: process.env.SERVER_BASE_URL,
+    baseURL: "https://server-shot.vercel.app/api/v1",
 });
 class Axios {
     get = async (url: string) => {
