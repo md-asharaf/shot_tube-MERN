@@ -33,11 +33,17 @@ class VideoC {
                 }
             */
             //upload video and thumbnail on cloudinary
+            console.log("uploading video")
             let videoFile = await Cloudinary.upload(localVideo.path, "video");
+            console.log("uploading thumbail")
+
             const thumbnail = await Cloudinary.upload(localThumbnail.path, "image");
             if (!videoFile || !thumbnail) {
                 throw new ApiError(500, "Failed to upload video or thumbnail")
             }
+            console.log("video uploaded")
+            console.log("thumbnail uploaded")
+
             //get duration of video
             const duration = videoFile.duration;
             videoFile = videoFile.video;

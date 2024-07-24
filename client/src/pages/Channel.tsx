@@ -64,13 +64,13 @@ const Channel = () => {
                 videos
             </span>
             <hr className="border-gray-400" />
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            <div className="grid grid-cols-2 gap-x-2 gap-y-4 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                 {videos?.map((video, index) => (
                     <Link
                         to={`/videos/${video._id}`}
                         onClick={() => dispatch(toggleMenu())}
                         key={index}
-                        className=" bg-white rounded-xl overflow-hidden transition-shadow duration-300 cursor-pointer p-2 hover:bg-zinc-300"
+                        className=" bg-white flex flex-col gap-4 rounded-xl overflow-hidden transition-shadow duration-300 cursor-pointer p-2 hover:bg-zinc-300"
                     >
                         <VideoCard video={video} />
                         <VideoTitle video={video} />

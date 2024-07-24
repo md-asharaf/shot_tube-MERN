@@ -5,11 +5,11 @@ interface Props {
 }
 const VideoCard: React.FC<Props> = ({ video, className = "" }) => {
     return (
-        <div className="relative h-2/3">
+        <div className="relative">
             <img
                 src={video.thumbnail.url}
                 alt="Video thumbnail"
-                className={`h-full w-full rounded-xl ${className}`}
+                className={`h-full w-full aspect-video object-cover rounded-xl ${className}`}
             />
             <p className="absolute right-[6px] bottom-2 bg-black text-white text-[10px] font-bold px-2 py-[1px] rounded">
                 {video.duration}

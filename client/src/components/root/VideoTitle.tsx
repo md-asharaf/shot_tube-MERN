@@ -9,7 +9,7 @@ interface Props {
 const VideoTitle: React.FC<Props> = ({ video, isImage = false }) => {
     const navigate = useNavigate();
     return (
-        <div className="flex items-center space-x-3 h-1/3">
+        <div className="flex items-center space-x-3">
             {isImage && (
                 <img
                     className="w-10 h-10 rounded-full"

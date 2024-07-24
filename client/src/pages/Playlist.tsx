@@ -4,6 +4,7 @@ import playlistServices from "@/services/playlist.services";
 import { useSuccess } from "@/lib/utils";
 import { useDispatch } from "react-redux";
 import { IPlaylist } from "@/interfaces";
+import { formatDistanceToNow } from "date-fns";
 
 const Playlist = () => {
     const dispatch = useDispatch();
@@ -60,7 +61,7 @@ const Playlist = () => {
                 <p className="text-sm">{playlist.description}</p>
             </div>
 
-            <div className="grid grid-rows-7 gap-2 overflow-auto">
+            <div className="grid grid-rows-8 gap-2 overflow-auto">
                 {playlist.videos?.map((video, index) => (
                     <Link to={`/videos/${video._id}`} key={video._id}>
                         <div className="flex space-x-4 items-center p-2 hover:bg-gray-300 rounded-lg">
@@ -78,7 +79,12 @@ const Playlist = () => {
                             <div>
                                 <h3 className="text-lg mb-2">{video.title}</h3>
                                 <p className="text-gray-400">
-                                    {`${video.creator.fullname} • ${video.views} views • 3 years ago`}
+                                    {`${video.creator.fullname} • ${
+                                        video.views
+                                    } views • ${formatDistanceToNow(
+                                        new Date(video.createdAt),
+                                        { addSuffix: true }
+                                    ).replace("about", "")}`}
                                 </p>
                             </div>
                         </div>

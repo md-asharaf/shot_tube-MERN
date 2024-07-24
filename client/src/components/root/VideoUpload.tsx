@@ -7,7 +7,6 @@ import { toggleVideoModal } from "@/provider/ui.slice";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { VideoFormValidation } from "../ui/validation";
-import { useState } from "react";
 import { IVideoForm } from "@/interfaces";
 import {
     Form,
@@ -25,7 +24,12 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
+import { useVideo } from "@/provider/video.slice";
+
 const VideoUpload = () => {
+    const { addVideo } = useVideo();
     const [loader, setLoader] = useState<boolean>(false);
     const form = useForm<IVideoForm>({
         resolver: zodResolver(VideoFormValidation),
@@ -39,6 +43,7 @@ const VideoUpload = () => {
     const videoRef = form.register("video");
     const thumbnailRef = form.register("thumbnail");
     const dispatch = useDispatch();
+
     const uploadVideo = async (values: IVideoForm) => {
         setLoader(true);
         const { title, description, video, thumbnail } = values;
@@ -47,12 +52,16 @@ const VideoUpload = () => {
         formData.append("description", description);
         formData.append("video", video[0]);
         formData.append("thumbnail", thumbnail[0]);
+
         try {
-            await videoService.upload(formData);
+            const response = await videoService.upload(formData);
+            console.log(response.data.data.video);
+            addVideo(response.data.data.video);
             dispatch(toggleVideoModal());
-            setLoader(false);
         } catch (err) {
-            console.log(err);
+            console.error(err);
+        } finally {
+            setLoader(false);
         }
     };
     return (
@@ -68,7 +77,7 @@ const VideoUpload = () => {
                             Upload Video
                         </CardTitle>
                         <CardDescription className="text-center">
-                            fill all the fields to upload a video.
+                            Fill all the fields to upload a video.
                         </CardDescription>
                     </CardHeader>
                     <CardContent>
@@ -88,7 +97,7 @@ const VideoUpload = () => {
                                             <FormControl>
                                                 <Input
                                                     type="text"
-                                                    placeholder="enter a title"
+                                                    placeholder="Enter a title"
                                                     {...field}
                                                 />
                                             </FormControl>
@@ -106,7 +115,7 @@ const VideoUpload = () => {
                                             </FormLabel>
                                             <FormControl>
                                                 <Textarea
-                                                    placeholder="enter a description"
+                                                    placeholder="Enter a description"
                                                     {...field}
                                                 />
                                             </FormControl>
@@ -152,31 +161,35 @@ const VideoUpload = () => {
                                         </FormItem>
                                     )}
                                 />
+                                <div className="flex items-center justify-between">
+                                    <Button
+                                        variant={"default"}
+                                        type="submit"
+                                        className="mr-4"
+                                    >
+                                        {loader ? (
+                                            <Loader2 className="animate-spin h-4 w-4">
+                                                Uploading...
+                                            </Loader2>
+                                        ) : (
+                                            "Publish"
+                                        )}
+                                    </Button>
+                                    <Button
+                                        type="button"
+                                        variant={"destructive"}
+                                        onClick={() => {
+                                            dispatch(toggleVideoModal());
+                                        }}
+                                    >
+                                        Cancel
+                                    </Button>
+                                </div>
                             </form>
                         </Form>
                     </CardContent>
-                    <CardFooter className="flex justify-between">
-                        <Button
-                            variant={"default"}
-                            type="submit"
-                            className="mr-4"
-                        >
-                            {loader ? "Uploading..." : "Publish"}
-                        </Button>
-                        <Button
-                            type="button"
-                            variant={"destructive"}
-                            onClick={() => {
-                                dispatch(toggleVideoModal());
-                            }}
-                        >
-                            Cancel
-                        </Button>
-                    </CardFooter>
+                    <CardFooter className="flex justify-between"></CardFooter>
                 </Card>
-                {/* <h1 className="text-center font-bold border-b border-blue-200 pb-4">
-                    Publish a video
-                </h1> */}
             </div>
         </div>
     );

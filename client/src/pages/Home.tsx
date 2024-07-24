@@ -5,23 +5,22 @@ import VideoTitle from "@/components/root/VideoTitle";
 import videoServices from "@/services/video.services";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
+import { useVideo } from "@/provider/video.slice";
 const Home = () => {
+    const { setVideos, videos } = useVideo();
     const fetchVideos = async () => {
         const res = await videoServices.allVideos();
+        console.log(res.data);
+        setVideos(res.data);
         return res.data;
     };
-    const {
-        data: videos,
-        isError,
-        error,
-        isLoading,
-    } = useQuery<IVideoData[]>({
+    const { isError, error, isLoading } = useQuery<IVideoData[]>({
         queryKey: ["all-videos"],
         queryFn: fetchVideos,
     });
     if (isLoading)
         return (
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 grid-rows-2 h-full w-full gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 w-full">
                 {[1, 2, 3, 4].map((key) => (
                     <Skeleton
                         key={key}
@@ -38,12 +37,12 @@ const Home = () => {
         );
     if (isError) return <div>Error: {error.message}</div>;
     return (
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 grid-rows-2">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 w-full gap-y-4">
             {videos?.map((video, index) => (
                 <Link
                     to={`/videos/${video._id}`}
                     key={index}
-                    className="group bg-white rounded-xl overflow-hidden transition-shadow duration-300 cursor-pointer p-2 hover:bg-zinc-400 col-span-1"
+                    className="group flex flex-col gap-2 bg-white rounded-xl transition-shadow duration-300 cursor-pointer p-2 hover:bg-zinc-400"
                 >
                     <VideoCard
                         video={video}

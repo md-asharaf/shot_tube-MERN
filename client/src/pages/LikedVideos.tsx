@@ -35,8 +35,8 @@ const LikedVideos = () => {
     const totalViews = videos.reduce((prev, curr) => prev + curr.views, 0);
     console.log(videos);
     return (
-        <div className="px-2 text-black flex space-x-1 relative w-full">
-            <div className="w-[300px] bg-gray-200 p-5 space-y-3 rounded-xl overflow-auto">
+        <div className="px-1 text-black flex-col flex md:flex-row gap-4 md:gap-1 relative w-full">
+            <div className="bg-gray-200 p-5 space-y-3 rounded-xl overflow-auto max-w-lg">
                 <img
                     src={videos[0].thumbnail.url}
                     alt="Playlist Thumbnail"
@@ -58,10 +58,10 @@ const LikedVideos = () => {
                 </div>
             </div>
 
-            <div className="grid grid-rows-7 gap-2 w-3/4 overflow-auto">
+            <div className="flex flex-col gap-2 min-w-[410px]">
                 {videos.map((video, index) => (
                     <Link to={`/videos/${video._id}`} key={video._id}>
-                        <div className="flex space-x-4 items-center p-2 hover:bg-gray-300 rounded-lg">
+                        <div className="flex space-x-2 items-center p-2 hover:bg-gray-300 rounded-lg">
                             <div>{index + 1}</div>
                             <div className="relative w-40 mr-5">
                                 <img
@@ -74,7 +74,6 @@ const LikedVideos = () => {
                                 </span>
                             </div>
                             <div>
-                                <h3></h3>
                                 <h3 className="text-lg mb-2">{video.title}</h3>
                                 <p className="text-gray-400">
                                     {`${video.creator.fullname} • ${video.views} views • 3 years ago`}

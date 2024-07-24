@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 const VideoTitle2: React.FC<IPlaylist> = (playlist) => {
     const navigate = useNavigate();
     return (
-        <div className="grid h-1/3 cursor-pointer">
+        <div className="grid cursor-pointer">
             <span className="font-bold">{playlist.name}</span>
             <span
                 className="text-sm text-zinc-600 hover:text-black"

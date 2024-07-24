@@ -7,6 +7,7 @@ import userServices from "@/services/user.services";
 import { RootState } from "@/provider";
 import { Button } from "@/components/ui/button";
 import { MdDelete } from "react-icons/md";
+import { formatDistanceToNow } from "date-fns";
 
 const WatchHistory = () => {
     const dispatch = useDispatch();
@@ -52,7 +53,7 @@ const WatchHistory = () => {
                 <div className="grid grid-rows-4 gap-2 overflow-auto w-3/4">
                     {videos?.map((video) => (
                         <Link to={`/videos/${video._id}`} key={video._id}>
-                            <div className="flex space-x-4 items-center p-2 row-span-1 hover:bg-gray-300 rounded-lg">
+                            <div className="flex flex-col sm:flex-row gap-4 items-start p-2 hover:bg-gray-300 rounded-lg">
                                 <div className="relative">
                                     <img
                                         src={video.thumbnail.url}
@@ -63,12 +64,17 @@ const WatchHistory = () => {
                                         {video.duration}
                                     </span>
                                 </div>
-                                <div>
+                                <div className="flex flex-col">
                                     <h3 className="text-lg mb-2">
                                         {video.title}
                                     </h3>
                                     <p className="text-gray-400">
-                                        {`${video.creator.fullname} • ${video.views} views • 3 years ago`}
+                                        {`${video.creator.fullname} • ${
+                                            video.views
+                                        } views • ${formatDistanceToNow(
+                                            new Date(video.createdAt),
+                                            { addSuffix: true }
+                                        ).replace("about", "")}`}
                                     </p>
                                 </div>
                             </div>
@@ -76,7 +82,7 @@ const WatchHistory = () => {
                     ))}
                 </div>
                 <div className="flex justify-center items-center h-10 w-1/4">
-                    <span className="text-gray-500">
+                    <span className="text-gray-500 md:block hidden">
                         clear all watch history
                     </span>
                     <Button
