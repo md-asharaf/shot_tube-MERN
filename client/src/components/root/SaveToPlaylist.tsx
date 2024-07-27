@@ -4,6 +4,7 @@ import playlistServices from "@/services/playlist.services";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
 import { useDispatch } from "react-redux";
+import { Button } from "../ui/button";
 interface Props {
     userId: string;
     setPLaylistIds: React.Dispatch<React.SetStateAction<string[]>>;
@@ -78,16 +79,17 @@ const SaveToPlaylist: React.FC<Props> = ({ userId, setPLaylistIds }) => {
                 <input
                     type="text"
                     id="name"
-                    className="max-w-full rounded-lg"
+                    className="max-w-full rounded-lg bg-zinc-100 text-white"
                     value={playlistName}
                     onChange={(e) => setPlaylistName(e.target.value)}
                 />
-                <button
-                    className="text-blue-500 text-center w-full mt-4"
+                <Button
+                    variant="outline"
+                    className="text-center w-full mt-4 text-lg"
                     onClick={() => createPlaylist()}
                 >
                     create
-                </button>
+                </Button>
             </div>
         </div>
     );

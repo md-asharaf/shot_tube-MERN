@@ -1,5 +1,5 @@
 const WatchLater = () => {
-    return <div>WatchLater</div>;
+    return <div className="dark:text-white">WatchLater</div>;
 };
 
 export default WatchLater;

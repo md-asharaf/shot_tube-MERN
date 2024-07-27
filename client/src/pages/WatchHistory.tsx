@@ -45,7 +45,7 @@ const WatchHistory = () => {
         return <div>ERROR: {error.message}</div>;
     }
     return (
-        <div className="w-full">
+        <div className="w-full dark:text-white">
             <div className="text-4xl mb-6">
                 {videos.length > 0 ? "Watch History" : "No History"}
             </div>
@@ -53,7 +53,7 @@ const WatchHistory = () => {
                 <div className="grid grid-rows-4 gap-2 overflow-auto w-3/4">
                     {videos?.map((video) => (
                         <Link to={`/videos/${video._id}`} key={video._id}>
-                            <div className="flex flex-col sm:flex-row gap-4 items-start p-2 hover:bg-gray-300 rounded-lg">
+                            <div className="flex flex-col sm:flex-row gap-4 items-start p-2 hover:bg-zinc-200 hover:dark:bg-zinc-800 rounded-lg">
                                 <div className="relative">
                                     <img
                                         src={video.thumbnail.url}
@@ -82,7 +82,7 @@ const WatchHistory = () => {
                     ))}
                 </div>
                 <div className="flex justify-center items-center h-10 w-1/4">
-                    <span className="text-gray-500 md:block hidden">
+                    <span className="text-gray-500 dark:text-zinc-300 md:block hidden">
                         clear all watch history
                     </span>
                     <Button

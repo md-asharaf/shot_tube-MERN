@@ -7,24 +7,28 @@ import SmallDrawer from "./SmallDrawer";
 import VideoProvider from "@/provider/video.slice";
 import { useState } from "react";
 import { IVideoData } from "@/interfaces";
+import { Toaster } from "../ui/toaster";
 const RootLayOut = () => {
     const [videos, setVideos] = useState([] as IVideoData[]);
     const addVideo = (video: IVideoData) => {
         setVideos((prev) => [...prev, video]);
+    };
+    const addVideos = (viideos: IVideoData[]) => {
+        setVideos((prev) => [...prev, ...viideos]);
     };
     const deleteVideo = (id: string) => {
         setVideos((prev) => prev.filter((video) => video._id != id));
     };
     const isMenuOpen = useSelector((state: RootState) => state.ui.isMenuOpen);
     return (
-        <VideoProvider value={{ videos, addVideo, deleteVideo, setVideos }}>
-            <div className="h-screen w-screen">
+        <VideoProvider value={{ videos, addVideo, deleteVideo, addVideos }}>
+            <div className="h-screen w-screen bg-white dark:bg-black">
                 <header>
                     <nav>
                         <NavBar />
                     </nav>
                 </header>
-                <div className="flex py-20 pr-4 space-x-4 h-screen w-screen">
+                <main className="flex pt-20 pr-1 space-x-4 h-screen w-screen">
                     {isMenuOpen ? (
                         <div className="pl-6 min-w-44 hidden sm:block overflow-auto">
                             <BigDrawer />
@@ -37,7 +41,8 @@ const RootLayOut = () => {
                     <div className="overflow-y-auto w-full">
                         <Outlet />
                     </div>
-                </div>
+                </main>
+                <Toaster />
             </div>
         </VideoProvider>
     );

@@ -155,7 +155,7 @@ const Video = () => {
     if (isError) return <div>Error: {error.message}</div>;
 
     return (
-        <div className="space-y-4 lg:w-4/5 xl:w-2/3">
+        <div className="space-y-4 lg:w-4/5 xl:w-2/3 dark:text-white">
             <div className="flex flex-col space-y-2">
                 <video
                     autoPlay
@@ -193,8 +193,8 @@ const Video = () => {
                             variant="default"
                             className={`${
                                 !isSubscribed
-                                    ? "bg-zinc-300 hover:bg-zinc-400"
-                                    : "bg-gray-500 hover:bg-gray-600"
+                                    ? "bg-zinc-200 hover:bg-zinc-400"
+                                    : "bg-zinc-400 hover:bg-zinc-500"
                             } shadow-none text-black rounded-3xl`}
                             onClick={() => toggleSubscription()}
                         >
@@ -205,7 +205,9 @@ const Video = () => {
                     <div className="flex gap-2 items-center">
                         <Button
                             disabled={!userId}
-                            className={`${isLiked && "text-blue-500"}`}
+                            className={`${
+                                isLiked && "text-blue-500"
+                            } dark:bg-zinc-600 border-none bg-zinc-200`}
                             variant="outline"
                             onClick={() => toggleVideoLike()}
                         >
@@ -219,11 +221,15 @@ const Video = () => {
                             }}
                         >
                             <PopoverTrigger>
-                                <Button disabled={!userId} variant="outline">
+                                <Button
+                                    disabled={!userId}
+                                    variant="outline"
+                                    className="dark:bg-zinc-600 border-none bg-zinc-200"
+                                >
                                     <MdOutlinePlaylistAdd className="text-2xl" />
                                 </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="w-48 right-0 top-2 absolute bg-gray-400">
+                            <PopoverContent className="w-48 right-0 top-2 absolute bg-zinc-200">
                                 <SaveToPlaylist
                                     userId={userId}
                                     setPLaylistIds={setPlaylistIds}
@@ -232,7 +238,7 @@ const Video = () => {
                         </Popover>
                     </div>
                 </div>
-                <div className="p-4 shadow-md rounded-xl bg-gray-300 font-semibold">
+                <div className="p-4 shadow-md rounded-xl bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-semibold">
                     <div className="flex space-x-4">
                         <div>{`${video.views} views`}</div>
                         <div>

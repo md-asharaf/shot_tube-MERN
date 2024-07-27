@@ -11,7 +11,7 @@ const SearchBar = () => {
                 type="text"
                 value={input}
                 placeholder="Search"
-                className="rounded-l-full p-2 w-[90%] border-gray-500 border-[1px] bg-transparent focus:outline-none focus:ring-[1px] focus:ring-blue-500 z-10"
+                className="rounded-l-full p-2 w-[90%] border-gray-500 border-[1px] bg-transparent focus:outline-none focus:ring-[1px] focus:ring-blue-500 dark:focus:ring-blue-300 z-10 dark:border-zinc-800"
             />
             <button
                 id="cross"
@@ -25,7 +25,7 @@ const SearchBar = () => {
             <button
                 disabled={!input}
                 onClick={() => alert(`You searched for ${input}`)}
-                className="rounded-r-full border-[1px] border-[#3D3D3D] w-20 p-3 bg-[#3D3D3D] overflow-hidden"
+                className="rounded-r-full border-[1px] border-[#3D3D3D] w-20 p-3 bg-[#3D3D3D] overflow-hidden dark:bg-zinc-800"
             >
                 <IoIosSearch className="w-full" />
             </button>

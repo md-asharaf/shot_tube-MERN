@@ -148,6 +148,7 @@ class VideoC {
     })
 
     getAllVideos = asyncHandler(async (req, res) => {
+        const { page, limit } = req.query;
         try {
             const videos = await Video.aggregate([
                 {
@@ -164,7 +165,14 @@ class VideoC {
                             $first: "$creator"
                         }
                     }
-                }, {
+                },
+                {
+                    $skip: page * Number(limit)
+                },
+                {
+                    $limit: Number(limit)
+                },
+                {
                     $project: {
                         userId: 0,
                         isPublished: 0,

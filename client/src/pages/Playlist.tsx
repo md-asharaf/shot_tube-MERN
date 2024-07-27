@@ -5,6 +5,7 @@ import { useSuccess } from "@/lib/utils";
 import { useDispatch } from "react-redux";
 import { IPlaylist } from "@/interfaces";
 import { formatDistanceToNow } from "date-fns";
+import { Button } from "@/components/ui/button";
 
 const Playlist = () => {
     const dispatch = useDispatch();
@@ -37,8 +38,8 @@ const Playlist = () => {
         0
     );
     return (
-        <div className="text-black flex space-x-1 w-full">
-            <div className="w-[300px] bg-gray-200 p-5 space-y-3 rounded-xl overflow-auto">
+        <div className="px-1 flex-col flex md:flex-row gap-4 md:gap-1 relative w-full dark:text-white">
+            <div className="dark:bg-zinc-700 bg-gray-200 p-5 space-y-3 rounded-xl max-w-lg">
                 <img
                     src={playlist.videos[0].thumbnail.url}
                     alt="Playlist Thumbnail"
@@ -51,20 +52,20 @@ const Playlist = () => {
                         2021`}
                 </p>
                 <div className="flex justify-between w-full">
-                    <button className=" bg-blue-500 py-2 px-4 rounded-full w-[47%]">
+                    <Button className="bg-white hover:text-white text-black py-2 px-4 rounded-full w-[47%]">
                         Play all
-                    </button>
-                    <button className="bg-blue-500 py-2 px-4 rounded-full w-[47%]">
+                    </Button>
+                    <Button className="bg-white hover:text-white text-black py-2 px-4 rounded-full w-[47%]">
                         Shuffle
-                    </button>
+                    </Button>
                 </div>
                 <p className="text-sm">{playlist.description}</p>
             </div>
 
-            <div className="grid grid-rows-8 gap-2 overflow-auto">
+            <div className="grid grid-rows-6 gap-2">
                 {playlist.videos?.map((video, index) => (
                     <Link to={`/videos/${video._id}`} key={video._id}>
-                        <div className="flex space-x-4 items-center p-2 hover:bg-gray-300 rounded-lg">
+                        <div className="flex space-x-4 items-center p-2 hover:bg-zinc-200 dark:hover:bg-gray-300 rounded-lg">
                             <div>{index + 1}</div>
                             <div className="relative">
                                 <img

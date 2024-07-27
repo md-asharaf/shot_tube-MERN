@@ -38,7 +38,7 @@ const PlayLists = () => {
                     <Link
                         to={`/playlist/${playlist._id}`}
                         key={index}
-                        className="space-y-2 rounded-xl p-2 hover:bg-gray-400"
+                        className="space-y-2 rounded-xl p-2 hover:bg-gray-400 hover:dark:bg-zinc-800"
                     >
                         <PlaylistCard {...playlist} />
                         <VideoTitle2 {...playlist} />

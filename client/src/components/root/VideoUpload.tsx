@@ -65,132 +65,128 @@ const VideoUpload = () => {
         }
     };
     return (
-        <div className="w-screen h-screen fixed top-0 right-0 bg-[#0000009e] z-30">
-            <div
-                className={`shadow-xl shadow-black border-2 border-gray-500 rounded-md p-4 fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white z-40 sm:w-[400px] w-[70vw]`}
+        <div className="w-screen h-screen fixed top-0 right-0 bg-[#0000009e] dark:bg-[#5756569e] z-30">
+            <Card
+                className={`shadow-xl shadow-transparent border-[1px] border-gray-500 dark:border-zinc-600 rounded-md p-4 fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 dark:bg-black z-40 sm:w-[400px] w-[70vw]`}
             >
-                <Card
-                    className={`shadow-xl shadow-black border-2 border-gray-500 rounded-md p-4 fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 bg-white z-40 sm:w-[400px] w-[70vw]`}
-                >
-                    <CardHeader>
-                        <CardTitle className="text-3xl font-bold text-center">
-                            Upload Video
-                        </CardTitle>
-                        <CardDescription className="text-center">
-                            Fill all the fields to upload a video.
-                        </CardDescription>
-                    </CardHeader>
-                    <CardContent>
-                        <Form {...form}>
-                            <form
-                                onSubmit={form.handleSubmit(uploadVideo)}
-                                className="space-y-8 mt-4"
-                            >
-                                <FormField
-                                    control={form.control}
-                                    name="title"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel htmlFor="title">
-                                                Title:
-                                            </FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    type="text"
-                                                    placeholder="Enter a title"
-                                                    {...field}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
+                <CardHeader>
+                    <CardTitle className="text-3xl font-bold text-center">
+                        Upload Video
+                    </CardTitle>
+                    <CardDescription className="text-center">
+                        Fill all the fields to upload a video.
+                    </CardDescription>
+                </CardHeader>
+                <CardContent>
+                    <Form {...form}>
+                        <form
+                            onSubmit={form.handleSubmit(uploadVideo)}
+                            className="space-y-8 mt-4"
+                        >
+                            <FormField
+                                control={form.control}
+                                name="title"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel htmlFor="title">
+                                            Title:
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                type="text"
+                                                placeholder="Enter a title"
+                                                {...field}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="description"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel htmlFor="description">
+                                            Description:
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Textarea
+                                                placeholder="Enter a description"
+                                                {...field}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="video"
+                                render={() => (
+                                    <FormItem>
+                                        <FormLabel htmlFor="video">
+                                            Video:
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                type="file"
+                                                accept="video/*"
+                                                {...videoRef}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <FormField
+                                control={form.control}
+                                name="thumbnail"
+                                render={() => (
+                                    <FormItem>
+                                        <FormLabel htmlFor="thumbnail">
+                                            Thumbnail:
+                                        </FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                type="file"
+                                                accept="image/*"
+                                                {...thumbnailRef}
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+                            <div className="flex items-center justify-between">
+                                <Button
+                                    variant={"default"}
+                                    type="submit"
+                                    className="mr-4"
+                                >
+                                    {loader ? (
+                                        <Loader2 className="animate-spin h-4 w-4">
+                                            Uploading...
+                                        </Loader2>
+                                    ) : (
+                                        "Publish"
                                     )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="description"
-                                    render={({ field }) => (
-                                        <FormItem>
-                                            <FormLabel htmlFor="description">
-                                                Description:
-                                            </FormLabel>
-                                            <FormControl>
-                                                <Textarea
-                                                    placeholder="Enter a description"
-                                                    {...field}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="video"
-                                    render={() => (
-                                        <FormItem>
-                                            <FormLabel htmlFor="video">
-                                                Video:
-                                            </FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    type="file"
-                                                    accept="video/*"
-                                                    {...videoRef}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <FormField
-                                    control={form.control}
-                                    name="thumbnail"
-                                    render={() => (
-                                        <FormItem>
-                                            <FormLabel htmlFor="thumbnail">
-                                                Thumbnail:
-                                            </FormLabel>
-                                            <FormControl>
-                                                <Input
-                                                    type="file"
-                                                    accept="image/*"
-                                                    {...thumbnailRef}
-                                                />
-                                            </FormControl>
-                                            <FormMessage />
-                                        </FormItem>
-                                    )}
-                                />
-                                <div className="flex items-center justify-between">
-                                    <Button
-                                        variant={"default"}
-                                        type="submit"
-                                        className="mr-4"
-                                    >
-                                        {loader ? (
-                                            <Loader2 className="animate-spin h-4 w-4">
-                                                Uploading...
-                                            </Loader2>
-                                        ) : (
-                                            "Publish"
-                                        )}
-                                    </Button>
-                                    <Button
-                                        type="button"
-                                        variant={"destructive"}
-                                        onClick={() => {
-                                            dispatch(toggleVideoModal());
-                                        }}
-                                    >
-                                        Cancel
-                                    </Button>
-                                </div>
-                            </form>
-                        </Form>
-                    </CardContent>
-                    <CardFooter className="flex justify-between"></CardFooter>
-                </Card>
-            </div>
+                                </Button>
+                                <Button
+                                    type="button"
+                                    variant={"destructive"}
+                                    onClick={() => {
+                                        dispatch(toggleVideoModal());
+                                    }}
+                                >
+                                    Cancel
+                                </Button>
+                            </div>
+                        </form>
+                    </Form>
+                </CardContent>
+                <CardFooter className="flex justify-between"></CardFooter>
+            </Card>
         </div>
     );
 };

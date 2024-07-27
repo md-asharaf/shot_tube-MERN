@@ -18,8 +18,10 @@ import {
     FormLabel,
     FormMessage,
 } from "@/components/ui/form";
+import { useToast } from "../ui/use-toast";
 
 const SignUp = () => {
+    const { toast } = useToast();
     const navigate = useNavigate();
     const dispatch = useDispatch();
     const [error, setError] = useState<string>("");
@@ -38,6 +40,10 @@ const SignUp = () => {
             const res = await authService.register(values);
             if (!res) return;
             if (res.success) {
+                toast({
+                    title: "Registration successfull",
+                    description: "now you can login",
+                });
                 const { email } = res.data;
                 const loginRes = await authService.login({
                     email,
@@ -138,10 +144,14 @@ const SignUp = () => {
                             </FormItem>
                         )}
                     />
-                    <Button type="submit" variant="default" className="w-full">
+                    <Button
+                        type="submit"
+                        variant="secondary"
+                        className="w-full"
+                    >
                         Sign up
                     </Button>
-                    <div className="flex gap-2 ">
+                    <div className="flex gap-2 items-center justify-center">
                         <p className="tracking-wider">
                             already have an account?
                         </p>

@@ -10,14 +10,14 @@ interface ISubDrawer {
 }
 const SubDrawer: React.FC<ISubDrawer> = ({ options, isSmall = false }) => {
     return (
-        <div className={`flex-col cursor-pointer`}>
+        <div className={`flex-col cursor-pointer dark:text-white`}>
             {options?.map((option, index) => (
                 <Link
                     to={option.route}
                     key={index}
                     className={`flex ${
                         isSmall && "flex-col text-[11px]"
-                    } items-center gap-x-4 hover:bg-zinc-400 rounded-xl p-2`}
+                    } items-center gap-x-4 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-xl p-2`}
                 >
                     {option.icon && (
                         <span className="text-xl">{option.icon}</span>

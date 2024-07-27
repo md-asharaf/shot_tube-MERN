@@ -39,7 +39,7 @@ const Channel = () => {
     if (userLoading || videosLoading) return <div>Loading...</div>;
 
     return (
-        <div className="space-y-2 w-full">
+        <div className="space-y-2 w-full dark:text-white">
             {userData?.username === username && (
                 <img
                     className="w-full h-32 rounded-xl"
@@ -55,12 +55,14 @@ const Channel = () => {
                 />
                 <div className="space-y-2">
                     <div className="font-bold text-3xl">{user?.fullname}</div>
-                    <div className="text-gray-500">{`@${user?.username} • ${
-                        user?.subscriberCount
-                    } subscribers • ${videos?.length || 0} videos`}</div>
+                    <div className="text-gray-500 dark:text-zinc-300">{`@${
+                        user?.username
+                    } • ${user?.subscriberCount} subscribers • ${
+                        videos?.length || 0
+                    } videos`}</div>
                 </div>
             </div>
-            <span className="text-xl font-semibold text-gray-600 mt-12 border-b-2 pb-2 border-b-zinc-900">
+            <span className="text-xl font-semibold text-gray-600 dark:text-zinc-300 mt-12 border-b-2 pb-2 border-b-zinc-900">
                 videos
             </span>
             <hr className="border-gray-400" />
@@ -70,7 +72,7 @@ const Channel = () => {
                         to={`/videos/${video._id}`}
                         onClick={() => dispatch(toggleMenu())}
                         key={index}
-                        className=" bg-white flex flex-col gap-4 rounded-xl overflow-hidden transition-shadow duration-300 cursor-pointer p-2 hover:bg-zinc-300"
+                        className="flex flex-col gap-4 rounded-xl transition-shadow duration-300 cursor-pointer p-2 hover:bg-zinc-200 hover:dark:bg-zinc-800"
                     >
                         <VideoCard video={video} />
                         <VideoTitle video={video} />

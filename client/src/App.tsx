@@ -13,34 +13,45 @@ import WatchLater from "./pages/WatchLater";
 import PlayLists from "./pages/PlayLists";
 import Playlist from "./pages/Playlist";
 import Empty from "./components/root/Empty";
+import { useSelector } from "react-redux";
+import { RootState } from "./provider";
 
 function App() {
+    const theme = useSelector((state: RootState) => state.theme.mode);
     return (
-        <BrowserRouter>
-            <Routes>
-                //public routes
-                <Route element={<AuthLayOut />}>
-                    <Route path="/login" element={<SignIn />} />
-                    <Route path="/register" element={<SignUp />} />
-                </Route>
-                //private routes
-                <Route element={<RootLayOut />}>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/videos/:videoId" element={<Video />} />
-                    <Route path="/:username/channel" element={<Channel />} />
-                    <Route path="/watch-history" element={<WatchHistory />} />
-                    <Route path="/liked-videos" element={<LikedVideos />} />
-                    <Route path="/my-videos" element={<MyVideos />} />
-                    <Route path="/watch-later" element={<WatchLater />} />
-                    <Route path="/playlists" element={<PlayLists />} />
-                    <Route
-                        path="/playlist/:playlistId"
-                        element={<Playlist />}
-                    />
-                    <Route path="/empty" element={<Empty />} />
-                </Route>
-            </Routes>
-        </BrowserRouter>
+        <div className={`${theme}`}>
+            <BrowserRouter>
+                <Routes>
+                    //public routes
+                    <Route element={<AuthLayOut />}>
+                        <Route path="/login" element={<SignIn />} />
+                        <Route path="/register" element={<SignUp />} />
+                    </Route>
+                    //private routes
+                    <Route element={<RootLayOut />}>
+                        <Route path="/" element={<Home />} />
+                        <Route path="/videos/:videoId" element={<Video />} />
+                        <Route
+                            path="/:username/channel"
+                            element={<Channel />}
+                        />
+                        <Route
+                            path="/watch-history"
+                            element={<WatchHistory />}
+                        />
+                        <Route path="/liked-videos" element={<LikedVideos />} />
+                        <Route path="/my-videos" element={<MyVideos />} />
+                        <Route path="/watch-later" element={<WatchLater />} />
+                        <Route path="/playlists" element={<PlayLists />} />
+                        <Route
+                            path="/playlist/:playlistId"
+                            element={<Playlist />}
+                        />
+                        <Route path="/empty" element={<Empty />} />
+                    </Route>
+                </Routes>
+            </BrowserRouter>
+        </div>
     );
 }
 

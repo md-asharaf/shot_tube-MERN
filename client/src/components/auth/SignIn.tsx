@@ -18,8 +18,10 @@ import {
 import { IoLogoYoutube } from "react-icons/io";
 import authService from "@/services/auth.services";
 import { ILoginForm } from "@/interfaces";
+import { toast, useToast } from "../ui/use-toast";
 
 const SignIn = () => {
+    const { toast } = useToast();
     const [error, setError] = useState<string>("");
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -31,10 +33,15 @@ const SignIn = () => {
         },
     });
     const onSubmit = async (values: ILoginForm) => {
+        setError("");
         try {
             const res = await authService.login(values);
             if (!res) return;
             if (res.success) {
+                toast({
+                    title: "Login successfull",
+                    description: "Welcome to ShotTube",
+                });
                 dispatch(login(res.data.user));
                 navigate("/");
             } else {
@@ -46,7 +53,7 @@ const SignIn = () => {
     };
 
     return (
-        <div className="items-center justify-center flex flex-col gap-2">
+        <div className="items-center justify-center flex flex-col gap-2 text-white">
             <div className="flex space-x-4 items-center">
                 <IoLogoYoutube className="text-3xl" />
                 <div className="text-red-500 font-bold text-pretty">
@@ -54,7 +61,7 @@ const SignIn = () => {
                 </div>
             </div>
             <div className="flex flex-col items-center justify-center">
-                <h1 className="font-semibold text-slate-600 text-sm border-b-[1px] pb-3 border-slate-500">
+                <h1 className="font-semibold text-zinc-300 text-sm border-b-[1px] pb-3 border-slate-500">
                     Sign in to your account
                 </h1>
             </div>
@@ -100,7 +107,11 @@ const SignIn = () => {
                             </FormItem>
                         )}
                     />
-                    <Button type="submit" className="w-full">
+                    <Button
+                        variant="secondary"
+                        type="submit"
+                        className="w-full"
+                    >
                         Sign in
                     </Button>
                 </form>

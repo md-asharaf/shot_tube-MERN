@@ -123,7 +123,7 @@ const Comments = ({ videoId }) => {
         );
     return (
         <>
-            <div className="font-bold text-2xl text-zinc-600">{`${comments.length} Comments`}</div>
+            <div className="font-bold text-2xl text-zinc-600 dark:text-zinc-300">{`${comments.length} Comments`}</div>
             <div className="flex flex-col">
                 <div className="flex gap-x-2 items-center justify-start">
                     <img
@@ -151,7 +151,7 @@ const Comments = ({ videoId }) => {
                             disabled={!content}
                             onClick={() => addComment(content)}
                             variant="outline"
-                            className="hover:bg-blue-500 hover:text-white"
+                            className="hover:bg-blue-500 hover:text-white dark:text-black dark:bg-white dark:hover:bg-blue-500"
                         >
                             Comment
                         </Button>
@@ -184,7 +184,7 @@ const Comments = ({ videoId }) => {
                                         }
                                         className="text-[16px] cursor-pointer"
                                     >{`@${comment.creator.username} `}</span>
-                                    <span className="text-gray-500 font-light text-[13px]">
+                                    <span className="text-gray-500 dark:text-zinc-200 font-light text-[13px]">
                                         {formatDistanceToNow(
                                             new Date(comment.createdAt),
                                             { addSuffix: true }
@@ -199,8 +199,9 @@ const Comments = ({ videoId }) => {
                                                 toggleCommentLike(comment._id)
                                             }
                                             variant="ghost"
-                                            className={`rounded-full text-lg p-2 ${
-                                                liked[index] && "text-blue-500"
+                                            className={`rounded-full text-lg p-2 dark:hover:bg-zinc-800 dark:hover:text-white ${
+                                                liked[index] &&
+                                                "text-blue-500 dark:hover:text-blue-500"
                                             }`}
                                         >
                                             <BiLike />
@@ -212,7 +213,7 @@ const Comments = ({ videoId }) => {
                                                     deleteComment(comment._id)
                                                 }
                                                 variant="ghost"
-                                                className="rounded-full text-lg p-2"
+                                                className="rounded-full text-lg p-2 dark:hover:bg-zinc-800 dark:hover:text-white"
                                             >
                                                 <RiDeleteBin6Line />
                                             </Button>

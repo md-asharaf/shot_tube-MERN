@@ -4,9 +4,8 @@ const VideoContext = createContext({
     videos: [] as IVideoData[],
     addVideo: (video: IVideoData) => {},
     deleteVideo: (id: string) => {},
-    setVideos: (videos: IVideoData[]) => {},
+    addVideos: (videos: IVideoData[]) => {},
 });
-
 export const useVideo = () => {
     return useContext(VideoContext);
 };

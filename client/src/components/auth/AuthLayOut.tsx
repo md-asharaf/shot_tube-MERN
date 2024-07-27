@@ -6,17 +6,10 @@ const AuthLayOut = () => {
             <img
                 src={bgImage}
                 alt=""
-                className="absolute right-0 top-0 w-1/2 h-full z-0 object-cover  rounded-xl "
+                className="absolute aspect-video object-cover right-0 top-0 w-full h-full z-0"
             />
-            <div className="w-1/2">
+            <div className="min-w-[700px] z-10">
                 <Outlet />
-            </div>
-            <div className="w-1/2 h-full flex items-center justify-center z-10">
-                <h1 className="text-2xl font-bold text-white">
-                    {window.location.href === "http://localhost:5173/login"
-                        ? "Welcome back!"
-                        : "Hello there!"}
-                </h1>
             </div>
         </div>
     );

@@ -54,8 +54,9 @@ const BigDrawer = () => {
         {
             name: "Your channel",
             icon: (
-                <div className="text-black w-full h-full block">
+                <div className="w-full h-full block">
                     <svg
+                        fill="currentColor"
                         xmlns="http://www.w3.org/2000/svg"
                         viewBox="0 0 24 24"
                         focusable="false"
@@ -72,8 +73,9 @@ const BigDrawer = () => {
         {
             name: "History",
             icon: (
-                <div className="text-black w-full h-full block">
+                <div className="w-full h-full block">
                     <svg
+                        fill="currentColor"
                         xmlns="http://www.w3.org/2000/svg"
                         height="24"
                         className="pointer-events-none w-full h-full block"
@@ -92,8 +94,9 @@ const BigDrawer = () => {
         {
             name: "Playlists",
             icon: (
-                <div className="text-black w-full h-full block">
+                <div className="w-full h-full block">
                     <svg
+                        fill="currentColor"
                         xmlns="http://www.w3.org/2000/svg"
                         height="24"
                         viewBox="0 0 24 24"
@@ -110,8 +113,9 @@ const BigDrawer = () => {
         {
             name: "Your videos",
             icon: (
-                <div className="text-black w-full h-full block">
+                <div className="w-full h-full block">
                     <svg
+                        fill="currentColor"
                         xmlns="http://www.w3.org/2000/svg"
                         height="24"
                         viewBox="0 0 24 24"
@@ -128,8 +132,9 @@ const BigDrawer = () => {
         {
             name: "Watch later",
             icon: (
-                <div className="text-black w-full h-full block">
+                <div className="w-full h-full block">
                     <svg
+                        fill="currentColor"
                         xmlns="http://www.w3.org/2000/svg"
                         height="24"
                         viewBox="0 0 24 24"
@@ -146,8 +151,9 @@ const BigDrawer = () => {
         {
             name: "Liked videos",
             icon: (
-                <div className="text-black w-full h-full block">
+                <div className="w-full h-full block">
                     <svg
+                        fill="currentColor"
                         xmlns="http://www.w3.org/2000/svg"
                         height="24"
                         viewBox="0 0 24 24"
@@ -175,7 +181,7 @@ const BigDrawer = () => {
             {userId && (
                 <>
                     <hr className="my-3" />
-                    <p className="ml-2 mb-2 text-sm font-bold text-black">
+                    <p className="ml-2 mb-2 text-xl font-bold dark:text-white">
                         {"You >"}
                     </p>
                     <div>
@@ -187,7 +193,7 @@ const BigDrawer = () => {
                         channels.length > 0 && (
                             <>
                                 <hr className="my-3" />
-                                <p className="ml-2 mb-2 text-sm font-bold text-black">
+                                <p className="ml-2 mb-2 text-lg font-bold dark:text-white">
                                     Subscriptions
                                 </p>
                                 <div>

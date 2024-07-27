@@ -10,6 +10,7 @@ const VideoCard: React.FC<Props> = ({ video, className = "" }) => {
                 src={video.thumbnail.url}
                 alt="Video thumbnail"
                 className={`h-full w-full aspect-video object-cover rounded-xl ${className}`}
+                loading="lazy"
             />
             <p className="absolute right-[6px] bottom-2 bg-black text-white text-[10px] font-bold px-2 py-[1px] rounded">
                 {video.duration}

@@ -22,19 +22,13 @@ import { shortName, useSuccess } from "@/lib/utils";
 import VideoUpload from "./VideoUpload";
 import { toggleVideoModal } from "@/provider/ui.slice";
 import authServices from "@/services/auth.services";
-// import { useEffect, useState } from "react";
+import { DarkModeSwitch } from "react-toggle-dark-mode";
+import { toggleTheme } from "@/provider/theme.slice";
 
 const NavBar = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    // const [authStatus, setAuthStatus] = useState<boolean>(false);
-    // const [userData, setUserData] = useState(null);
-    // useEffect(() => {
-    //     const authData = JSON.parse(localStorage.getItem("auth_data"));
-    //     setUserData(authData.userData);
-    //     setAuthStatus(authData.status);
-    // }, []);
-    const authStatus = useSelector((state: RootState) => state.auth.status);
+    const theme = useSelector((state: RootState) => state.theme.mode);
     const userData = useSelector((state: RootState) => state.auth.userData);
     const videoModal = useSelector(
         (state: RootState) => state.ui.isVideoModalOpen
@@ -48,10 +42,10 @@ const NavBar = () => {
         }
     };
     return (
-        <div className="fixed top-0 left-0 z-50 flex items-center justify-between p-6 h-16 gap-2 w-full shadow-lg bg-white">
+        <div className="fixed top-0 left-0 z-50 flex items-center justify-between p-6 h-16 gap-2 w-full dark:text-white ">
             <div className="flex items-center gap-x-2 md:gap-x-4">
                 <CiMenuBurger
-                    className="text-4xl dark:text-white hover:bg-zinc-400 p-2 rounded-lg"
+                    className="text-4xl dark:text-white hover:bg-zinc-400 dark:hover:bg-zinc-700 p-2 rounded-lg"
                     onClick={() => {
                         dispatch(toggleMenu());
                     }}
@@ -69,59 +63,69 @@ const NavBar = () => {
                     <CiSearch className="md:hidden block text-3xl font-extralight" />
                 </div>
             </div>
+
             {videoModal && <VideoUpload />}
-            {authStatus ? (
-                <div className="flex gap-1 sm:gap-4 lg:gap-8 items-center">
-                    <div className="p-1.5 rounded-full hover:bg-zinc-500">
-                        <TbVideoPlus
-                            className="text-3xl dark:text-white"
-                            onClick={() => dispatch(toggleVideoModal())}
-                        />
-                    </div>
-                    <div className="p-2 rounded-full hover:bg-zinc-500">
-                        <IoNotificationsOutline className="text-2xl dark:text-white" />
-                    </div>
-                    <DropdownMenu>
-                        <DropdownMenuTrigger>
-                            <Avatar>
-                                <AvatarImage src={userData?.avatar?.url} />
-                                <AvatarFallback>
-                                    {shortName(userData?.fullname)}
-                                </AvatarFallback>
-                            </Avatar>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent className="mr-2">
-                            {userData && (
-                                <Link to={`/${userData?.username}/channel`}>
-                                    <DropdownMenuItem>
-                                        <Profile {...userData} />
-                                    </DropdownMenuItem>
-                                    <DropdownMenuSeparator />
-                                </Link>
-                            )}
-                            <DropdownMenuItem>
-                                <Button
-                                    className="w-full"
-                                    onClick={onLogout}
-                                    variant="destructive"
-                                >
-                                    Log out
-                                </Button>
-                            </DropdownMenuItem>
-                        </DropdownMenuContent>
-                    </DropdownMenu>
+
+            <div className="flex gap-1 sm:gap-4 lg:gap-8 items-center">
+                <div>
+                    <DarkModeSwitch
+                        checked={theme === "dark"}
+                        onChange={() => dispatch(toggleTheme())}
+                    />
                 </div>
-            ) : (
-                <Link to={"/login"}>
-                    <Button
-                        className="rounded-2xl text-blue-500 gap-1"
-                        variant={"outline"}
-                    >
-                        <span>Log in</span>
-                        <img src={ProfileImage} height={30} width={30} />
-                    </Button>
-                </Link>
-            )}
+                {userData ? (
+                    <>
+                        <div className="p-1.5 rounded-full hover:bg-zinc-500 dark:hover:bg-zinc-800">
+                            <TbVideoPlus
+                                className="text-3xl"
+                                onClick={() => dispatch(toggleVideoModal())}
+                            />
+                        </div>
+                        <div className="p-2 rounded-full hover:bg-zinc-500 dark:hover:bg-zinc-800">
+                            <IoNotificationsOutline className="text-2xl" />
+                        </div>
+                        <DropdownMenu>
+                            <DropdownMenuTrigger>
+                                <Avatar>
+                                    <AvatarImage src={userData?.avatar?.url} />
+                                    <AvatarFallback>
+                                        {shortName(userData?.fullname)}
+                                    </AvatarFallback>
+                                </Avatar>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent className="mr-2">
+                                {userData && (
+                                    <Link to={`/${userData?.username}/channel`}>
+                                        <DropdownMenuItem>
+                                            <Profile {...userData} />
+                                        </DropdownMenuItem>
+                                        <DropdownMenuSeparator />
+                                    </Link>
+                                )}
+                                <DropdownMenuItem>
+                                    <Button
+                                        className="w-full"
+                                        onClick={onLogout}
+                                        variant="destructive"
+                                    >
+                                        Log out
+                                    </Button>
+                                </DropdownMenuItem>
+                            </DropdownMenuContent>
+                        </DropdownMenu>
+                    </>
+                ) : (
+                    <Link to={"/login"}>
+                        <Button
+                            className="rounded-2xl text-blue-500 gap-1"
+                            variant={"outline"}
+                        >
+                            <span>Log in</span>
+                            <img src={ProfileImage} height={30} width={30} />
+                        </Button>
+                    </Link>
+                )}
+            </div>
         </div>
     );
 };

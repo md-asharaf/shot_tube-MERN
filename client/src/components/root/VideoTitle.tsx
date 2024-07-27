@@ -9,7 +9,7 @@ interface Props {
 const VideoTitle: React.FC<Props> = ({ video, isImage = false }) => {
     const navigate = useNavigate();
     return (
-        <div className="flex items-center space-x-3">
+        <div className="flex items-center space-x-3 dark:text-white">
             {isImage && (
                 <img
                     className="w-10 h-10 rounded-full"
@@ -18,11 +18,7 @@ const VideoTitle: React.FC<Props> = ({ video, isImage = false }) => {
                 />
             )}
             <div className="flex-1 min-w-0">
-                <p
-                    className={`font-bold text-black truncate ${
-                        !isImage && "text-xs"
-                    }`}
-                >
+                <p className={`font-bold truncate ${!isImage && "text-xs"}`}>
                     {video.title}
                 </p>
                 {isImage && (
@@ -31,12 +27,12 @@ const VideoTitle: React.FC<Props> = ({ video, isImage = false }) => {
                             e.preventDefault();
                             navigate(`/${video.creator.username}/channel`);
                         }}
-                        className="font-semibold text-gray-600 hover:text-black truncate"
+                        className="font-semibold text-gray-500 dark:text-zinc-400 hover:text-black truncate"
                     >
                         {video.creator.fullname}
                     </span>
                 )}
-                <p className="text-gray-500 text-xs truncate">
+                <p className="text-gray-500 dark:text-zinc-300 text-xs truncate">
                     {`${video.views} views • ${formatDistanceToNow(
                         video.createdAt,
                         { addSuffix: true }

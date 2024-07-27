@@ -1,3 +1,4 @@
+import { Button } from "@/components/ui/button";
 import { IVideoData } from "@/interfaces";
 import { useSuccess } from "@/lib/utils";
 import { RootState } from "@/provider";
@@ -35,12 +36,12 @@ const LikedVideos = () => {
     const totalViews = videos.reduce((prev, curr) => prev + curr.views, 0);
     console.log(videos);
     return (
-        <div className="px-1 text-black flex-col flex md:flex-row gap-4 md:gap-1 relative w-full">
-            <div className="bg-gray-200 p-5 space-y-3 rounded-xl overflow-auto max-w-lg">
+        <div className="px-1 flex-col flex md:flex-row gap-4 md:gap-1 relative w-full dark:text-white">
+            <div className="dark:bg-zinc-700 bg-gray-200 p-5 space-y-3 rounded-xl max-w-lg">
                 <img
                     src={videos[0].thumbnail.url}
                     alt="Playlist Thumbnail"
-                    className="rounded-lg"
+                    className="rounded-lg hover:opacity-40"
                 />
                 <h1 className="text-[2em] font-bold">Liked Videos</h1>
                 <p>{userData.fullname}</p>
@@ -49,19 +50,19 @@ const LikedVideos = () => {
                         2021`}
                 </p>
                 <div className="flex justify-between w-full">
-                    <button className=" bg-blue-500 py-2 px-4 rounded-full w-[47%]">
+                    <Button className="bg-white hover:text-white text-black py-2 px-4 rounded-full w-[47%]">
                         Play all
-                    </button>
-                    <button className="bg-blue-500 py-2 px-4 rounded-full w-[47%]">
+                    </Button>
+                    <Button className="bg-white hover:text-white text-black py-2 px-4 rounded-full w-[47%]">
                         Shuffle
-                    </button>
+                    </Button>
                 </div>
             </div>
 
-            <div className="flex flex-col gap-2 min-w-[410px]">
+            <div className="grid grid-rows-6 gap-2">
                 {videos.map((video, index) => (
                     <Link to={`/videos/${video._id}`} key={video._id}>
-                        <div className="flex space-x-2 items-center p-2 hover:bg-gray-300 rounded-lg">
+                        <div className="flex space-x-2 items-center p-2 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-lg">
                             <div>{index + 1}</div>
                             <div className="relative w-40 mr-5">
                                 <img
@@ -69,7 +70,7 @@ const LikedVideos = () => {
                                     alt="Video Thumbnail"
                                     className="w-full h-[10vh] rounded-lg"
                                 />
-                                <span className="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white px-2 text-xs">
+                                <span className="absolute bottom-2 bg-black right-2 bg-opacity-75 text-white px-2 text-xs">
                                     {video.duration}
                                 </span>
                             </div>
