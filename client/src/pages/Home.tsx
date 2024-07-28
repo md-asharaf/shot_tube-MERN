@@ -53,12 +53,7 @@ const Home = () => {
 
     return (
         <>
-            <div
-                className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 w-full gap-y-6"
-                onScroll={() => {
-                    console.log("scrolling");
-                }}
-            >
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 w-full gap-y-6">
                 {data?.pages?.map((group, i) =>
                     group.map((video: IVideoData, index: number) => {
                         const isLast =

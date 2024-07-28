@@ -12,9 +12,10 @@ const VideoTitle: React.FC<Props> = ({ video, isImage = false }) => {
         <div className="flex items-center space-x-3 dark:text-white">
             {isImage && (
                 <img
-                    className="w-10 h-10 rounded-full"
+                    className="w-10 h-10 rounded-full aspect-video object-cover"
                     src={video.creator.avatar?.url || DefaultProfileImage}
                     alt={video.creator.fullname}
+                    loading="lazy"
                 />
             )}
             <div className="flex-1 min-w-0">

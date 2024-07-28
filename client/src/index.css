@@ -5,18 +5,24 @@
 body {
     font-family: "Roboto", sans-serif;
 }
+/* src/styles/custom.css */
 ::-webkit-scrollbar {
     border-radius: 50px;
     border: none;
-    width: 10px;
+    width: 8px;
 }
+
 ::-webkit-scrollbar-thumb {
     border-radius: 50px;
     border: none;
     background-color: rgba(175, 159, 159, 0.782);
 }
+
 ::-webkit-scrollbar-thumb:hover {
     cursor: grab;
+}
+.no-scrollbar::-webkit-scrollbar {
+    display: none;
 }
 @layer base {
     :root {

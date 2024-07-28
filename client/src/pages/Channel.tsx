@@ -9,6 +9,8 @@ import DefaultCoverImage from "@/assets/images/coverImage.jpg";
 import VideoTitle from "@/components/root/VideoTitle";
 import videoServices from "@/services/video.services";
 import { useQuery } from "@tanstack/react-query";
+import { Button } from "@/components/ui/button";
+import subscriptionServices from "@/services/subscription.services";
 
 const Channel = () => {
     const dispatch = useDispatch();
@@ -28,7 +30,14 @@ const Channel = () => {
         queryFn: fetchUserData,
         enabled: !!username,
     });
-
+    const { data: isSubscribed, refetch } = useQuery<boolean>({
+        queryKey: ["isSubscribed", user?._id],
+        queryFn: async () => {
+            const res = await subscriptionServices.isSubscribed(user?._id);
+            return res.data.isSubscribed;
+        },
+        enabled: !!user,
+    });
     // Fetch videos by user
     const { data: videos, isLoading: videosLoading } = useQuery<IVideoData[]>({
         queryKey: ["videos", user?._id],
@@ -60,6 +69,21 @@ const Channel = () => {
                     } • ${user?.subscriberCount} subscribers • ${
                         videos?.length || 0
                     } videos`}</div>
+                    {userData?.username != username && (
+                        <Button
+                            className={`rounded-full ${
+                                !isSubscribed && "bg-red-500 hover:bg-red-500"
+                            } `}
+                            onClick={async () => {
+                                await subscriptionServices.toggleSubscription(
+                                    user?._id
+                                );
+                                refetch();
+                            }}
+                        >
+                            {isSubscribed ? "Unsubscribe" : "Subscribe"}
+                        </Button>
+                    )}
                 </div>
             </div>
             <span className="text-xl font-semibold text-gray-600 dark:text-zinc-300 mt-12 border-b-2 pb-2 border-b-zinc-900">

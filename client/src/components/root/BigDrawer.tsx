@@ -1,5 +1,4 @@
-import { IoHomeOutline } from "react-icons/io5";
-import { MdOutlineSubscriptions } from "react-icons/md";
+import { MdOutlineSubscriptions, MdSubscriptions } from "react-icons/md";
 import { SiYoutubeshorts } from "react-icons/si";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/provider";
@@ -8,6 +7,8 @@ import subscriptionServices from "@/services/subscription.services";
 import { useSuccess } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
+import { GoHome, GoHomeFill } from "react-icons/go";
+import { NavLink } from "react-router-dom";
 
 interface IChannel {
     name: string;
@@ -36,21 +37,11 @@ const BigDrawer = () => {
         queryFn: fetchChannels,
         enabled: !!userId,
     });
-
-    const options1 = [
-        { name: "Home", icon: <IoHomeOutline />, route: "/" },
+    const options = [
         {
-            name: "Shorts",
-            icon: <SiYoutubeshorts />,
-            route: "/empty",
+            name: "You >",
+            route: `/${username}/playlist-n-history`,
         },
-        {
-            name: "Subscriptions",
-            icon: <MdOutlineSubscriptions />,
-            route: "/empty",
-        },
-    ];
-    const options2 = [
         {
             name: "Your channel",
             icon: (
@@ -127,7 +118,7 @@ const BigDrawer = () => {
                     </svg>
                 </div>
             ),
-            route: `/empty`,
+            route: `/your-videos`,
         },
         {
             name: "Watch later",
@@ -175,17 +166,51 @@ const BigDrawer = () => {
     }));
     return (
         <div className="w-full">
-            <div>
-                <SubDrawer options={options1} />
+            <div className="flex-col dark:text-white text-black`">
+                <NavLink to={"/"}>
+                    {({ isActive }) => (
+                        <div
+                            className={`flex gap-x-4 items-center rounded-xl p-2 ${
+                                isActive && "bg-zinc-200 dark:bg-zinc-800"
+                            }`}
+                        >
+                            {isActive ? (
+                                <GoHomeFill className="text-xl" />
+                            ) : (
+                                <GoHome className="text-xl" />
+                            )}
+                            <span>Home</span>
+                        </div>
+                    )}
+                </NavLink>
+                <NavLink to={"/shorts"}>
+                    <div className="flex gap-x-4 items-center rounded-xl p-2">
+                        <SiYoutubeshorts className="text-xl" />
+                        <span>Shorts</span>
+                    </div>
+                </NavLink>
+                <NavLink to={"/subscriptions"}>
+                    {({ isActive }) => (
+                        <div
+                            className={`flex gap-x-4 items-center rounded-xl p-2 ${
+                                isActive && "bg-zinc-200 dark:bg-zinc-800"
+                            }`}
+                        >
+                            {isActive ? (
+                                <MdSubscriptions className="text-xl" />
+                            ) : (
+                                <MdOutlineSubscriptions className="text-xl" />
+                            )}
+                            <span>Subscriptions</span>
+                        </div>
+                    )}
+                </NavLink>
             </div>
             {userId && (
                 <>
                     <hr className="my-3" />
-                    <p className="ml-2 mb-2 text-xl font-bold dark:text-white">
-                        {"You >"}
-                    </p>
                     <div>
-                        <SubDrawer options={options2} />
+                        <SubDrawer options={options} />
                     </div>
                     {isLoading ? (
                         <Skeleton className="h-4 w-full" />

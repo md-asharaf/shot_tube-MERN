@@ -156,7 +156,7 @@ const Video = () => {
 
     return (
         <div className="space-y-4 lg:w-4/5 xl:w-2/3 dark:text-white">
-            <div className="flex flex-col space-y-2">
+            <div className="flex flex-col space-y-2 px-2">
                 <video
                     autoPlay
                     src={video.videoFile.url}
@@ -164,8 +164,8 @@ const Video = () => {
                     controls
                 />
                 <h1 className="font-bold text-xl">{video.title}</h1>
-                <div className="flex justify-between">
-                    <div className="flex gap-x-4 items-center">
+                <div className="flex justify-between flex-col sm:flex-row gap-y-2 sm:gap-0">
+                    <div className="flex gap-x-4 items-center justify-between sm:justify-normal">
                         <Link
                             to={`/${video.creator.username}/channel`}
                             className="flex gap-x-4 items-center"
@@ -202,7 +202,7 @@ const Video = () => {
                         </Button>
                     </div>
 
-                    <div className="flex gap-2 items-center">
+                    <div className="flex items-center justify-end sm:justify-normal gap-4 sm:gap-2">
                         <Button
                             disabled={!userId}
                             className={`${

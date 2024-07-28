@@ -32,16 +32,21 @@ const LikedVideos = () => {
     if (isError) {
         return <div>ERROR: {error.message}</div>;
     }
-    if (videos.length === 0) return <div>No liked videos...</div>;
+    if (videos.length === 0)
+        return (
+            <div className="flex items-center justify-center h-full text-2xl">
+                No liked videos...
+            </div>
+        );
     const totalViews = videos.reduce((prev, curr) => prev + curr.views, 0);
     console.log(videos);
     return (
         <div className="px-1 flex-col flex md:flex-row gap-4 md:gap-1 relative w-full dark:text-white">
-            <div className="dark:bg-zinc-700 bg-gray-200 p-5 space-y-3 rounded-xl max-w-lg">
+            <div className="dark:bg-zinc-700 bg-gray-200 p-5 space-y-3 rounded-xl md:max-w-md">
                 <img
                     src={videos[0].thumbnail.url}
                     alt="Playlist Thumbnail"
-                    className="rounded-lg hover:opacity-40"
+                    className="aspect-video object-cover rounded-lg hover:opacity-40"
                 />
                 <h1 className="text-[2em] font-bold">Liked Videos</h1>
                 <p>{userData.fullname}</p>
@@ -59,7 +64,7 @@ const LikedVideos = () => {
                 </div>
             </div>
 
-            <div className="grid grid-rows-6 gap-2">
+            <div className="grid grid-rows-6 gap-2 md:min-w-max">
                 {videos.map((video, index) => (
                     <Link to={`/videos/${video._id}`} key={video._id}>
                         <div className="flex space-x-2 items-center p-2 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-lg">

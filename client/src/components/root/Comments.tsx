@@ -122,7 +122,7 @@ const Comments = ({ videoId }) => {
             </div>
         );
     return (
-        <>
+        <div className="px-2">
             <div className="font-bold text-2xl text-zinc-600 dark:text-zinc-300">{`${comments.length} Comments`}</div>
             <div className="flex flex-col">
                 <div className="flex gap-x-2 items-center justify-start">
@@ -225,7 +225,7 @@ const Comments = ({ videoId }) => {
                     ))}
                 </div>
             </div>
-        </>
+        </div>
     );
 };
 

@@ -39,11 +39,11 @@ const Playlist = () => {
     );
     return (
         <div className="px-1 flex-col flex md:flex-row gap-4 md:gap-1 relative w-full dark:text-white">
-            <div className="dark:bg-zinc-700 bg-gray-200 p-5 space-y-3 rounded-xl max-w-lg">
+            <div className="dark:bg-zinc-700 bg-gray-200 p-5 space-y-3 rounded-xl md:max-w-md">
                 <img
                     src={playlist.videos[0].thumbnail.url}
                     alt="Playlist Thumbnail"
-                    className="w-full rounded-lg"
+                    className="object-cover aspect-video w-full rounded-lg"
                 />
                 <h1 className="text-[2em] font-bold">{playlist.name}</h1>
                 <p>{playlist.creator?.fullname}</p>
@@ -62,10 +62,10 @@ const Playlist = () => {
                 <p className="text-sm">{playlist.description}</p>
             </div>
 
-            <div className="grid grid-rows-6 gap-2">
+            <div className="grid grid-rows-6 gap-2 md:min-w-max">
                 {playlist.videos?.map((video, index) => (
                     <Link to={`/videos/${video._id}`} key={video._id}>
-                        <div className="flex space-x-4 items-center p-2 hover:bg-zinc-200 dark:hover:bg-gray-300 rounded-lg">
+                        <div className="flex space-x-3 items-center p-2 hover:bg-zinc-200 dark:hover:bg-gray-300 rounded-lg">
                             <div>{index + 1}</div>
                             <div className="relative">
                                 <img

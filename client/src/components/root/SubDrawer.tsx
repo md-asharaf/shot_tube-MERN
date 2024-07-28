@@ -1,29 +1,27 @@
-import { Link } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 interface IOption {
     name: string;
     icon?: React.ReactNode;
-    route?: string;
+    route: string;
 }
-interface ISubDrawer {
-    options: IOption[];
-    isSmall?: boolean;
-}
-const SubDrawer: React.FC<ISubDrawer> = ({ options, isSmall = false }) => {
+const SubDrawer: React.FC<{ options: IOption[] }> = ({ options }) => {
     return (
-        <div className={`flex-col cursor-pointer dark:text-white`}>
+        <div className={`flex-col dark:text-white`}>
             {options?.map((option, index) => (
-                <Link
+                <NavLink
                     to={option.route}
                     key={index}
-                    className={`flex ${
-                        isSmall && "flex-col text-[11px]"
-                    } items-center gap-x-4 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-xl p-2`}
+                    className={({ isActive }) =>
+                        `flex items-center gap-x-4 rounded-xl p-2 ${
+                            isActive && "bg-zinc-200 dark:bg-zinc-800"
+                        } `
+                    }
                 >
                     {option.icon && (
                         <span className="text-xl">{option.icon}</span>
                     )}
                     <span>{option.name}</span>
-                </Link>
+                </NavLink>
             ))}
         </div>
     );

@@ -88,7 +88,7 @@ const WatchHistory = () => {
                     <Button
                         disabled={videos.length === 0}
                         variant="destructive"
-                        className="ml-4"
+                        className="ml-4 mr-2"
                         onClick={() => clearAllHistory()}
                     >
                         <MdDelete className="text-2xl" />

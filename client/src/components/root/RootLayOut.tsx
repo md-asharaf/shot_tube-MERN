@@ -8,6 +8,7 @@ import VideoProvider from "@/provider/video.slice";
 import { useState } from "react";
 import { IVideoData } from "@/interfaces";
 import { Toaster } from "../ui/toaster";
+import BottomBar from "./BottomBar";
 const RootLayOut = () => {
     const [videos, setVideos] = useState([] as IVideoData[]);
     const addVideo = (video: IVideoData) => {
@@ -28,7 +29,7 @@ const RootLayOut = () => {
                         <NavBar />
                     </nav>
                 </header>
-                <main className="flex pt-20 pr-1 space-x-4 h-screen w-screen">
+                <main className="flex pt-20 pr-1 space-x-4 h-screen w-screen custom-scrollbar">
                     {isMenuOpen ? (
                         <div className="pl-6 min-w-44 hidden sm:block overflow-auto">
                             <BigDrawer />
@@ -38,10 +39,13 @@ const RootLayOut = () => {
                             <SmallDrawer />
                         </div>
                     )}
-                    <div className="overflow-y-auto w-full">
+                    <div className="overflow-y-auto w-full mb-12 sm:mb-0">
                         <Outlet />
                     </div>
                 </main>
+                <div className="block sm:hidden">
+                    <BottomBar />
+                </div>
                 <Toaster />
             </div>
         </VideoProvider>

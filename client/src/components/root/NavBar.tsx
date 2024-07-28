@@ -75,13 +75,13 @@ const NavBar = () => {
                 </div>
                 {userData ? (
                     <>
-                        <div className="p-1.5 rounded-full hover:bg-zinc-500 dark:hover:bg-zinc-800">
+                        <div className="p-1.5 rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-800">
                             <TbVideoPlus
                                 className="text-3xl"
                                 onClick={() => dispatch(toggleVideoModal())}
                             />
                         </div>
-                        <div className="p-2 rounded-full hover:bg-zinc-500 dark:hover:bg-zinc-800">
+                        <div className="p-2 rounded-full hover:bg-zinc-200 dark:hover:bg-zinc-800">
                             <IoNotificationsOutline className="text-2xl" />
                         </div>
                         <DropdownMenu>

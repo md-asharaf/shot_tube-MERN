@@ -34,10 +34,10 @@ const PlayLists = () => {
         <div className="px-2">
             <h1 className="text-4xl font-bold">Playlists</h1>
             <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
-                {playlists.map((playlist, index) => (
+                {playlists.map((playlist) => (
                     <Link
                         to={`/playlist/${playlist._id}`}
-                        key={index}
+                        key={playlist._id}
                         className="space-y-2 rounded-xl p-2 hover:bg-gray-400 hover:dark:bg-zinc-800"
                     >
                         <PlaylistCard {...playlist} />

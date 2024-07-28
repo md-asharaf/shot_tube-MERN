@@ -15,6 +15,10 @@ import Playlist from "./pages/Playlist";
 import Empty from "./components/root/Empty";
 import { useSelector } from "react-redux";
 import { RootState } from "./provider";
+import PlaylistNhistory from "./components/root/PlaylistNhistory";
+import Shorts from "./pages/Shorts";
+import Subscriptions from "./pages/Subscriptions";
+import YourVideos from "./components/root/YourVideos";
 
 function App() {
     const theme = useSelector((state: RootState) => state.theme.mode);
@@ -47,7 +51,16 @@ function App() {
                             path="/playlist/:playlistId"
                             element={<Playlist />}
                         />
-                        <Route path="/empty" element={<Empty />} />
+                        <Route
+                            path="/:username/playlist-n-history"
+                            element={<PlaylistNhistory />}
+                        />
+                        <Route
+                            path="/subscriptions"
+                            element={<Subscriptions />}
+                        />
+                        <Route path="/shorts" element={<Shorts />} />
+                        <Route path="/your-videos" element={<YourVideos />} />
                     </Route>
                 </Routes>
             </BrowserRouter>
