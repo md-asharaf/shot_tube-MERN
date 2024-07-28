@@ -61,14 +61,14 @@ const SignUp = () => {
     };
 
     return (
-        <div className="items-center justify-center flex flex-col gap-2">
+        <div className="items-center justify-center flex flex-col gap-2 text-white">
             <div className="flex space-x-4 items-center">
                 <IoLogoYoutube className="text-3xl" />
                 <div className="text-red-500 font-bold text-pretty">
                     ShotTube
                 </div>
             </div>
-            <h1 className="font-semibold text-slate-600 text-sm border-b-[1px] pb-3 border-slate-500">
+            <h1 className="font-semibold text-zinc-300 text-sm border-b-[1px] pb-3 border-slate-500">
                 Sign up to create an account
             </h1>
             {error && <div className="text-red-500 font-semibold">{error}</div>}
