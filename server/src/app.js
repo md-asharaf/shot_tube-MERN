@@ -10,6 +10,7 @@ import subscriptionRoutes from "./routes/subscription.routes.js";
 import videoRoutes from "./routes/video.routes.js";
 import playlistRoutes from "./routes/playlist.routes.js";
 import bodyParser from "body-parser"
+import { detectEmotion } from "./utils/analyze.js";
 const app = express();
 
 //middlewares
@@ -41,7 +42,7 @@ app.use("/api/v1/subscriptions", subscriptionRoutes)
 app.use("/api/v1/videos", videoRoutes)
 
 app.use("/api/v1/playlists", playlistRoutes)
-
+app.post('/api/v1/analyze-comment', detectEmotion);
 //error handler
 app.use(errorHandler)
 
