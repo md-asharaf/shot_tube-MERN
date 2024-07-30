@@ -15,6 +15,10 @@ const commentSchema = new Schema({
         ref: "User",
         required: true
     },
+    sentiment: {
+        type: String,
+        required: true
+    }
 }, { timestamps: true });
 
 commentSchema.plugin(MAP);

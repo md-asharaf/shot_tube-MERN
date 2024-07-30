@@ -1,14 +1,14 @@
 import Router from "express";
 import { verifyJWT } from "../middlewares/auth.middlewares.js";
 import VideoC from "../controllers/video.controllers.js";
-import { upload } from "../middlewares/multer.middlewares.js";
+import { multerUpload } from "../middlewares/multer.middlewares.js";
 const router = Router();
 
 
 router.get("/", VideoC.getAllVideos);
 router.get("/:videoId", VideoC.getSingleVideo);
 
-router.post("/publish", verifyJWT, upload.fields([
+router.post("/publish", verifyJWT, multerUpload.fields([
     {
         name: "video",
         maxCount: 1
@@ -23,7 +23,7 @@ router.get("/:userId/videos", VideoC.getUserVideos);
 
 router.delete("/:videoId/delete", verifyJWT, VideoC.deleteVideo);
 
-router.patch("/:videoId/update", verifyJWT, upload.single("thumbnail"), VideoC.updateVideo);
+router.patch("/:videoId/update", verifyJWT, multerUpload.single("thumbnail"), VideoC.updateVideo);
 
 router.patch("/:videoId/toggle-status", verifyJWT, VideoC.togglePublishStatus);
 

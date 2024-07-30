@@ -4,7 +4,6 @@ import { ApiError } from "../utils/ApiError.js";
 import { Comment } from "../models/comment.models.js";
 import { Video } from "../models/video.models.js";
 import mongoose from "mongoose";
-import { Like } from "../models/like.models.js";
 
 class CommentC {
     //controller to get all comments of a video
@@ -44,6 +43,7 @@ class CommentC {
             {
                 $project: {
                     content: 1,
+                    sentiment: 1,
                     createdAt: 1,
                     creator: 1
                 }
@@ -57,7 +57,7 @@ class CommentC {
     //controller to create a comment
     addComment = asyncHandler(async (req, res) => {
         //get content and video id from request body and params
-        const { content } = req.body;
+        const { content, sentiment } = req.body;
         const { videoId } = req.params;
         const userId = req.user?._id;
         //check if content and video id are provided
@@ -74,7 +74,8 @@ class CommentC {
             {
                 content,
                 videoId,
-                userId
+                userId,
+                sentiment
             }
         )
         //check if comment is created

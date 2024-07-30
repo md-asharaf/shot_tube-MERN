@@ -65,7 +65,7 @@ const Playlist = () => {
             <div className="grid grid-rows-6 gap-2 md:min-w-max">
                 {playlist.videos?.map((video, index) => (
                     <Link to={`/videos/${video._id}`} key={video._id}>
-                        <div className="flex space-x-3 items-center p-2 hover:bg-zinc-200 dark:hover:bg-gray-300 rounded-lg">
+                        <div className="flex space-x-3 items-center p-2 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-lg">
                             <div>{index + 1}</div>
                             <div className="relative">
                                 <img

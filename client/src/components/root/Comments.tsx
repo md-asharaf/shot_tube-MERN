@@ -14,6 +14,7 @@ import { IComment } from "@/interfaces";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "../ui/skeleton";
 import { useState } from "react";
+import { FaPlus } from "react-icons/fa";
 
 const Comments = ({ videoId }) => {
     const navigate = useNavigate();
@@ -160,69 +161,103 @@ const Comments = ({ videoId }) => {
                 <div className="w-full border-b-2 border-gray-300 mb-8 mt-4"></div>
 
                 <div className="flex flex-col space-y-4">
-                    {comments.map((comment, index) => (
-                        <div key={index} className="flex space-x-4 items-start">
-                            <img
-                                src={
-                                    comment.creator.avatar?.url ||
-                                    DefaultProfileImage
-                                }
-                                className="rounded-full h-10 w-10 cursor-pointer"
-                                onClick={() =>
-                                    navigate(
-                                        `/${comment.creator.username}/channel`
-                                    )
-                                }
-                            />
-                            <div>
+                    {comments.map((comment, index) => {
+                        const sentiment =
+                            comment.sentiment?.toLowerCase() || "neutral";
+                        return (
+                            <div
+                                key={index}
+                                className="flex space-x-4 items-start"
+                            >
+                                <img
+                                    src={
+                                        comment.creator.avatar?.url ||
+                                        DefaultProfileImage
+                                    }
+                                    className="rounded-full h-10 w-10 cursor-pointer"
+                                    onClick={() =>
+                                        navigate(
+                                            `/${comment.creator.username}/channel`
+                                        )
+                                    }
+                                />
                                 <div>
-                                    <span
-                                        onClick={() =>
-                                            navigate(
-                                                `/${comment.creator.username}/channel`
-                                            )
-                                        }
-                                        className="text-[16px] cursor-pointer"
-                                    >{`@${comment.creator.username} `}</span>
-                                    <span className="text-gray-500 dark:text-zinc-200 font-light text-[13px]">
-                                        {formatDistanceToNow(
-                                            new Date(comment.createdAt),
-                                            { addSuffix: true }
-                                        ).replace("about ", "")}
-                                    </span>
-                                </div>
-                                <div>{comment.content}</div>
-                                {user.status && (
-                                    <div className="space-x-2 flex items-center">
-                                        <Button
+                                    <div className="flex items-center justify-center space-x-2">
+                                        <div
                                             onClick={() =>
-                                                toggleCommentLike(comment._id)
+                                                navigate(
+                                                    `/${comment.creator.username}/channel`
+                                                )
                                             }
-                                            variant="ghost"
-                                            className={`rounded-full text-lg p-2 dark:hover:bg-zinc-800 dark:hover:text-white ${
-                                                liked[index] &&
-                                                "text-blue-500 dark:hover:text-blue-500"
-                                            }`}
+                                            className="text-[16px] cursor-pointer"
                                         >
-                                            <BiLike />
-                                        </Button>
-                                        {user.userData.username ===
-                                            comment.creator.username && (
+                                            {`@${comment.creator.username} `}
+                                        </div>
+                                        <div className="text-gray-500 dark:text-zinc-200 font-light text-[13px]">
+                                            {formatDistanceToNow(
+                                                new Date(comment.createdAt),
+                                                { addSuffix: true }
+                                            ).replace("about ", "")}
+                                        </div>
+                                        <div
+                                            className={`flex ${
+                                                sentiment == "positive" &&
+                                                "bg-green-500"
+                                            } ${
+                                                sentiment == "negative" &&
+                                                "bg-red-500"
+                                            } ${
+                                                sentiment == "neutral" &&
+                                                "bg-yellow-500"
+                                            } rounded-full items-center justify-center space-x-1 px-2`}
+                                        >
+                                            {sentiment === "positive" ? (
+                                                <FaPlus className="text-white" />
+                                            ) : sentiment === "negative" ? (
+                                                <FaPlus className="text-white" />
+                                            ) : (
+                                                <FaPlus className="text-white" />
+                                            )}
+                                            <span>{sentiment}</span>
+                                        </div>
+                                    </div>
+                                    <div>{comment.content}</div>
+                                    {user.status && (
+                                        <div className="space-x-2 flex items-center">
                                             <Button
                                                 onClick={() =>
-                                                    deleteComment(comment._id)
+                                                    toggleCommentLike(
+                                                        comment._id
+                                                    )
                                                 }
                                                 variant="ghost"
-                                                className="rounded-full text-lg p-2 dark:hover:bg-zinc-800 dark:hover:text-white"
+                                                className={`rounded-full text-lg p-2 dark:hover:bg-zinc-800 dark:hover:text-white ${
+                                                    liked[index] &&
+                                                    "text-blue-500 dark:hover:text-blue-500"
+                                                }`}
                                             >
-                                                <RiDeleteBin6Line />
+                                                <BiLike />
                                             </Button>
-                                        )}
-                                    </div>
-                                )}
+                                            {user.userData.username ===
+                                                comment.creator.username && (
+                                                <Button
+                                                    onClick={() =>
+                                                        deleteComment(
+                                                            comment._id
+                                                        )
+                                                    }
+                                                    variant="ghost"
+                                                    className="rounded-full text-lg p-2 dark:hover:bg-zinc-800 dark:hover:text-white"
+                                                >
+                                                    <RiDeleteBin6Line />
+                                                </Button>
+                                            )}
+                                        </div>
+                                    )}
+                                </div>
                             </div>
-                        </div>
-                    ))}
+                        );
+                    })}
                 </div>
             </div>
         </div>

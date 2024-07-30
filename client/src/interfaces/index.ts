@@ -61,6 +61,7 @@ export interface IVideoData {
 export interface IComment {
     _id: string;
     content: string;
+    sentiment: string;
     creator: IUser;
     createdAt: Date;
 }

@@ -53,7 +53,7 @@ const Home = () => {
 
     return (
         <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 w-full gap-y-6">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 w-full gap-y-6 dark:text-white text-black">
                 {data?.pages?.map((group, i) =>
                     group.map((video: IVideoData, index: number) => {
                         const isLast =
@@ -76,22 +76,22 @@ const Home = () => {
                     })
                 )}
             </div>
-            {isLoading && (
-                <div className="flex items-center justify-center">
-                    <Loader2 className="animate-spin h-10 w-10" />
-                </div>
-            )}
-            {isError && (
-                <div>
-                    An error occured{" "}
-                    <Button
-                        variant="outline"
-                        onClick={() => hasNextPage && fetchNextPage()}
-                    >
-                        <RefreshCw />
-                    </Button>
-                </div>
-            )}
+            <div className="flex items-center justify-center">
+                {isLoading && (
+                    <Loader2 className="animate-spin h-10 w-10 dark:text-white" />
+                )}
+                {isError && (
+                    <div>
+                        An error occured{" "}
+                        <button
+                            onClick={() => hasNextPage && fetchNextPage()}
+                            className="dark:text-white text-black p-2 rounded-full"
+                        >
+                            <RefreshCw />
+                        </button>
+                    </div>
+                )}
+            </div>
         </>
     );
 };
