@@ -26,10 +26,13 @@ import {
 } from "@/components/ui/card";
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
-import { useVideo } from "@/provider/video.slice";
+import { useToast } from "../ui/use-toast";
+import { useSuccess } from "@/lib/utils";
 
 const VideoUpload = () => {
-    const { addVideo } = useVideo();
+    const dispatch = useDispatch();
+    const isSuccessfull = useSuccess(dispatch);
+    const { toast } = useToast();
     const [loader, setLoader] = useState<boolean>(false);
     const form = useForm<IVideoForm>({
         resolver: zodResolver(VideoFormValidation),
@@ -42,7 +45,6 @@ const VideoUpload = () => {
     });
     const videoRef = form.register("video");
     const thumbnailRef = form.register("thumbnail");
-    const dispatch = useDispatch();
 
     const uploadVideo = async (values: IVideoForm) => {
         setLoader(true);
@@ -55,9 +57,18 @@ const VideoUpload = () => {
 
         try {
             const response = await videoService.upload(formData);
-            console.log(response.data.data.video);
-            addVideo(response.data.data.video);
             dispatch(toggleVideoModal());
+            if (!isSuccessfull(response)) {
+                toast({
+                    title: "Failed to upload video",
+                    description: "Please login first",
+                });
+            } else {
+                toast({
+                    title: "Video uploaded successfully",
+                    description: "Your video is now live",
+                });
+            }
         } catch (err) {
             console.error(err);
         } finally {

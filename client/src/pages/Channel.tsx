@@ -1,4 +1,4 @@
-import { Link, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { IUser, IVideoData } from "@/interfaces";
 import userServices from "@/services/user.services";
 import VideoCard from "@/components/root/VideoCard";
@@ -11,17 +11,30 @@ import videoServices from "@/services/video.services";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import subscriptionServices from "@/services/subscription.services";
+import { useSuccess } from "@/lib/utils";
+import { useToast } from "@/components/ui/use-toast";
 
 const Channel = () => {
+    const navigate = useNavigate();
     const dispatch = useDispatch();
+    const isSuccessfull = useSuccess(dispatch);
     const userData = useSelector((state: RootState) => state.auth.userData);
     const { username } = useParams<{ username: string }>();
+    const { toast } = useToast();
     const fetchUserData = async () => {
         const res = await userServices.getUser(username);
         return res.data;
     };
     const fetchUserVideos = async () => {
         const res = await videoServices.allVideosByUser(user?._id);
+        if (!isSuccessfull(res)) {
+            navigate(-1);
+            toast({
+                title: "Please login first",
+                description: "You need to login to view this page",
+            });
+            return null;
+        }
         return res.data;
     };
     // Fetch user data
