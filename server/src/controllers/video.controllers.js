@@ -25,13 +25,6 @@ class VideoC {
             //get video and thumbnail files
             const localVideo = req.files.video[0];
             const localThumbnail = req.files.thumbnail[0];
-            /*
-                await cloudinary.search.expression(encodeURIComponent(`resource_type:video AND filename:${localVideo.filename}`)).execute().then(result => console.log(result.total_count)).catch(err => console.log(err));
-                if (existedVideo.total_count) {
-                    //upload to cloudinary
-                    throw new ApiError(400, "Video already exists")
-                }
-            */
             //upload video and thumbnail on cloudinary
             console.log("uploading video")
             let videoFile = await Cloudinary.upload(localVideo.path, "video");
