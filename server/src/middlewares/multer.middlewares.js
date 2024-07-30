@@ -25,10 +25,10 @@ const multipleUploadSolution = multer.diskStorage({
         cb(null, file.originalname);
     },
 });
-
-module.exports = {
-    multerUpload: multer({
-        storage: multipleUploadSolution,
-        limits: { fileSize: 1024 * 1024 * 12 },
-    }),
+const multerUpload = multer({
+    storage: multipleUploadSolution,
+    limits: { fileSize: 1024 * 1024 * 12 },
+});
+export {
+    multerUpload
 };
