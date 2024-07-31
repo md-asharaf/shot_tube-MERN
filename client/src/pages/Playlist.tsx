@@ -1,21 +1,15 @@
 import { Link, useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import playlistServices from "@/services/playlist.services";
-import { useSuccess } from "@/lib/utils";
-import { useDispatch } from "react-redux";
 import { IPlaylist } from "@/interfaces";
 import { formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/button";
 
 const Playlist = () => {
-    const dispatch = useDispatch();
     const { playlistId } = useParams();
-    const success = useSuccess(dispatch);
     const fetchPlaylist = async () => {
         const res = await playlistServices.getPlaylist(playlistId);
-        if (success(res)) {
-            return res.data;
-        }
+        return res.data;
     };
     const {
         data: playlist,

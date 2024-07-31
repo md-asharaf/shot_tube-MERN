@@ -3,7 +3,7 @@ import { MdOutlinePlaylistAdd } from "react-icons/md";
 import { BiLike } from "react-icons/bi";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { RootState } from "@/provider";
 import { IVideoData } from "@/interfaces";
 import { formatDistanceToNow } from "date-fns";
@@ -20,13 +20,10 @@ import SaveToPlaylist from "../components/root/SaveToPlaylist";
 import Comments from "@/components/root/Comments";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import playlistServices from "@/services/playlist.services";
-import { useSuccess } from "@/lib/utils";
 import userServices from "@/services/user.services";
 import videoServices from "@/services/video.services";
 
 const Video = () => {
-    const dispatch = useDispatch();
-    const successfull = useSuccess(dispatch);
     const userId = useSelector((state: RootState) => state.auth.userData?._id);
     const { videoId } = useParams();
     const [playlistIds, setPlaylistIds] = useState<string[]>([]);
@@ -36,15 +33,11 @@ const Video = () => {
     };
     const fetchIsLiked = async () => {
         const res = await likeService.isLiked(videoId, "video");
-        if (successfull(res)) {
-            return res.data;
-        }
+        return res.data;
     };
     const fetchIsSubscribed = async () => {
         const res = await subscriptionServices.isSubscribed(video.creator._id);
-        if (successfull(res)) {
-            return res.data.isSubscribed;
-        }
+        return res.data.isSubscribed;
     };
     const fetchSubscribersCount = async () => {
         const res = await subscriptionServices.getSubscribersCount(
@@ -53,32 +46,23 @@ const Video = () => {
         return res.data;
     };
     const toggleVideoLikeMutation = async () => {
-        const res = await likeService.toggleLike(videoId, "video");
-        if (successfull(res)) {
-            refetchIsLiked();
-        }
+        await likeService.toggleLike(videoId, "video");
+        refetchIsLiked();
     };
     const toggleSubscribeMutation = async () => {
-        const res = await subscriptionServices.toggleSubscription(
-            video.creator._id
-        );
-        if (successfull(res)) {
-            refetchIsSubscribed();
-            refetchSubscribersCount();
-        }
+        await subscriptionServices.toggleSubscription(video.creator._id);
+        refetchIsSubscribed();
+        refetchSubscribersCount();
     };
     const addVideoToPlaylist = async (playlistId: string) => {
         const res = await playlistServices.addVideoToPlaylist(
             videoId,
             playlistId
         );
-        if (successfull(res)) {
-            return res.data;
-        }
+        return res.data;
     };
     const addToWatchHistoryMutation = async () => {
-        const res = await userServices.addToWatchHistory(videoId);
-        successfull(res);
+        await userServices.addToWatchHistory(videoId);
     };
     const addToPlaylists = async () => {
         await Promise.all(

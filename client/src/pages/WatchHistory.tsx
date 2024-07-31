@@ -1,7 +1,6 @@
 import { Link } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useSuccess } from "@/lib/utils";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { IVideoData } from "@/interfaces";
 import userServices from "@/services/user.services";
 import { RootState } from "@/provider";
@@ -10,20 +9,14 @@ import { MdDelete } from "react-icons/md";
 import { formatDistanceToNow } from "date-fns";
 
 const WatchHistory = () => {
-    const dispatch = useDispatch();
-    const successfull = useSuccess(dispatch);
     const userId = useSelector((state: RootState) => state.auth.userData?._id);
     const fetchWatchHistory = async () => {
         const res = await userServices.watchHistory();
-        if (successfull(res)) {
-            return res.data;
-        }
+        return res.data;
     };
     const clearAllHistoryMutation = async () => {
         const res = await userServices.clearHistory();
-        if (successfull(res)) {
-            refetch();
-        }
+        refetch();
     };
     const {
         data: videos,

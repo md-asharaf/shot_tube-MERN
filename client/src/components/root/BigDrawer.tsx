@@ -1,10 +1,9 @@
 import { MdOutlineSubscriptions, MdSubscriptions } from "react-icons/md";
 import { SiYoutubeshorts } from "react-icons/si";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import { RootState } from "@/provider";
 import SubDrawer from "./SubDrawer";
 import subscriptionServices from "@/services/subscription.services";
-import { useSuccess } from "@/lib/utils";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { GoHome, GoHomeFill } from "react-icons/go";
@@ -15,17 +14,13 @@ interface IChannel {
     username: string;
 }
 const BigDrawer = () => {
-    const dispatch = useDispatch();
     const userId = useSelector((state: RootState) => state.auth.userData?._id);
     const username = useSelector(
         (state: RootState) => state.auth.userData?.username
     );
-    const successfull = useSuccess(dispatch);
     const fetchChannels = async () => {
         const res = await subscriptionServices.getSubscribedChannels(userId);
-        if (successfull(res)) {
-            return res.data.subscribedChannels;
-        }
+        return res.data.subscribedChannels;
     };
     const {
         data: channels,

@@ -61,21 +61,21 @@ const SignUp = () => {
     };
 
     return (
-        <div className="items-center justify-center flex flex-col gap-2 text-white">
+        <div className="w-[80%] sm:w-1/2 md:w-1/3 lg:w-1/4 items-center justify-center flex flex-col gap-2 dark:text-white text-black">
             <div className="flex space-x-4 items-center">
                 <IoLogoYoutube className="text-3xl" />
                 <div className="text-red-500 font-bold text-pretty">
                     ShotTube
                 </div>
             </div>
-            <h1 className="font-semibold text-zinc-300 text-sm border-b-[1px] pb-3 border-slate-500">
+            <h1 className="font-semibold dark:text-zinc-200 text-zinc-800 text-sm border-b-[1px] pb-3 border-slate-500">
                 Sign up to create an account
             </h1>
             {error && <div className="text-red-500 font-semibold">{error}</div>}
             <Form {...form}>
                 <form
                     onSubmit={form.handleSubmit(onSubmit)}
-                    className="space-y-4 w-1/2"
+                    className="space-y-4 w-full"
                 >
                     <FormField
                         control={form.control}
@@ -144,13 +144,12 @@ const SignUp = () => {
                             </FormItem>
                         )}
                     />
-                    <Button
+                    <button
                         type="submit"
-                        variant="secondary"
-                        className="w-full"
+                        className="w-full rounded-full p-2 dark:bg-white bg-black text-white dark:text-black"
                     >
                         Sign up
-                    </Button>
+                    </button>
                     <div className="flex gap-2 items-center justify-center">
                         <p className="tracking-wider">
                             already have an account?

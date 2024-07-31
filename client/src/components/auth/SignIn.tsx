@@ -18,7 +18,7 @@ import {
 import { IoLogoYoutube } from "react-icons/io";
 import authService from "@/services/auth.services";
 import { ILoginForm } from "@/interfaces";
-import { toast, useToast } from "../ui/use-toast";
+import { useToast } from "../ui/use-toast";
 
 const SignIn = () => {
     const { toast } = useToast();
@@ -53,7 +53,7 @@ const SignIn = () => {
     };
 
     return (
-        <div className="items-center justify-center flex flex-col gap-2 text-white">
+        <div className="w-[80%] sm:w-1/2 md:w-1/3 lg:w-1/4 items-center justify-center flex flex-col gap-2 dark:text-white text-black">
             <div className="flex space-x-4 items-center">
                 <IoLogoYoutube className="text-3xl" />
                 <div className="text-red-500 font-bold text-pretty">
@@ -61,7 +61,7 @@ const SignIn = () => {
                 </div>
             </div>
             <div className="flex flex-col items-center justify-center">
-                <h1 className="font-semibold text-zinc-300 text-sm border-b-[1px] pb-3 border-slate-500">
+                <h1 className="font-semibold dark:text-zinc-200 text-zinc-800 text-sm border-b-[1px] pb-3 border-slate-500">
                     Sign in to your account
                 </h1>
             </div>
@@ -69,7 +69,7 @@ const SignIn = () => {
             <Form {...form}>
                 <form
                     onSubmit={form.handleSubmit(onSubmit)}
-                    className="space-y-4 w-1/2"
+                    className="space-y-4 w-full px-4"
                 >
                     <FormField
                         control={form.control}
@@ -107,13 +107,12 @@ const SignIn = () => {
                             </FormItem>
                         )}
                     />
-                    <Button
-                        variant="secondary"
+                    <button
                         type="submit"
-                        className="w-full"
+                        className="w-full rounded-full p-2 dark:bg-white bg-black text-white dark:text-black"
                     >
                         Sign in
-                    </Button>
+                    </button>
                 </form>
             </Form>
             <div className="flex gap-2 ">

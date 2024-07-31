@@ -1,15 +1,12 @@
 import { RootState } from "@/provider";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import DefaultAvatarImage from "@/assets/images/profile.png";
 import { IPlaylist, IVideoData } from "@/interfaces";
 import { useQuery } from "@tanstack/react-query";
 import videoServices from "@/services/video.services";
 import playlistServices from "@/services/playlist.services";
-import { useSuccess } from "@/lib/utils";
 import Slider from "./Slider";
 const PlaylistNhistory = () => {
-    const dispatch = useDispatch();
-    const successfull = useSuccess(dispatch);
     const userData = useSelector((state: RootState) => state.auth.userData);
     const fetchUserVideos = async () => {
         const res = await videoServices.allVideosByUser(userData?._id);
@@ -22,9 +19,7 @@ const PlaylistNhistory = () => {
     });
     const fetchPlaylists = async () => {
         const res = await playlistServices.getPlaylists(userData?._id);
-        if (successfull(res)) {
-            return res.data;
-        }
+        return res.data;
     };
     const { data: playlists, isLoading } = useQuery<IPlaylist[]>({
         queryKey: ["playlists", userData?._id],
@@ -33,7 +28,7 @@ const PlaylistNhistory = () => {
     });
     if (isLoading || videosLoading) return <div>Loading...</div>;
     return (
-        <div className="w-full dark:text-whit overflow-auto space-y-2">
+        <div className="w-full dark:text-white overflow-auto space-y-2">
             <div className="space-x-8 justify-center rounded-2xl hidden sm:flex">
                 <img
                     src={userData?.avatar?.url || DefaultAvatarImage}
@@ -52,8 +47,8 @@ const PlaylistNhistory = () => {
                 </div>
             </div>
             <div className="space-y-16">
-                <Slider videos={videos} />
-                <Slider playlists={playlists} />
+                {videos?.length > 0 && <Slider videos={videos} />}
+                {playlists?.length > 0 && <Slider playlists={playlists} />}
             </div>
         </div>
     );

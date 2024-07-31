@@ -32,7 +32,7 @@ const Slider = ({
     };
 
     return (
-        <div className="dark:text-white space-y-4">
+        <div className="dark:text-white space-y-4 px-4">
             <div className="flex justify-between">
                 <div className="text-2xl">
                     {videos ? "History" : "Playlists"}

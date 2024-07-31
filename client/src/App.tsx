@@ -12,16 +12,24 @@ import MyVideos from "./pages/MyVideos";
 import WatchLater from "./pages/WatchLater";
 import PlayLists from "./pages/PlayLists";
 import Playlist from "./pages/Playlist";
-import Empty from "./components/root/Empty";
-import { useSelector } from "react-redux";
-import { RootState } from "./provider";
+import { useDispatch, useSelector } from "react-redux";
+import { login, logout, RootState } from "./provider";
 import PlaylistNhistory from "./components/root/PlaylistNhistory";
 import Shorts from "./pages/Shorts";
 import Subscriptions from "./pages/Subscriptions";
 import YourVideos from "./components/root/YourVideos";
+import { useEffect } from "react";
+import userServices from "./services/user.services";
 
 function App() {
+    const dispatch = useDispatch();
     const theme = useSelector((state: RootState) => state.theme.mode);
+    useEffect(() => {
+        userServices
+            .getCurrentUser()
+            .then(({ data }) => dispatch(data ? login(data) : logout()))
+            .catch((err) => console.log("error occurred: ", err.message));
+    }, []);
     return (
         <div className={`${theme}`}>
             <BrowserRouter>

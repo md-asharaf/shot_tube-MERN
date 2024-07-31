@@ -1,13 +1,12 @@
 import { RootState } from "@/provider";
 import commentServices from "@/services/comment.services";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useDispatch, useSelector } from "react-redux";
+import { useSelector } from "react-redux";
 import DefaultProfileImage from "@/assets/images/profile.png";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { formatDistanceToNow } from "date-fns";
 import likeServices from "@/services/like.services";
-import { useSuccess } from "@/lib/utils";
 import { BiLike } from "react-icons/bi";
 import { RiDeleteBin6Line } from "react-icons/ri";
 import { IComment } from "@/interfaces";
@@ -18,9 +17,6 @@ import { FaPlus } from "react-icons/fa";
 
 const Comments = ({ videoId }) => {
     const navigate = useNavigate();
-    const dispatch = useDispatch();
-    const successfull = useSuccess(dispatch);
-    const success = useSuccess(dispatch);
     const user = useSelector((state: RootState) => state.auth);
     const [content, setContent] = useState<string>("");
     const fetchComments = async () => {
@@ -31,24 +27,19 @@ const Comments = ({ videoId }) => {
         const likes: boolean[] = await Promise.all(
             comments.map(async (comment) => {
                 const res = await likeServices.isLiked(comment._id, "comment");
-                if (success(res)) {
-                    return res.data;
-                }
+                return res.data;
             })
         );
         return likes;
     };
     const addCommentMutation = async (content: string) => {
-        const res = await commentServices.comment(videoId, content);
-        successfull(res);
+        await commentServices.comment(videoId, content);
     };
     const deleteCommentMutation = async (commentId: string) => {
-        const res = await commentServices.deleteComment(commentId);
-        successfull(res);
+        await commentServices.deleteComment(commentId);
     };
     const toggleCommentLikeMutation = async (commentId: string) => {
-        const res = await likeServices.toggleLike(commentId, "comment");
-        successfull(res);
+        await likeServices.toggleLike(commentId, "comment");
     };
     const {
         data: comments,

@@ -1,5 +1,7 @@
+import Empty from "@/components/root/Empty";
+
 const WatchLater = () => {
-    return <div className="dark:text-white">WatchLater</div>;
+    return <Empty />;
 };
 
 export default WatchLater;

@@ -1,17 +1,13 @@
 import { IPlaylist } from "@/interfaces";
-import { useSuccess } from "@/lib/utils";
 import playlistServices from "@/services/playlist.services";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useState } from "react";
-import { useDispatch } from "react-redux";
 import { Button } from "../ui/button";
 interface Props {
     userId: string;
     setPLaylistIds: React.Dispatch<React.SetStateAction<string[]>>;
 }
 const SaveToPlaylist: React.FC<Props> = ({ userId, setPLaylistIds }) => {
-    const dispatch = useDispatch();
-    const successfull = useSuccess(dispatch);
     const [playlistName, setPlaylistName] = useState<string>("");
     const [hidden, setHidden] = useState<boolean>(true);
     const getPlaylists = async () => {
@@ -19,11 +15,9 @@ const SaveToPlaylist: React.FC<Props> = ({ userId, setPLaylistIds }) => {
         return res.data;
     };
     const createPlaylistMutation = async () => {
-        const res = await playlistServices.create(playlistName);
-        if (successfull(res)) {
-            setHidden(true);
-            refetch();
-        }
+        await playlistServices.create(playlistName);
+        setHidden(true);
+        refetch();
     };
     const {
         data: playlists,

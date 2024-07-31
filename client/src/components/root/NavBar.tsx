@@ -18,7 +18,7 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import Profile from "./Profile";
 import { logout, RootState, toggleMenu } from "@/provider";
 import { Link, useNavigate } from "react-router-dom";
-import { shortName, useSuccess } from "@/lib/utils";
+import { shortName } from "@/lib/utils";
 import VideoUpload from "./VideoUpload";
 import { toggleVideoModal } from "@/provider/ui.slice";
 import authServices from "@/services/auth.services";
@@ -33,13 +33,10 @@ const NavBar = () => {
     const videoModal = useSelector(
         (state: RootState) => state.ui.isVideoModalOpen
     );
-    const isSuccess = useSuccess(navigate);
     const onLogout = async () => {
         const res = await authServices.logout();
-        if (isSuccess(res)) {
-            dispatch(logout());
-            navigate("/");
-        }
+        dispatch(logout());
+        navigate("/");
     };
     return (
         <div className="fixed top-0 left-0 z-50 flex items-center justify-between p-6 h-16 gap-2 w-full dark:text-white">

@@ -27,11 +27,9 @@ import {
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useToast } from "../ui/use-toast";
-import { useSuccess } from "@/lib/utils";
 
 const VideoUpload = () => {
     const dispatch = useDispatch();
-    const isSuccessfull = useSuccess(dispatch);
     const { toast } = useToast();
     const [loader, setLoader] = useState<boolean>(false);
     const form = useForm<IVideoForm>({
@@ -58,19 +56,16 @@ const VideoUpload = () => {
         try {
             const response = await videoService.upload(formData);
             dispatch(toggleVideoModal());
-            if (!isSuccessfull(response)) {
-                toast({
-                    title: "Failed to upload video",
-                    description: "Please login first",
-                });
-            } else {
-                toast({
-                    title: "Video uploaded successfully",
-                    description: "Your video is now live",
-                });
-            }
+            toast({
+                title: "Video uploaded successfully",
+                description: "Your video is now live",
+            });
         } catch (err) {
             console.error(err);
+            toast({
+                title: "Failed to upload video",
+                description: "Please login first",
+            });
         } finally {
             setLoader(false);
         }

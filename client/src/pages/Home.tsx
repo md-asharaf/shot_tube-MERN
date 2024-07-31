@@ -6,7 +6,6 @@ import { useInfiniteQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useCallback } from "react";
 import videoServices from "@/services/video.services";
 import { Loader2, RefreshCw } from "lucide-react";
-import { Button } from "@/components/ui/button";
 
 const Home = () => {
     const lastVideoRef = useRef(null);
