@@ -15,12 +15,3 @@ export function shortName(name: string | undefined) {
     }
     return splitName[0][0].toUpperCase();
 }
-export const useSuccess =
-    (dispatch: Dispatch<UnknownAction>) => (res: ApiResponse) => {
-        console.log("Response message:: ", res.message);
-        if (res.status === 401) {
-            dispatch(logout());
-            return false;
-        }
-        return res?.success;
-    };

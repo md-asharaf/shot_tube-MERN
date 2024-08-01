@@ -1,12 +1,10 @@
 import { IVideoData } from "@/interfaces";
 import { createContext, useContext } from "react";
-const VideoContext = createContext({
-    videos: [] as IVideoData[],
-    addVideo: (video: IVideoData) => {},
-    deleteVideo: (id: string) => {},
-    addVideos: (videos: IVideoData[]) => {},
+const QueryContext = createContext({
+    query: "",
+    setQuery: (query: string) => {},
 });
-export const useVideo = () => {
-    return useContext(VideoContext);
+export const useQuerry = () => {
+    return useContext(QueryContext);
 };
-export default VideoContext.Provider;
+export default QueryContext.Provider;

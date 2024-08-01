@@ -1,8 +1,12 @@
+import { useQuerry } from "@/provider/video.slice";
 import { useState } from "react";
 import { IoIosSearch } from "react-icons/io";
 import { MdOutlineClear } from "react-icons/md";
+import { useNavigate } from "react-router-dom";
 const SearchBar = () => {
+    const navigate = useNavigate();
     const [input, setInput] = useState<string>("");
+    const { setQuery } = useQuerry();
     return (
         <div className="flex items-center relative w-[40vw]">
             <input
@@ -24,7 +28,10 @@ const SearchBar = () => {
             </button>
             <button
                 disabled={!input}
-                onClick={() => alert(`You searched for ${input}`)}
+                onClick={() => {
+                    setQuery(input);
+                    navigate("/search");
+                }}
                 className="rounded-r-full border-[1px] border-[#3D3D3D] w-20 p-3 bg-[#3D3D3D] overflow-hidden dark:bg-zinc-800"
             >
                 <IoIosSearch className="w-full" />

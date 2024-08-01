@@ -8,23 +8,36 @@ cloudinary.config({
 });
 
 class Cloudinary {
-    static upload = async (localFilePath, resource_type = "auto") => {
+    static upload = async (localFilePath, resource_type) => {
         try {
             if (!localFilePath) return null;
             //upload the file to cloudinary
-            const response = await cloudinary.uploader.upload(localFilePath, {
-                resource_type: "auto",
-            })
+            let response;
+            if (resource_type == "video") {
+                response = await cloudinary.uploader.upload(localFilePath, {
+                    resource_type,
+                    eager: [
+                        { streaming_profile: 'hd', format: 'm3u8' },
+                        { streaming_profile: 'sd', format: 'm3u8' },
+                        { streaming_profile: 'ld', format: 'm3u8' }
+                    ],
+                    eager_async: true
+                });
+            } else {
+                response = await cloudinary.uploader.upload(localFilePath, {
+                    resource_type
+                });
+            }
+            fs.unlinkSync(localFilePath);
             //file uploaded successfully
-            console.log("file uploaded successfully\nFile url:  ", response.url)
+            console.log(`file uploaded successfully\n ${resource_type} url:  `, response.secure_url)
 
-            fs.unlinkSync(localFilePath)
             return resource_type == "video" ? {
-                video: { url: response.url, public_id: response.public_id },
+                video: { url: response.secure_url, public_id: response.public_id, m3u8: response.playback_url },
                 duration: response.duration
             } : { url: response.url, public_id: response.public_id };
         } catch (error) {
-            fs.unlinkSync(localFilePath);//remove the locally saved temporary file as the upload operation got failed
+            fs.unlinkSync(localFilePath);
             return null;
         }
     }

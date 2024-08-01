@@ -4,7 +4,8 @@ const videoSchema = new Schema({
     videoFile: {
         type: {
             url: String,
-            public_id: String
+            public_id: String,
+            m3u8: String,
         },//cloudinary url
         required: true
     },

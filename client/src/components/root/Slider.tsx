@@ -63,7 +63,7 @@ const Slider = ({
                             <Link
                                 to={`/videos/${video._id}`}
                                 key={video._id}
-                                className="flex gap-2 flex-col min-w-[294px]"
+                                className="flex gap-2 flex-col min-w-[294px] max-w-[294px]"
                             >
                                 <VideoCard
                                     video={video}

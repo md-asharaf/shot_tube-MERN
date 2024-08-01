@@ -14,7 +14,8 @@ import { useNavigate } from "react-router-dom";
 import { Skeleton } from "../ui/skeleton";
 import { useState } from "react";
 import { FaPlus } from "react-icons/fa";
-
+import { FiMinus } from "react-icons/fi";
+import { GoDot } from "react-icons/go";
 const Comments = ({ videoId }) => {
     const navigate = useNavigate();
     const user = useSelector((state: RootState) => state.auth);
@@ -153,8 +154,7 @@ const Comments = ({ videoId }) => {
 
                 <div className="flex flex-col space-y-4">
                     {comments.map((comment, index) => {
-                        const sentiment =
-                            comment.sentiment?.toLowerCase() || "neutral";
+                        const sentiment = comment.sentiment?.toLowerCase();
                         return (
                             <div
                                 key={index}
@@ -200,16 +200,18 @@ const Comments = ({ videoId }) => {
                                             } ${
                                                 sentiment == "neutral" &&
                                                 "bg-yellow-500"
-                                            } rounded-full items-center justify-center space-x-1 px-2`}
+                                            } rounded-full items-center justify-center py-1 px-2`}
                                         >
                                             {sentiment === "positive" ? (
-                                                <FaPlus className="text-white" />
+                                                <FaPlus className="text-white text-xs mr-1 dark:text-black" />
                                             ) : sentiment === "negative" ? (
-                                                <FaPlus className="text-white" />
+                                                <FiMinus className="text-white mr-1 dark:text-black" />
                                             ) : (
-                                                <FaPlus className="text-white" />
+                                                <GoDot className="text-white dark:text-black text-xl" />
                                             )}
-                                            <span>{sentiment}</span>
+                                            <span className="text-white dark:text-black text-sm">
+                                                {sentiment}
+                                            </span>
                                         </div>
                                     </div>
                                     <div>{comment.content}</div>

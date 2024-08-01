@@ -77,9 +77,8 @@ const Playlist = () => {
                                     {`${video.creator.fullname} • ${
                                         video.views
                                     } views • ${formatDistanceToNow(
-                                        new Date(video.createdAt),
-                                        { addSuffix: true }
-                                    ).replace("about", "")}`}
+                                        new Date(video.createdAt)
+                                    ).replace("about", "")} ago`}
                                 </p>
                             </div>
                         </div>

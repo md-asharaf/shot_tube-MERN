@@ -5,22 +5,33 @@ import { IPlaylist, IVideoData } from "@/interfaces";
 import { useQuery } from "@tanstack/react-query";
 import videoServices from "@/services/video.services";
 import playlistServices from "@/services/playlist.services";
-import Slider from "./Slider";
+import Slider from "../components/root/Slider";
+import subscriptionServices from "@/services/subscription.services";
 const PlaylistNhistory = () => {
     const userData = useSelector((state: RootState) => state.auth.userData);
     const fetchUserVideos = async () => {
         const res = await videoServices.allVideosByUser(userData?._id);
         return res.data;
     };
+    const fetchPlaylists = async () => {
+        const res = await playlistServices.getPlaylists(userData?._id);
+        return res.data;
+    };
+    const { data: subscriberCount } = useQuery<number>({
+        queryKey: ["subscriberCount", userData?._id],
+        queryFn: async () => {
+            const res = await subscriptionServices.getSubscribersCount(
+                userData?._id
+            );
+            return res.data;
+        },
+        enabled: !!userData,
+    });
     const { data: videos, isLoading: videosLoading } = useQuery<IVideoData[]>({
         queryKey: ["videos", userData?._id],
         queryFn: fetchUserVideos,
         enabled: !!userData,
     });
-    const fetchPlaylists = async () => {
-        const res = await playlistServices.getPlaylists(userData?._id);
-        return res.data;
-    };
     const { data: playlists, isLoading } = useQuery<IPlaylist[]>({
         queryKey: ["playlists", userData?._id],
         queryFn: fetchPlaylists,
@@ -41,7 +52,7 @@ const PlaylistNhistory = () => {
                     </div>
                     <div className="text-gray-500 dark:text-zinc-300">{`@${
                         userData?.username
-                    } • ${userData?.subscriberCount} subscribers • ${
+                    } • ${subscriberCount} subscribers • ${
                         videos?.length || 0
                     } videos`}</div>
                 </div>

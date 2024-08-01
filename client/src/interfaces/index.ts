@@ -45,6 +45,7 @@ export interface IFile {
     _id?: string;
     url: string;
     public_id: string;
+    m3u8?: string;
 }
 export interface IVideoData {
     _id: string;

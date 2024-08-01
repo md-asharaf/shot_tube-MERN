@@ -3,6 +3,7 @@ import { IVideoData } from "@/interfaces";
 import { RootState } from "@/provider";
 import videoServices from "@/services/video.services";
 import { useQuery } from "@tanstack/react-query";
+import { formatDistanceToNow } from "date-fns";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 
@@ -45,8 +46,11 @@ const LikedVideos = () => {
                 <h1 className="text-[2em] font-bold">Liked Videos</h1>
                 <p>{userData.fullname}</p>
                 <p className="text-xs">
-                    {`${videos.length} videos • ${totalViews} views • Last updated on 11 Dec
-                        2021`}
+                    {`${
+                        videos.length
+                    } videos • ${totalViews} views • Last updated on ${new Date(
+                        videos[videos.length - 1].updatedAt
+                    ).toDateString()}`}
                 </p>
                 <div className="flex justify-between w-full">
                     <Button className="bg-white hover:text-white text-black py-2 px-4 rounded-full w-[47%]">
@@ -76,7 +80,11 @@ const LikedVideos = () => {
                             <div>
                                 <h3 className="text-lg mb-2">{video.title}</h3>
                                 <p className="text-gray-400">
-                                    {`${video.creator.fullname} • ${video.views} views • 3 years ago`}
+                                    {`${video.creator.fullname} • ${
+                                        video.views
+                                    } views • ${formatDistanceToNow(
+                                        new Date(video.createdAt)
+                                    ).replace("about", "")} ago`}
                                 </p>
                             </div>
                         </div>

@@ -6,23 +6,13 @@ import BigDrawer from "./BigDrawer";
 import SmallDrawer from "./SmallDrawer";
 import VideoProvider from "@/provider/video.slice";
 import { useState } from "react";
-import { IVideoData } from "@/interfaces";
 import { Toaster } from "../ui/toaster";
 import BottomBar from "./BottomBar";
 const RootLayOut = () => {
-    const [videos, setVideos] = useState([] as IVideoData[]);
-    const addVideo = (video: IVideoData) => {
-        setVideos((prev) => [...prev, video]);
-    };
-    const addVideos = (viideos: IVideoData[]) => {
-        setVideos((prev) => [...prev, ...viideos]);
-    };
-    const deleteVideo = (id: string) => {
-        setVideos((prev) => prev.filter((video) => video._id != id));
-    };
+    const [query, setQuery] = useState("");
     const isMenuOpen = useSelector((state: RootState) => state.ui.isMenuOpen);
     return (
-        <VideoProvider value={{ videos, addVideo, deleteVideo, addVideos }}>
+        <VideoProvider value={{ query, setQuery }}>
             <div className="h-screen w-screen bg-white dark:bg-black">
                 <header>
                     <nav>

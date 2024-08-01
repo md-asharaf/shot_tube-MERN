@@ -33,6 +33,7 @@ const NavBar = () => {
     const videoModal = useSelector(
         (state: RootState) => state.ui.isVideoModalOpen
     );
+
     const onLogout = async () => {
         const res = await authServices.logout();
         dispatch(logout());

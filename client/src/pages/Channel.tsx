@@ -22,14 +22,6 @@ const Channel = () => {
     };
     const fetchUserVideos = async () => {
         const res = await videoServices.allVideosByUser(user?._id);
-        // if (!isSuccessfull(res)) {
-        //     navigate(-1);
-        //     toast({
-        //         title: "Please login first",
-        //         description: "You need to login to view this page",
-        //     });
-        //     return null;
-        // }
         return res.data;
     };
     // Fetch user data

@@ -14,12 +14,13 @@ import PlayLists from "./pages/PlayLists";
 import Playlist from "./pages/Playlist";
 import { useDispatch, useSelector } from "react-redux";
 import { login, logout, RootState } from "./provider";
-import PlaylistNhistory from "./components/root/PlaylistNhistory";
+import PlaylistNhistory from "./pages/PlaylistNhistory";
 import Shorts from "./pages/Shorts";
 import Subscriptions from "./pages/Subscriptions";
 import YourVideos from "./components/root/YourVideos";
 import { useEffect } from "react";
 import userServices from "./services/user.services";
+import SearchedVideos from "./pages/SearchedVideos";
 
 function App() {
     const dispatch = useDispatch();
@@ -69,6 +70,7 @@ function App() {
                         />
                         <Route path="/shorts" element={<Shorts />} />
                         <Route path="/your-videos" element={<YourVideos />} />
+                        <Route path="/search" element={<SearchedVideos />} />
                     </Route>
                 </Routes>
             </BrowserRouter>

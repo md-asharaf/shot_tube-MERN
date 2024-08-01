@@ -48,6 +48,10 @@ class CommentC {
                     creator: 1
                 }
 
+            }, {
+                $sort: {
+                    createdAt: -1
+                }
             }
         ]);
         //pass the aggregate as a query and paginate the results

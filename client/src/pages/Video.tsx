@@ -22,6 +22,7 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import playlistServices from "@/services/playlist.services";
 import userServices from "@/services/user.services";
 import videoServices from "@/services/video.services";
+import VideoPlayer from "@/components/root/VideoPlayer";
 
 const Video = () => {
     const userId = useSelector((state: RootState) => state.auth.userData?._id);
@@ -95,7 +96,7 @@ const Video = () => {
     const { data: isLiked, refetch: refetchIsLiked } = useQuery<boolean>({
         queryKey: ["isLiked", videoId],
         queryFn: fetchIsLiked,
-        enabled: !!video && !!userId,
+        enabled: !!videoId && !!userId,
     });
 
     const { data: isSubscribed, refetch: refetchIsSubscribed } =
@@ -141,11 +142,9 @@ const Video = () => {
     return (
         <div className="space-y-4 lg:w-4/5 xl:w-2/3 dark:text-white">
             <div className="flex flex-col space-y-2 px-2">
-                <video
-                    autoPlay
-                    src={video.videoFile.url}
-                    className="w-full rounded-xl"
-                    controls
+                <VideoPlayer
+                    src={video.videoFile.m3u8}
+                    className="w-full h-full rounded-xl"
                 />
                 <h1 className="font-bold text-xl">{video.title}</h1>
                 <div className="flex justify-between flex-col sm:flex-row gap-y-2 sm:gap-0">
