@@ -132,7 +132,7 @@ const Comments = ({ videoId }) => {
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
                             placeholder="Add a public comment..."
-                            className="outline-none shadow-none border-b-[1px] border-b-black w-full"
+                            className="outline-none shadow-none border-b-[1px] border-b-black dark:border-b-white dark:bg-black w-full"
                         />
                     </div>
                     <div className="flex space-x-2 justify-end">
