@@ -48,7 +48,10 @@ const NavBar = () => {
                         dispatch(toggleMenu());
                     }}
                 />
-                <button className="flex items-center">
+                <button
+                    className="flex items-center"
+                    onClick={() => window.location.reload()}
+                >
                     <ImYoutube className="text-3xl w-10" />
                     <h1 className="font-extrabold text-red-500">ShOtTube</h1>
                 </button>

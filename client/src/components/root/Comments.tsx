@@ -118,25 +118,31 @@ const Comments = ({ videoId }) => {
         <div className="px-2">
             <div className="font-bold text-2xl text-zinc-600 dark:text-zinc-300">{`${comments.length} Comments`}</div>
             <div className="flex flex-col">
-                <div className="flex gap-x-2 items-center justify-start">
-                    <img
-                        src={user.userData?.avatar?.url || DefaultProfileImage}
-                        className="rounded-full h-10 w-10"
-                    />
-                    <Input
-                        disabled={!user.status}
-                        value={content}
-                        onChange={(e) => setContent(e.target.value)}
-                        placeholder="Add a public comment..."
-                        className="border-none shadow-none"
-                    />
-                    <div className="flex space-x-2">
+                <div className="flex gap-y-1 flex-col justify-start">
+                    <div className="flex items-center gap-2">
+                        <img
+                            src={
+                                user.userData?.avatar?.url ||
+                                DefaultProfileImage
+                            }
+                            className="rounded-full h-10 w-10"
+                        />
+                        <input
+                            disabled={!user.status}
+                            value={content}
+                            onChange={(e) => setContent(e.target.value)}
+                            placeholder="Add a public comment..."
+                            className="outline-none shadow-none border-b-[1px] border-b-black w-full"
+                        />
+                    </div>
+                    <div className="flex space-x-2 justify-end">
                         <Button
                             disabled={!content}
                             onClick={() => {
                                 setContent("");
                             }}
                             variant="destructive"
+                            className="h-7 sm:h-9"
                         >
                             Cancel
                         </Button>
@@ -144,15 +150,14 @@ const Comments = ({ videoId }) => {
                             disabled={!content}
                             onClick={() => addComment(content)}
                             variant="outline"
-                            className="hover:bg-blue-500 hover:text-white dark:text-black dark:bg-white dark:hover:bg-blue-500"
+                            className="hover:bg-blue-500 hover:text-white dark:text-black dark:bg-white dark:hover:bg-blue-500 h-7 sm:h-9 p-1 sm:p-2"
                         >
                             Comment
                         </Button>
                     </div>
                 </div>
-                <div className="w-full border-b-2 border-gray-300 mb-8 mt-4"></div>
 
-                <div className="flex flex-col space-y-4">
+                <div className="flex flex-col space-y-4 mt-3">
                     {comments.map((comment, index) => {
                         const sentiment = comment.sentiment?.toLowerCase();
                         return (

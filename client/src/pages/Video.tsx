@@ -185,12 +185,12 @@ const Video = () => {
                         </Button>
                     </div>
 
-                    <div className="flex items-center justify-end sm:justify-normal gap-4 sm:gap-2">
+                    <div className="flex sm:items-center justify-end gap-4 sm:gap-2">
                         <Button
                             disabled={!userId}
                             className={`${
                                 isLiked && "text-blue-500"
-                            } dark:bg-zinc-600 border-none bg-zinc-200`}
+                            } dark:bg-zinc-600 border-none bg-zinc-200 h-7 sm:h-9`}
                             variant="outline"
                             onClick={() => toggleVideoLike()}
                         >
@@ -207,12 +207,12 @@ const Video = () => {
                                 <Button
                                     disabled={!userId}
                                     variant="outline"
-                                    className="dark:bg-zinc-600 border-none bg-zinc-200"
+                                    className="dark:bg-zinc-600 border-none bg-zinc-200 h-7 sm:h-9"
                                 >
                                     <MdOutlinePlaylistAdd className="text-2xl" />
                                 </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="w-48 right-0 top-2 absolute bg-zinc-200">
+                            <PopoverContent className="w-48 right-0 top-2 absolute bg-zinc-400">
                                 <SaveToPlaylist
                                     userId={userId}
                                     setPLaylistIds={setPlaylistIds}
