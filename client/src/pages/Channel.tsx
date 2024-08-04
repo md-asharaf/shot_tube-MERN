@@ -11,6 +11,7 @@ import videoServices from "@/services/video.services";
 import { useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import subscriptionServices from "@/services/subscription.services";
+import { Loader2 } from "lucide-react";
 
 const Channel = () => {
     const dispatch = useDispatch();
@@ -45,7 +46,13 @@ const Channel = () => {
         enabled: !!user,
     });
 
-    if (userLoading || videosLoading) return <div>Loading...</div>;
+    if (userLoading || videosLoading) {
+        return (
+            <div className="flex w-[90%] justify-center">
+                <Loader2 className="h-10 w-10 animate-spin" />
+            </div>
+        );
+    }
 
     return (
         <div className="space-y-2 w-full dark:text-white">

@@ -7,6 +7,7 @@ import { RootState } from "@/provider";
 import { Button } from "@/components/ui/button";
 import { MdDelete } from "react-icons/md";
 import { formatDistanceToNow } from "date-fns";
+import { Loader2 } from "lucide-react";
 
 const WatchHistory = () => {
     const userId = useSelector((state: RootState) => state.auth.userData?._id);
@@ -33,7 +34,13 @@ const WatchHistory = () => {
     const { mutate: clearAllHistory } = useMutation({
         mutationFn: clearAllHistoryMutation,
     });
-    if (isLoading) return <div>Loading...</div>;
+    if (isLoading) {
+        return (
+            <div className="flex w-[90%] justify-center">
+                <Loader2 className="h-10 w-10 animate-spin" />
+            </div>
+        );
+    }
     if (isError) {
         return <div>ERROR: {error.message}</div>;
     }

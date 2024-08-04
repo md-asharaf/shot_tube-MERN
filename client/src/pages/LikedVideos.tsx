@@ -4,6 +4,7 @@ import { RootState } from "@/provider";
 import videoServices from "@/services/video.services";
 import { useQuery } from "@tanstack/react-query";
 import { formatDistanceToNow } from "date-fns";
+import { Loader2 } from "lucide-react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 
@@ -23,7 +24,11 @@ const LikedVideos = () => {
         queryFn: fetchLikedVideos,
     });
     if (isLoading) {
-        return <div>Loading...</div>;
+        return (
+            <div className="flex w-[90%] justify-center">
+                <Loader2 className="h-10 w-10 animate-spin" />
+            </div>
+        );
     }
     if (isError) {
         return <div>ERROR: {error.message}</div>;

@@ -6,6 +6,7 @@ import VideoTitle2 from "@/components/root/VideoTitle2";
 import { Link } from "react-router-dom";
 import playlistServices from "@/services/playlist.services";
 import { useQuery } from "@tanstack/react-query";
+import { Loader2 } from "lucide-react";
 
 const PlayLists = () => {
     const userId = useSelector((state: RootState) => state.auth.userData?._id);
@@ -23,7 +24,13 @@ const PlayLists = () => {
         queryFn: fetchPlaylists,
         enabled: !!userId,
     });
-    if (isLoading) return <div>Loading...</div>;
+    if (isLoading) {
+        return (
+            <div className="flex w-[90%] justify-center">
+                <Loader2 className="h-10 w-10 animate-spin" />
+            </div>
+        );
+    }
     if (isError) return <div>Error: {error.message}</div>;
     return (
         <div className="px-2 dark:text-white">

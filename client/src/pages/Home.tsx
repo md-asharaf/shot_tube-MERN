@@ -1,11 +1,12 @@
-import VideoCard from "@/components/root/VideoCard";
-import { IVideoData } from "@/interfaces";
-import { Link } from "react-router-dom";
-import VideoTitle from "@/components/root/VideoTitle";
-import { useInfiniteQuery } from "@tanstack/react-query";
 import { useEffect, useRef, useCallback } from "react";
-import videoServices from "@/services/video.services";
+import { Link } from "react-router-dom";
+import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2, RefreshCw } from "lucide-react";
+import VideoCard from "@/components/root/VideoCard";
+import VideoTitle from "@/components/root/VideoTitle";
+import videoServices from "@/services/video.services";
+import LoadingSkeleton from "@/components/skeletons/LoadingSkeleton";
+import { IVideoData } from "@/interfaces";
 
 const Home = () => {
     const lastVideoRef = useRef(null);
@@ -13,6 +14,9 @@ const Home = () => {
         useInfiniteQuery({
             queryKey: ["videos"],
             queryFn: async ({ pageParam }) => {
+                if (pageParam === 0) {
+                    await new Promise((resolve) => setTimeout(resolve, 10000));
+                }
                 const res = await videoServices.allVideos(8, pageParam);
                 return res.data;
             },
@@ -52,29 +56,33 @@ const Home = () => {
 
     return (
         <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 w-full gap-y-6 dark:text-white text-black">
-                {data?.pages?.map((group, i) =>
-                    group.map((video: IVideoData, index: number) => {
-                        const isLast =
-                            index === group.length - 1 &&
-                            i === data.pages.length - 1;
-                        return (
-                            <Link
-                                to={`/videos/${video._id}`}
-                                key={video._id}
-                                className="group flex flex-col gap-2 rounded-xl transition-shadow duration-300 cursor-pointer p-2 hover:bg-zinc-200 hover:dark:bg-zinc-800"
-                                ref={isLast ? lastVideoRef : null}
-                            >
-                                <VideoCard
-                                    video={video}
-                                    className="group-hover:rounded-none"
-                                />
-                                <VideoTitle video={video} isImage />
-                            </Link>
-                        );
-                    })
-                )}
-            </div>
+            {isLoading ? (
+                <LoadingSkeleton />
+            ) : (
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 w-full gap-y-6 dark:text-white text-black">
+                    {data?.pages?.map((group, i) =>
+                        group.map((video: IVideoData, index: number) => {
+                            const isLast =
+                                index === group.length - 1 &&
+                                i === data.pages.length - 1;
+                            return (
+                                <Link
+                                    to={`/videos/${video._id}`}
+                                    key={video._id}
+                                    className="group flex flex-col gap-2 rounded-xl transition-shadow duration-300 cursor-pointer p-2 hover:bg-zinc-200 hover:dark:bg-zinc-800"
+                                    ref={isLast ? lastVideoRef : null}
+                                >
+                                    <VideoCard
+                                        video={video}
+                                        className="group-hover:rounded-none"
+                                    />
+                                    <VideoTitle video={video} isImage />
+                                </Link>
+                            );
+                        })
+                    )}
+                </div>
+            )}
             <div className="flex items-center justify-center">
                 {isLoading && (
                     <Loader2 className="animate-spin h-10 w-10 dark:text-white" />

@@ -4,6 +4,7 @@ import playlistServices from "@/services/playlist.services";
 import { IPlaylist } from "@/interfaces";
 import { formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/button";
+import { Loader2 } from "lucide-react";
 
 const Playlist = () => {
     const { playlistId } = useParams();
@@ -21,7 +22,13 @@ const Playlist = () => {
         queryFn: fetchPlaylist,
         enabled: !!playlistId,
     });
-    if (isLoading) return <div>Loading...</div>;
+    if (isLoading) {
+        return (
+            <div className="flex w-[90%] justify-center">
+                <Loader2 className="h-10 w-10 animate-spin" />
+            </div>
+        );
+    }
     if (isError) {
         return <div>ERROR: {error.message}</div>;
     }

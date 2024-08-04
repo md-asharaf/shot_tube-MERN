@@ -23,6 +23,7 @@ import playlistServices from "@/services/playlist.services";
 import userServices from "@/services/user.services";
 import videoServices from "@/services/video.services";
 import VideoPlayer from "@/components/root/VideoPlayer";
+import { Loader2 } from "lucide-react";
 
 const Video = () => {
     const userId = useSelector((state: RootState) => state.auth.userData?._id);
@@ -136,7 +137,13 @@ const Video = () => {
             }, 10000);
     }, [video]);
 
-    if (isLoading) return <div>Loading...</div>;
+    if (isLoading) {
+        return (
+            <div className="flex w-[90%] justify-center">
+                <Loader2 className="h-10 w-10 animate-spin" />
+            </div>
+        );
+    }
     if (isError) return <div>Error: {error.message}</div>;
 
     return (
@@ -212,7 +219,7 @@ const Video = () => {
                                     <MdOutlinePlaylistAdd className="text-2xl" />
                                 </Button>
                             </PopoverTrigger>
-                            <PopoverContent className="w-48 right-0 top-2 absolute bg-zinc-400">
+                            <PopoverContent className="w-48 right-0 top-2 absolute bg-zinLoader2c-400">
                                 <SaveToPlaylist
                                     userId={userId}
                                     setPLaylistIds={setPlaylistIds}

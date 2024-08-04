@@ -15,12 +15,13 @@ const SearchedVideos = () => {
         },
         enabled: !!query,
     });
-    if (isLoading)
+    if (isLoading) {
         return (
-            <div className="flex items-center justify-center">
-                <Loader2 className="h-6 w-6 animate-spin" />
+            <div className="flex w-[90%] justify-center">
+                <Loader2 className="h-10 w-10 animate-spin" />
             </div>
         );
+    }
     if (!videos || videos.length === 0)
         return (
             <div className="flex items-center text-2xl justify-center mt-40 w-[80%] dark:text-white">

@@ -7,6 +7,7 @@ import videoServices from "@/services/video.services";
 import playlistServices from "@/services/playlist.services";
 import Slider from "../components/root/Slider";
 import subscriptionServices from "@/services/subscription.services";
+import { Loader2 } from "lucide-react";
 const PlaylistNhistory = () => {
     const userData = useSelector((state: RootState) => state.auth.userData);
     const fetchUserVideos = async () => {
@@ -37,7 +38,13 @@ const PlaylistNhistory = () => {
         queryFn: fetchPlaylists,
         enabled: !!userData?._id,
     });
-    if (isLoading || videosLoading) return <div>Loading...</div>;
+    if (isLoading) {
+        return (
+            <div className="flex w-[90%] justify-center">
+                <Loader2 className="h-10 w-10 animate-spin" />
+            </div>
+        );
+    }
     return (
         <div className="w-full dark:text-white overflow-auto space-y-2">
             <div className="space-x-8 justify-center rounded-2xl hidden sm:flex">
