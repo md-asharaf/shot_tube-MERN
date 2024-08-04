@@ -54,7 +54,7 @@ const VideoUpload = () => {
         formData.append("thumbnail", thumbnail[0]);
 
         try {
-            const response = await videoService.upload(formData);
+            await videoService.upload(formData);
             dispatch(toggleVideoModal());
             toast({
                 title: "Video uploaded successfully",
@@ -73,7 +73,7 @@ const VideoUpload = () => {
     return (
         <div className="w-screen h-screen fixed top-0 right-0 bg-[#0000009e] dark:bg-[#5756569e] z-30">
             <Card
-                className={`shadow-xl shadow-transparent border-[1px] border-gray-500 dark:border-zinc-600 rounded-md p-4 fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 dark:bg-black z-40 sm:w-[400px] w-[70vw]`}
+                className={`shadow-xl shadow-transparent border-[1px] border-gray-500 dark:border-zinc-600 rounded-md p-4 fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 dark:bg-black z-40 sm:w-[500px] w-[90vw]`}
             >
                 <CardHeader>
                     <CardTitle className="text-3xl font-bold text-center">

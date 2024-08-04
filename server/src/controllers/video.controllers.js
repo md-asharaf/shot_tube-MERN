@@ -12,7 +12,6 @@ class VideoC {
             const { title, description } = req.body;
             //get user id from request user object
             const userId = req.user?._id;
-            console.log(title, description, userId)
             //check if title and description are provided
             if (!title || !description) {
                 throw new ApiError(400, "Please provide title and description")
@@ -43,22 +42,24 @@ class VideoC {
             // await generateHLSPlaylist(output360, _360m3u8);
             // await generateHLSPlaylist(output720, _720m3u8);
             // await generateHLSPlaylist(output1080, _1080m3u8);
-            const { video, duration } = await Cloudinary.upload(localVideo.path, "video");
+            console.log("before video upload")
+            const videoFile = await Cloudinary.upload(localVideo.path, "video", localVideo.size);
+            console.log("after video upload")
             const thumbnail = await Cloudinary.upload(localThumbnail.path, "image");
             //get duration of video
             //create video
-            const videoo = await Video.create({
-                videoFile: video,
+            const video = await Video.create({
+                videoFile: videoFile.video,
                 thumbnail,
-                duration,
+                duration: videoFile.duration,
                 title,
                 description,
                 userId
             })
-            if (!video) {
+            if (!videoo) {
                 throw new ApiError(500, "Failed to publish video")
             }
-            return res.status(200).json(new ApiResponse(200, videoo, "Video published successfully"))
+            return res.status(200).json(new ApiResponse(200, video, "Video published successfully"))
         } catch (error) {
             console.log(error.message)
         }

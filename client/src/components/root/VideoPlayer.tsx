@@ -1,70 +1,22 @@
-import { useEffect, useRef } from "react";
-import videojs from "video.js";
-import "video.js/dist/video-js.css";
-import "@videojs/themes/dist/city/index.css";
-import "videojs-http-source-selector"; // Import the plugin
+import { memo, useEffect } from "react";
+import { videoPlayer } from "cloudinary-video-player";
+import "cloudinary-video-player/cld-video-player.min.css";
 
-export const VideoPlayer = ({ src, className = "" }) => {
-    const videoRef = useRef(null);
-    const playerRef = useRef(null);
-    const options = {
-        autoplay: true,
-        controls: true,
-        responsive: true,
-        fluid: true,
-        sources: [
-            {
-                src,
-                type: "application/x-mpegURL",
-            },
-        ],
-    };
+const HLSVideoPlayer = ({ src, className = "" }) => {
     useEffect(() => {
-        // Make sure Video.js player is only initialized once
-        if (!playerRef.current) {
-            // The Video.js player needs to be _inside_ the component el for React 18 Strict Mode.
-            const videoElement = document.createElement("video-js");
-
-            videoElement.classList.add("vjs-big-play-centered");
-            videoRef.current.appendChild(videoElement);
-
-            const player = (playerRef.current = videojs(
-                videoElement,
-                options,
-                () => {
-                    videojs.log("player is ready");
-                    onReady && onReady(player);
-                }
-            ));
-        } else {
-            const player = playerRef.current;
-
-            player.autoplay(options.autoplay);
-            player.src(options.sources);
-        }
-    }, [options, videoRef]);
-
-    // Dispose the Video.js player when the functional component unmounts
-    useEffect(() => {
-        const player = playerRef.current;
-        return () => {
-            if (player && !player.isDisposed()) {
-                player.dispose();
-                playerRef.current = null;
-            }
-        };
-    }, [playerRef]);
-    const onReady = (player) => {
-        console.log("Player is ready:", player);
-    };
+        const player = videoPlayer("player", {
+            cloudName: "demo",
+        });
+        player.source(src);
+    });
     return (
-        <div data-vjs-player>
-            <div
-                ref={videoRef}
-                className={`video-js vjs-theme-fantasy overflow-hidden ${className}`}
-            />
-        </div>
+        <video
+            id="player"
+            controls
+            autoPlay
+            className={`cld-video-player cld-fluid ${className}`}
+        />
     );
 };
 
-export default VideoPlayer;
+export default memo(HLSVideoPlayer);

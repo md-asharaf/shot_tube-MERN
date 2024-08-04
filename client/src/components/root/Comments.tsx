@@ -173,7 +173,7 @@ const Comments = ({ videoId }) => {
                                     }
                                 />
                                 <div>
-                                    <div className="flex items-center justify-center space-x-2">
+                                    <div className="flex items-center space-x-2">
                                         <div
                                             onClick={() =>
                                                 navigate(
@@ -200,7 +200,7 @@ const Comments = ({ videoId }) => {
                                             } ${
                                                 sentiment == "neutral" &&
                                                 "bg-yellow-500"
-                                            } rounded-full items-center justify-center py-1 px-2`}
+                                            } rounded-full items-center justify-center pl-1 pr-2`}
                                         >
                                             {sentiment === "positive" ? (
                                                 <FaPlus className="text-white text-xs mr-1 dark:text-black" />
