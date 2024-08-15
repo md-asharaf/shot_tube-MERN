@@ -1,7 +1,8 @@
 import axios from "axios";
 import { defaultConfig, jsonConfig, formdataConfig } from ".";
+
 const axio = axios.create({
-    baseURL: "https://shot-tube-mern.onrender.com/api/v1",
+    baseURL: String(import.meta.env.VITE_BACKEND_BASE_URL),
 });
 class Axios {
     get = async (url: string) => {

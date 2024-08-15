@@ -28,6 +28,10 @@ app.use(express.json());
 app.use(express.static("public"))
 app.use(cookieParser())
 //routes declaration
+
+app.use("/hello",(req,res)=>{
+    res.send("Hello World")
+})
 app.use("/api/v1/users", userRoutes)
 
 app.use("/api/v1/tweets", tweetRoutes)

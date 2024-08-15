@@ -27,6 +27,8 @@
         "cloudinary-video-player": "^2.0.5",
         "clsx": "^2.1.0",
         "date-fns": "^3.6.0",
+        "dotenv": "^16.4.5",
+        "dotenv-webpack": "^8.1.0",
         "input": "^1.0.1",
         "lucide-react": "^0.414.0",
         "react": "^18.2.0",
@@ -41,6 +43,7 @@
         "shadcn-ui": "^0.2.3",
         "tailwind-merge": "^2.2.2",
         "tailwindcss-animate": "^1.0.7",
+        "webpack": "^5.93.0",
         "zod": "^3.22.5"
     },
     "devDependencies": {
