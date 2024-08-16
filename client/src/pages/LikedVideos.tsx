@@ -33,7 +33,7 @@ const LikedVideos = () => {
     if (isError) {
         return <div>ERROR: {error.message}</div>;
     }
-    if (videos.length === 0)
+    if (videos?.length === 0)
         return (
             <div className="flex items-center justify-center h-full text-2xl">
                 No liked videos...
@@ -49,7 +49,7 @@ const LikedVideos = () => {
                     className="aspect-video object-cover rounded-lg hover:opacity-40"
                 />
                 <h1 className="text-[2em] font-bold">Liked Videos</h1>
-                <p>{userData.fullname}</p>
+                <p>{userData?.fullname}</p>
                 <p className="text-xs">
                     {`${
                         videos.length
@@ -68,7 +68,7 @@ const LikedVideos = () => {
             </div>
 
             <div className="grid grid-rows-6 gap-2 md:min-w-max">
-                {videos.map((video, index) => (
+                {videos?.map((video, index) => (
                     <Link to={`/videos/${video._id}`} key={video._id}>
                         <div className="flex space-x-2 items-center p-2 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-lg">
                             <div>{index + 1}</div>

@@ -102,7 +102,7 @@ const Video = () => {
 
     const { data: isSubscribed, refetch: refetchIsSubscribed } =
         useQuery<boolean>({
-            queryKey: ["isSubscribed", video?.creator._id],
+            queryKey: ["subscribe", video?.creator._id,userId],
             queryFn: fetchIsSubscribed,
             enabled: !!video && !!userId,
         });
@@ -121,11 +121,11 @@ const Video = () => {
 
     const { mutate: toggleSubscription } = useMutation({
         mutationFn: toggleSubscribeMutation,
-        mutationKey: ["toggleSubscribe", video?.creator._id, userId],
+        mutationKey: ["subscribe", video?.creator._id, userId],
     });
 
     const { mutate: addToWatchHistory } = useMutation({
-        mutationKey: ["add-to-watch-history", videoId, userId],
+        mutationKey: ["watch-history", videoId, userId],
         mutationFn: addToWatchHistoryMutation,
     });
 

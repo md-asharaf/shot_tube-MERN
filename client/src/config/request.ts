@@ -2,7 +2,7 @@ import axios from "axios";
 import { defaultConfig, jsonConfig, formdataConfig } from ".";
 
 const axio = axios.create({
-    baseURL: String(import.meta.env.VITE_BACKEND_BASE_URL),
+    baseURL: String(window.location.protocol==='https:'?import.meta.env.VITE_RENDER_BASE_URL:import.meta.env.VITE_EC2_BASE_URL)+'/api/v1'
 });
 class Axios {
     get = async (url: string) => {

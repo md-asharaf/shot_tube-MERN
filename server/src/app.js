@@ -14,7 +14,7 @@ const app = express();
 
 //middlewares
 app.use(cors({
-    origin: process.env.ORIGIN,
+    origin: [process.env.ORIGIN_01,process.env.ORIGIN_02],
     credentials: true
 }))
 app.use(bodyParser.json({

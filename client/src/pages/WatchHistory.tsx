@@ -16,7 +16,7 @@ const WatchHistory = () => {
         return res.data;
     };
     const clearAllHistoryMutation = async () => {
-        const res = await userServices.clearHistory();
+        await userServices.clearHistory();
         refetch();
     };
     const {
@@ -47,7 +47,7 @@ const WatchHistory = () => {
     return (
         <div className="w-full dark:text-white">
             <div className="text-4xl mb-6">
-                {videos.length > 0 ? "Watch History" : "No History"}
+                {videos?.length > 0 ? "Watch History" : "No History"}
             </div>
             <div className="flex space-x-4">
                 <div className="grid grid-rows-4 gap-2 overflow-auto w-3/4">
@@ -86,7 +86,7 @@ const WatchHistory = () => {
                         clear all watch history
                     </span>
                     <Button
-                        disabled={videos.length === 0}
+                        disabled={videos?.length === 0}
                         variant="destructive"
                         className="ml-4 mr-2"
                         onClick={() => clearAllHistory()}

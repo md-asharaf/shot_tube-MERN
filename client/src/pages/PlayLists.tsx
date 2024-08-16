@@ -38,7 +38,7 @@ const PlayLists = () => {
                 {playlists?.length > 0 ? "Playlists" : "No playlists yet"}
             </h1>
             <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
-                {playlists.map((playlist) => (
+                {playlists?.map((playlist) => (
                     <Link
                         to={`/playlist/${playlist._id}`}
                         key={playlist._id}
