@@ -97,11 +97,11 @@ class Auth {
         const options = {
             httpOnly: true,
             secure: true,
-            maxAge: 24 * 60 * 60 * 1000,
+            maxAge: 10 * 60 * 60 * 1000,
             sameSite: "none" // 7 days
             // set to your Vercel base URL with leading dot for subdomains
         };
-        return res.status(200).clearCookie("accessToken", options).clearCookie("refreshToken", { ...options, maxAge: 10 * 24 * 60 * 100 }).json(new ApiResponse(200, null, "User logged out successfully"))
+        return res.status(200).clearCookie("accessToken", options).clearCookie("refreshToken", options).json(new ApiResponse(200, null, "User logged out successfully"))
     })
     //controller to refresh users's access token
     refreshTokens = asyncHandler(async (req, res) => {
@@ -121,14 +121,14 @@ class Auth {
             const options = {
                 httpOnly: true,
                 secure: true,
-                maxAge: 24 * 60 * 60 * 1000,
+                maxAge: 10 * 60 * 60 * 1000,
                 sameSite: "none"// 7 days
                 // set to your Vercel base URL with leading dot for subdomains
             };
             const { accessToken, refreshToken } = this.generateTokens(user._id);
             return res
                 .status(200)
-                .cookie("accessToken", accessToken, options).cookie("refreshToken", refreshToken, { ...options, maxAge: 10 * 24 * 60 * 100 }).json(new ApiResponse(200, {
+                .cookie("accessToken", accessToken, options).cookie("refreshToken", refreshToken, options).json(new ApiResponse(200, {
                     accessToken,
                     refreshToken,
                 }, "Access Token refreshed"))

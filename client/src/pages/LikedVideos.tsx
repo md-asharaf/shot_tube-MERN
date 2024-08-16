@@ -7,7 +7,7 @@ import { formatDistanceToNow } from "date-fns";
 import { Loader2 } from "lucide-react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-
+import Thumbnail from "@/assets/images/defaultThumbnail.jpg"
 const LikedVideos = () => {
     const userData = useSelector((state: RootState) => state.auth.userData);
     const fetchLikedVideos = async () => {
@@ -39,12 +39,12 @@ const LikedVideos = () => {
                 No liked videos...
             </div>
         );
-    const totalViews = videos.reduce((prev, curr) => prev + curr.views, 0);
+    const totalViews = videos?.reduce((prev, curr) => prev + curr.views, 0);
     return (
         <div className="px-1 flex-col flex md:flex-row gap-4 md:gap-1 relative w-full dark:text-white">
             <div className="dark:bg-zinc-700 bg-gray-200 p-5 space-y-3 rounded-xl md:max-w-md">
                 <img
-                    src={videos[0].thumbnail.url}
+                    src={videos?videos[0].thumbnail.url:Thumbnail}
                     alt="Playlist Thumbnail"
                     className="aspect-video object-cover rounded-lg hover:opacity-40"
                 />
@@ -52,7 +52,7 @@ const LikedVideos = () => {
                 <p>{userData?.fullname}</p>
                 <p className="text-xs">
                     {`${
-                        videos.length
+                        videos?.length
                     } videos • ${totalViews} views • Last updated on ${new Date(
                         videos[videos.length - 1].updatedAt
                     ).toDateString()}`}
