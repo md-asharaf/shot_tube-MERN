@@ -5,8 +5,9 @@ import { multerUpload } from "../middlewares/multer.middlewares.js";
 const router = Router();
 
 router.get("/", VideoC.getAllVideos);
-router.get("/:videoId", VideoC.getSingleVideo);
+router.get("/single/:videoId", VideoC.getSingleVideo);
 router.get("/search/:query", VideoC.getVideosByQuery);
+router.get("/recommended", verifyJWT, VideoC.getRecommendedVideos);
 router.post("/publish", verifyJWT, multerUpload.fields([
     {
         name: "video",

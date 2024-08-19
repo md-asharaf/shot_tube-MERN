@@ -4,6 +4,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { Video } from "../models/video.models.js";
 import mongoose from "mongoose";
 import { Cloudinary } from "../utils/cloudinary.js";
+import { User } from "../models/user.models.js";
 class VideoC {
     // controller to publish a video
     publishVideo = asyncHandler(async (req, res) => {
@@ -320,6 +321,60 @@ class VideoC {
             console.log("ERROR: ", error.message)
         }
     })
+
+    getRecommendedVideos = asyncHandler(async (req, res) => {
+        console.log("i am in recommended videos")
+        const userId = req.user?._id;
+        console.log("userId: ", userId)
+        // Check if userId is valid
+        if (!mongoose.Types.ObjectId.isValid(userId)) {
+            return res.status(400).json(new ApiResponse(400, null, 'Invalid user ID'));
+        }
+
+        try {
+            const user = await User.findById(userId).populate('watchHistory').exec();
+
+
+            if (!user) {
+                return res.status(404).json(new ApiResponse(404, null, 'User not found'));
+            }
+            const watchedVideos = user.watchHistory.map(video => video._id);
+
+            // Find other users who have watched the same videos
+            const otherUsers = await User.find({
+                _id: { $ne: userId },
+                watchHistory: { $in: watchedVideos }
+            }).exec();
+
+            // Collect videos watched by these other users
+            let recommendedVideos = [];
+            for (const otherUser of otherUsers) {
+                recommendedVideos = recommendedVideos.concat(otherUser.watchHistory);
+            }
+
+            // Filter out videos the user has already watched and remove duplicates
+            recommendedVideos = recommendedVideos
+                .filter(videoId => !watchedVideos.includes(videoId.toString()))
+                .filter((videoId, index, self) => index === self.findIndex(v => v.toString() === videoId.toString()));
+
+            // Populate video details
+            let detailedRecommendedVideos = await Video.find({ _id: { $in: recommendedVideos } }).populate({
+                path: 'userId',
+                select: 'fullname username'
+            }).lean().exec();
+            detailedRecommendedVideos = detailedRecommendedVideos.map((video) => {
+                video.creator = video.userId;
+                delete video.userId;
+                return video;
+            }
+
+            )
+            return res.status(200).json(new ApiResponse(200, detailedRecommendedVideos, 'Recommended videos fetched successfully'));
+        } catch (error) {
+            console.log("ERROR: ", error.message);
+            return res.status(500).json(new ApiResponse(500, null, 'Internal server error'));
+        }
+    });
     increaseViews = asyncHandler(async (req, res) => {
         const { videoId } = req.params;
         const video = await Video.findById(videoId);
