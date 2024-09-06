@@ -4,60 +4,27 @@ import { ApiError } from "../utils/ApiError.js";
 import { Video } from "../models/video.models.js";
 import mongoose from "mongoose";
 import { Cloudinary } from "../utils/cloudinary.js";
-import { User } from "../models/user.models.js";
 class VideoC {
     // controller to publish a video
     publishVideo = asyncHandler(async (req, res) => {
         try {
             //get title and description from request body
-            const { title, description } = req.body;
+            const { title, description,video,thumbnail,duration } = req.body;
             //get user id from request user object
             const userId = req.user?._id;
             //check if title and description are provided
-            if (!title || !description) {
-                throw new ApiError(400, "Please provide title and description")
+            if (!title || !description || !video || !thumbnail || !duration) {
+                throw new ApiError(400, "please provide title, description, video, thumbnail and duration")
             }
-            //check if video and thumbnail files are provided
-            if (!req.files || !req.files.video || !req.files.thumbnail || !req.files.video.length || !req.files.thumbnail.length) {
-                return res.json(new ApiResponse(400, {}, "Please provide video and thumbnail files"))
-            }
-            //get video and thumbnail files
-            const localVideo = req.files.video[0];
-            const localThumbnail = req.files.thumbnail[0];
-            //upload video and thumbnail on cloudinary
-            // const output360 = localVideo.path.replace(".mp4", "_360p.mp4");
-            // const output720 = localVideo.path.replace(".mp4", "_720p.mp4");
-            // const output1080 = localVideo.path.replace(".mp4", "_1080p.mp4");
-            // await transcodeVideo(localVideo.path, output360, "640x360");
-            // await transcodeVideo(localVideo.path, output720, "1280x720");
-            // await transcodeVideo(localVideo.path, output1080, "1920x1080");
-            // const { video: url_360 } = await Cloudinary.upload(output360, "video");
-            // const { video: url_720 } = await Cloudinary.upload(output720, "video");
-            // const { video: url_1080, duration, public_id } = await Cloudinary.upload(output1080, "video");
-            // if (!url_360 || !url_720 || !url_1080) {
-            //     throw new ApiError(500, "Failed to upload video or thumbnail")
-            // }
-            // const _360m3u8 = output360.replace(".mp4", ".m3u8");
-            // const _720m3u8 = output720.replace(".mp4", ".m3u8");
-            // const _1080m3u8 = output1080.replace(".mp4", ".m3u8");
-            // await generateHLSPlaylist(output360, _360m3u8);
-            // await generateHLSPlaylist(output720, _720m3u8);
-            // await generateHLSPlaylist(output1080, _1080m3u8);
-            console.log("before video upload")
-            const videoFile = await Cloudinary.upload(localVideo.path, "video", localVideo.size);
-            console.log("after video upload")
-            const thumbnail = await Cloudinary.upload(localThumbnail.path, "image");
-            //get duration of video
-            //create video
-            const video = await Video.create({
-                videoFile: videoFile.video,
+            const newVideo = await Video.create({
+                video,
                 thumbnail,
-                duration: videoFile.duration,
+                duration,
                 title,
                 description,
                 userId
             })
-            if (!videoo) {
+            if (!video) {
                 throw new ApiError(500, "Failed to publish video")
             }
             return res.status(200).json(new ApiResponse(200, video, "Video published successfully"))
@@ -321,11 +288,10 @@ class VideoC {
             console.log("ERROR: ", error.message)
         }
     })
+<<<<<<< HEAD
 
     getRecommendedVideos = asyncHandler(async (req, res) => {
-        console.log("i am in recommended videos")
         const userId = req.user?._id;
-        console.log("userId: ", userId)
         // Check if userId is valid
         if (!mongoose.Types.ObjectId.isValid(userId)) {
             return res.status(400).json(new ApiResponse(400, null, 'Invalid user ID'));
@@ -375,6 +341,8 @@ class VideoC {
             return res.status(500).json(new ApiResponse(500, null, 'Internal server error'));
         }
     });
+=======
+>>>>>>> parent of 6ce2cea (deplyed whole app on aws using docker and ec2 and attached ssl certificates to the domain)
     increaseViews = asyncHandler(async (req, res) => {
         const { videoId } = req.params;
         const video = await Video.findById(videoId);

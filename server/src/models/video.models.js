@@ -1,18 +1,17 @@
 import { Schema, model } from "mongoose";
 import MAP from "mongoose-aggregate-paginate-v2";
 const videoSchema = new Schema({
-    videoFile: {
+    video: {
         type: {
             url: String,
-            public_id: String,
-            m3u8: String,
+            filename:String
         },//cloudinary url
         required: true
     },
     thumbnail: {
         type: {
             url: String,
-            public_id: String
+            filename:String
         },//cloudinary url
         required: true
     },

@@ -27,6 +27,8 @@ import {
 import { useState } from "react";
 import { Loader2 } from "lucide-react";
 import { useToast } from "../ui/use-toast";
+import s3Services from "@/services/s3.services";
+import { getVideoDuration } from "@/lib/utils";
 
 const VideoUpload = () => {
     const dispatch = useDispatch();
@@ -47,24 +49,36 @@ const VideoUpload = () => {
     const uploadVideo = async (values: IVideoForm) => {
         setLoader(true);
         const { title, description, video, thumbnail } = values;
-        const formData = new FormData();
-        formData.append("title", title);
-        formData.append("description", description);
-        formData.append("video", video[0]);
-        formData.append("thumbnail", thumbnail[0]);
-
         try {
-            await videoService.upload(formData);
+            const videoFile = video[0];
+            const thumnailFile = thumbnail[0];
+            const videoUrl = await s3Services.uploadFile(videoFile);
+            const thumbnailUrl = await s3Services.uploadFile(thumnailFile);
+            const duration = await getVideoDuration(video[0]);
+            console.log("video duration:",duration)
+            await videoService.upload({
+                title,
+                description,
+                video: {
+                    url: videoUrl,
+                    filename: videoFile.name,
+                },
+                thumbnail:{
+                    url:thumbnailUrl,
+                    filename:thumnailFile.name
+                },
+                duration
+            });
             dispatch(toggleVideoModal());
             toast({
                 title: "Video uploaded successfully",
                 description: "Your video is now live",
             });
         } catch (err) {
-            console.error(err);
+            console.log(err);
             toast({
-                title: "Failed to upload video",
-                description: "Please login first",
+                title: "Error",
+                description: "Failed to upload video",
             });
         } finally {
             setLoader(false);

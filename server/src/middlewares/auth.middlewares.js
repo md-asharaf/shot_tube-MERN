@@ -37,7 +37,6 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
         req.user = user;
         next();
     } catch (error) {
-        console.log("error in access token", error.message)
         await verifyRefreshToken(refreshToken);
     }
 });

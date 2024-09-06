@@ -29,7 +29,7 @@ const Video = () => {
     const userId = useSelector((state: RootState) => state.auth.userData?._id);
     const { videoId } = useParams();
     const [playlistIds, setPlaylistIds] = useState<string[]>([]);
-    const fetchVideo = async ()=> {
+    const fetchVideo = async () => {
         const res = await videoService.singleVideo(videoId);
         return res.data;
     };
@@ -102,7 +102,7 @@ const Video = () => {
 
     const { data: isSubscribed, refetch: refetchIsSubscribed } =
         useQuery<boolean>({
-            queryKey: ["subscribe", video?.creator._id, userId],
+            queryKey: ["subscribe", video?.creator._id,userId],
             queryFn: fetchIsSubscribed,
             enabled: !!video && !!userId,
         });
@@ -113,15 +113,6 @@ const Video = () => {
             queryFn: fetchSubscribersCount,
             enabled: !!video,
         });
-
-    const { data: recommendedVideos } = useQuery<IVideoData[]>({
-        queryKey: ["recommendedVideos", videoId],
-        queryFn: async()=>{
-            const res= await videoService.recommendedVideos();
-            return res.data;
-        },
-        enabled: !!videoId,
-    });
 
     const { mutate: toggleVideoLike } = useMutation({
         mutationFn: toggleVideoLikeMutation,
@@ -154,13 +145,14 @@ const Video = () => {
         );
     }
     if (isError) return <div>Error: {error.message}</div>;
-    console.log("recommended Videos: ",recommendedVideos)
+
     return (
+<<<<<<< HEAD
         <div className="flex flex-col space-y-4 md:flex-row md:space-x-4 w-full dark:text-white">
             <div className="space-y-4 lg:w-4/5 xl:w-2/3">
                 <div className="flex flex-col space-y-2 px-2">
                     <VideoPlayer
-                        src={video.videoFile.m3u8}
+                        src={video.video.url}
                         className="w-full h-full rounded-xl"
                     />
                     <h1 className="font-bold text-xl">{video.title}</h1>
@@ -185,97 +177,124 @@ const Video = () => {
                                     <div className="text-gray-500  text-sm">
                                         {`${subscribersCount} subscribers`}
                                     </div>
+=======
+        <div className="space-y-4 lg:w-4/5 xl:w-2/3 dark:text-white">
+            <div className="flex flex-col space-y-2 px-2">
+                <VideoPlayer
+                    src={video.videoFile.m3u8}
+                    className="w-full h-full rounded-xl"
+                />
+                <h1 className="font-bold text-xl">{video.title}</h1>
+                <div className="flex justify-between flex-col sm:flex-row gap-y-2 sm:gap-0">
+                    <div className="flex gap-x-4 items-center justify-between sm:justify-normal">
+                        <Link
+                            to={`/${video.creator.username}/channel`}
+                            className="flex gap-x-4 items-center"
+                        >
+                            <img
+                                src={
+                                    video.creator.avatar?.url ||
+                                    DefaultProfileImage
+                                }
+                                className="rounded-full object-cover h-12 w-12"
+                            />
+                            <div className="flex flex-col gap-y-1 items-start">
+                                <div className="font-bold">
+                                    {video.creator.fullname}
+>>>>>>> parent of 6ce2cea (deplyed whole app on aws using docker and ec2 and attached ssl certificates to the domain)
                                 </div>
-                            </Link>
 
-                            <Button
-                                disabled={!userId}
-                                variant="default"
-                                className={`${
-                                    !isSubscribed
-                                        ? "bg-zinc-200 hover:bg-zinc-400"
-                                        : "bg-zinc-400 hover:bg-zinc-500"
-                                } shadow-none text-black rounded-3xl`}
-                                onClick={() => toggleSubscription()}
-                            >
-                                {isSubscribed ? "Subscribed" : "Subscribe"}
-                            </Button>
-                        </div>
-
-                        <div className="flex sm:items-center justify-end gap-4 sm:gap-2">
-                            <Button
-                                disabled={!userId}
-                                className={`${
-                                    isLiked && "text-blue-500"
-                                } dark:bg-zinc-600 border-none bg-zinc-200 h-7 sm:h-9`}
-                                variant="outline"
-                                onClick={() => toggleVideoLike()}
-                            >
-                                <BiLike className="text-2xl" />
-                            </Button>
-                            <Popover
-                                onOpenChange={(open) => {
-                                    if (!open) {
-                                        addToPlaylists();
-                                    }
-                                }}
-                            >
-                                <PopoverTrigger>
-                                    <Button
-                                        disabled={!userId}
-                                        variant="outline"
-                                        className="dark:bg-zinc-600 border-none bg-zinc-200 h-7 sm:h-9"
-                                    >
-                                        <MdOutlinePlaylistAdd className="text-2xl" />
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-48 right-0 top-2 absolute bg-zinLoader2c-400">
-                                    <SaveToPlaylist
-                                        userId={userId}
-                                        setPLaylistIds={setPlaylistIds}
-                                    />
-                                </PopoverContent>
-                            </Popover>
-                        </div>
-                    </div>
-                    <div className="p-4 shadow-md rounded-xl bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-semibold">
-                        <div className="flex space-x-4">
-                            <div>{`${video.views} views`}</div>
-                            <div>
-                                {formatDistanceToNow(
-                                    new Date(video.createdAt),
-                                    {
-                                        addSuffix: true,
-                                    }
-                                )}
+                                <div className="text-gray-500  text-sm">
+                                    {`${subscribersCount} subscribers`}
+                                </div>
                             </div>
-                        </div>
-                        <div>{video.description}</div>
+                        </Link>
+
+                        <Button
+                            disabled={!userId}
+                            variant="default"
+                            className={`${
+                                !isSubscribed
+                                    ? "bg-zinc-200 hover:bg-zinc-400"
+                                    : "bg-zinc-400 hover:bg-zinc-500"
+                            } shadow-none text-black rounded-3xl`}
+                            onClick={() => toggleSubscription()}
+                        >
+                            {isSubscribed ? "Subscribed" : "Subscribe"}
+                        </Button>
+                    </div>
+
+                    <div className="flex sm:items-center justify-end gap-4 sm:gap-2">
+                        <Button
+                            disabled={!userId}
+                            className={`${
+                                isLiked && "text-blue-500"
+                            } dark:bg-zinc-600 border-none bg-zinc-200 h-7 sm:h-9`}
+                            variant="outline"
+                            onClick={() => toggleVideoLike()}
+                        >
+                            <BiLike className="text-2xl" />
+                        </Button>
+                        <Popover
+                            onOpenChange={(open) => {
+                                if (!open) {
+                                    addToPlaylists();
+                                }
+                            }}
+                        >
+                            <PopoverTrigger>
+                                <Button
+                                    disabled={!userId}
+                                    variant="outline"
+                                    className="dark:bg-zinc-600 border-none bg-zinc-200 h-7 sm:h-9"
+                                >
+                                    <MdOutlinePlaylistAdd className="text-2xl" />
+                                </Button>
+                            </PopoverTrigger>
+                            <PopoverContent className="w-48 right-0 top-2 absolute bg-zinLoader2c-400">
+                                <SaveToPlaylist
+                                    userId={userId}
+                                    setPLaylistIds={setPlaylistIds}
+                                />
+                            </PopoverContent>
+                        </Popover>
                     </div>
                 </div>
+<<<<<<< HEAD
                 <Comments videoId={videoId} />
             </div>
             <div>
-                {recommendedVideos?.map((video) => (
-                    <Link to={`/video/${video._id}`} key={video._id}>
+                {recommendedVideos?.map((data) => (
+                    <Link to={`/video/${data._id}`} key={data._id}>
                         <div className="flex gap-4 p-4">
                             <img
-                                src={video.thumbnail.url}
+                                src={data.thumbnail.url}
                                 className="h-28 w-40 object-cover rounded-lg"
                             />
                             <div className="flex flex-col gap-2">
-                                <h2 className="font-bold">{video.title}</h2>
+                                <h2 className="font-bold">{data.title}</h2>
                                 <div className="text-gray-500">
-                                    {video.creator?.fullname}
+                                    {data.creator?.fullname}
                                 </div>
                                 <div className="text-gray-500">
-                                    {`${video.views} views`}
+                                    {`${data.views} views`}
                                 </div>
                             </div>
+=======
+                <div className="p-4 shadow-md rounded-xl bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-semibold">
+                    <div className="flex space-x-4">
+                        <div>{`${video.views} views`}</div>
+                        <div>
+                            {formatDistanceToNow(new Date(video.createdAt), {
+                                addSuffix: true,
+                            })}
+>>>>>>> parent of 6ce2cea (deplyed whole app on aws using docker and ec2 and attached ssl certificates to the domain)
                         </div>
-                    </Link>
-                ))}
+                    </div>
+                    <div>{video.description}</div>
+                </div>
             </div>
+            <Comments videoId={videoId} />
         </div>
     );
 };

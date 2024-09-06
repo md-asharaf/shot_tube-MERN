@@ -44,14 +44,14 @@ export interface IVideoForm {
 export interface IFile {
     _id?: string;
     url: string;
-    public_id: string;
+    filename:string;
     m3u8?: string;
 }
 export interface IVideoData {
     _id: string;
     title: string;
     description: string;
-    videoFile: IFile;
+    video: IFile;
     thumbnail: IFile;
     creator: IUser;
     views: number;

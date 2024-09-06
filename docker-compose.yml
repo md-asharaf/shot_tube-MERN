@@ -1,11 +1,28 @@
 services:
-  app:
-    image: shot-tube-app
-    container_name: shot-tube-app
+  server:
+    image: server
+    container_name: server_container
     build: 
-      context: .
+      context: ./server
       dockerfile: Dockerfile
+    networks:
+      - my_network
     ports:
       - "8000:8000"
     env_file:
       - ./server/.env
+  client:
+    image: client
+    container_name: client_container
+    build: 
+      context: ./client
+      dockerfile: Dockerfile
+    networks:
+      - my_network
+    ports:
+      - "3000:3000"
+    depends_on:
+      - server
+networks:
+  my_network:
+    driver: bridge

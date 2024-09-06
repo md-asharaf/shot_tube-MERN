@@ -12,6 +12,8 @@ client/node_modules
 # Ignore local environment files
 server/.env
 server/.env.local
+client/.env
+client/.env.local
 
 # Ignore build output
 client/build
@@ -24,3 +26,4 @@ client/dist
 # Ignore other common unnecessary files
 .DS_Store
 Thumbs.db
+client/src/hls/lambdas/.serverless
