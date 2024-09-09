@@ -25,4 +25,4 @@ dist-ssr
 bun.lockb
 package-lock.json
 .env
-hls/lambdas/.serverless
+src/hls/lambdas/.serverless
