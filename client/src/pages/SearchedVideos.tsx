@@ -36,7 +36,7 @@ const SearchedVideos = () => {
                     <div className="flex space-x-2 p-2 rounded-lg h-1/4">
                         <div className="relative mr-5 w-1/2 xl:w-1/3">
                             <img
-                                src={video.thumbnail.url}
+                                src={video.thumbnail}
                                 alt="Video Thumbnail"
                                 className="w-full rounded-lg aspect-video object-cover "
                             />
@@ -57,7 +57,7 @@ const SearchedVideos = () => {
                             </div>
                             <div className="flex items-center space-x-4">
                                 <img
-                                    src={video.creator.avatar?.url}
+                                    src={video.creator.avatar}
                                     className="w-10 h-10 rounded-full"
                                 />
                                 <div>{video.creator.fullname}</div>

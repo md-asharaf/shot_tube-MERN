@@ -4,6 +4,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { Video } from "../models/video.models.js";
 import mongoose from "mongoose";
 import { Cloudinary } from "../utils/cloudinary.js";
+import { User } from "../models/user.models.js";
 class VideoC {
     // controller to publish a video
     publishVideo = asyncHandler(async (req, res) => {
@@ -288,7 +289,6 @@ class VideoC {
             console.log("ERROR: ", error.message)
         }
     })
-<<<<<<< HEAD
 
     getRecommendedVideos = asyncHandler(async (req, res) => {
         const userId = req.user?._id;
@@ -341,8 +341,6 @@ class VideoC {
             return res.status(500).json(new ApiResponse(500, null, 'Internal server error'));
         }
     });
-=======
->>>>>>> parent of 6ce2cea (deplyed whole app on aws using docker and ec2 and attached ssl certificates to the domain)
     increaseViews = asyncHandler(async (req, res) => {
         const { videoId } = req.params;
         const video = await Video.findById(videoId);

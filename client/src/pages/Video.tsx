@@ -6,7 +6,7 @@ import { Link, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { RootState } from "@/provider";
 import { IVideoData } from "@/interfaces";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNow, set } from "date-fns";
 import DefaultProfileImage from "@/assets/images/profile.png";
 import videoService from "@/services/video.services";
 import subscriptionServices from "@/services/subscription.services";
@@ -26,10 +26,16 @@ import VideoPlayer from "@/components/root/VideoPlayer";
 import { Loader2 } from "lucide-react";
 
 const Video = () => {
+    const [isExpanded, setIsExpanded] = useState(false);
+    const [maxLength, setMaxLength] = useState(100); // Number of characters before truncating
+
     const userId = useSelector((state: RootState) => state.auth.userData?._id);
     const { videoId } = useParams();
     const [playlistIds, setPlaylistIds] = useState<string[]>([]);
-    const fetchVideo = async ()=> {
+    const toggleExpanded = () => {
+        setIsExpanded(!isExpanded);
+    };
+    const fetchVideo = async () => {
         const res = await videoService.singleVideo(videoId);
         return res.data;
     };
@@ -116,8 +122,8 @@ const Video = () => {
 
     const { data: recommendedVideos } = useQuery<IVideoData[]>({
         queryKey: ["recommendedVideos", videoId],
-        queryFn: async()=>{
-            const res= await videoService.recommendedVideos();
+        queryFn: async () => {
+            const res = await videoService.recommendedVideos();
             return res.data;
         },
         enabled: !!videoId,
@@ -146,6 +152,9 @@ const Video = () => {
             }, 10000);
     }, [video]);
 
+    useEffect(() => {
+        setMaxLength(window.innerWidth * 0.1);
+    }, [window.innerWidth]);
     if (isLoading) {
         return (
             <div className="flex w-[90%] justify-center">
@@ -154,13 +163,12 @@ const Video = () => {
         );
     }
     if (isError) return <div>Error: {error.message}</div>;
-    console.log("recommended Videos: ",recommendedVideos)
     return (
         <div className="flex flex-col space-y-4 md:flex-row md:space-x-4 w-full dark:text-white">
             <div className="space-y-4 lg:w-4/5 xl:w-2/3">
                 <div className="flex flex-col space-y-2 px-2">
                     <VideoPlayer
-                        src={video.videoFile.m3u8}
+                        src={video.video}
                         className="w-full h-full rounded-xl"
                     />
                     <h1 className="font-bold text-xl">{video.title}</h1>
@@ -172,7 +180,7 @@ const Video = () => {
                             >
                                 <img
                                     src={
-                                        video.creator.avatar?.url ||
+                                        video.creator.avatar ||
                                         DefaultProfileImage
                                     }
                                     className="rounded-full object-cover h-12 w-12"
@@ -229,7 +237,7 @@ const Video = () => {
                                         <MdOutlinePlaylistAdd className="text-2xl" />
                                     </Button>
                                 </PopoverTrigger>
-                                <PopoverContent className="w-48 right-0 top-2 absolute bg-zinLoader2c-400">
+                                <PopoverContent className="w-48 right-0 top-2 absolute bg-zinc-400">
                                     <SaveToPlaylist
                                         userId={userId}
                                         setPLaylistIds={setPlaylistIds}
@@ -250,17 +258,35 @@ const Video = () => {
                                 )}
                             </div>
                         </div>
-                        <div>{video.description}</div>
+                        <div>
+                            <div className="description">
+                                {isExpanded ||
+                                video.description.length <= maxLength
+                                    ? video.description
+                                    : `${video.description.substring(
+                                          0,
+                                          maxLength
+                                      )}...`}
+                            </div>
+                            {video.description.length > maxLength && (
+                                <button
+                                    onClick={toggleExpanded}
+                                    className="show-more-btn"
+                                >
+                                    {isExpanded ? "Show less" : "Show more"}
+                                </button>
+                            )}
+                        </div>
                     </div>
                 </div>
                 <Comments videoId={videoId} />
             </div>
             <div>
                 {recommendedVideos?.map((video) => (
-                    <Link to={`/video/${video._id}`} key={video._id}>
+                    <Link to={`/videos/${video._id}`} key={video._id}>
                         <div className="flex gap-4 p-4">
                             <img
-                                src={video.thumbnail.url}
+                                src={video.thumbnail}
                                 className="h-28 w-40 object-cover rounded-lg"
                             />
                             <div className="flex flex-col gap-2">

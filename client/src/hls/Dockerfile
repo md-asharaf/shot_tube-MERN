@@ -1,12 +1,20 @@
 FROM alpine:latest
 
-RUN apk update && apk add --no-cache ffmpeg
+# Install dependencies and AWS CLI
+RUN apk update && \
+    apk add --no-cache ffmpeg aws-cli
 
+# Set the working directory
 WORKDIR /home/app
 
-COPY main.sh /home/app/main.sh
+# Copy the main.sh script to the container
+COPY main.sh main.sh
 
-RUN chmod +x /home/app/main.sh
+# Make the script executable
+RUN chmod +x main.sh
 
-CMD ["./main.sh"]
+# Set the default command to execute the script
+CMD ["sh", "./main.sh"]
+
+
 

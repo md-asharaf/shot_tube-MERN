@@ -1,4 +1,4 @@
-import { Link, useNavigate, useParams } from "react-router-dom";
+import { Link, useParams } from "react-router-dom";
 import { IUser, IVideoData } from "@/interfaces";
 import userServices from "@/services/user.services";
 import VideoCard from "@/components/root/VideoCard";
@@ -59,13 +59,13 @@ const Channel = () => {
             {userData?.username === username && (
                 <img
                     className="w-full h-32 rounded-xl"
-                    src={user?.coverImage?.url || DefaultCoverImage}
+                    src={user?.coverImage || DefaultCoverImage}
                     alt="User cover"
                 />
             )}
             <div className="flex space-x-8 justify-center rounded-2xl">
                 <img
-                    src={user?.avatar?.url || DefaultAvatarImage}
+                    src={user?.avatar || DefaultAvatarImage}
                     className="rounded-full h-40 w-40"
                     alt="User avatar"
                 />

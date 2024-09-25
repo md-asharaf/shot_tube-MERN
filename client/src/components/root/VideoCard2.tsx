@@ -5,7 +5,7 @@ const VideoCard2: React.FC<IVideoData> = (video) => {
         <div className="flex mb-5 border-b border-gray-700 pb-3">
             <div className="relative w-40 mr-5">
                 <img
-                    src={video.thumbnail.url}
+                    src={video.thumbnail}
                     alt="Video Thumbnail"
                     className="h-full w-full aspect-video object-cover"
                 />

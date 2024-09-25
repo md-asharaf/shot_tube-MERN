@@ -39,7 +39,8 @@ class Auth {
             email,
             password,
             fullname,
-            username: username.toLowerCase()
+            username: username.toLowerCase(),
+            avatar: "https://shot-tube-videos.s3.ap-south-1.amazonaws.com/profile.png"
         })
         //remove password and refresh token fields from response
         const createdUser = await User.findById(user._id)?.select("-password -refreshToken");

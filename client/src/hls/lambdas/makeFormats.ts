@@ -1,13 +1,14 @@
 import AWS from "aws-sdk";
 const ecs= new AWS.ECS({
-    region: "ap-south-1",
-    credentials:{
-        secretAccessKey: process.env.SECRET_ACCESS_KEY,
-        accessKeyId: process.env.ACCESS_KEY_ID
-    }
+    region: "ap-south-1"
 })
 
 module.exports.handler= async (event:any) =>{
+    console.log("ENV: ", process.env);
+    const eventBody= JSON.parse(event.Records[0].body);
+    console.log("EVENT BODY: ",eventBody);
+    const FILE_KEY=eventBody.Records[0].s3.object.key;
+    const INPUT_BUCKET=eventBody.Records[0].s3.bucket.name;
     const params= {
         cluster: process.env.CLUSTER_ARN,
         taskDefinition: process.env.TASK_ARN,
@@ -26,11 +27,11 @@ module.exports.handler= async (event:any) =>{
                     environment: [
                         {
                             name: "FILE_KEY",
-                            value: event.Records[0].s3.object.key
+                            value: FILE_KEY
                         },
                         {
                             name: "INPUT_BUCKET",
-                            value: event.Records[0].s3.bucket.name
+                            value: INPUT_BUCKET
                         },
                         {
                             name: "OUTPUT_BUCKET",
@@ -43,6 +44,7 @@ module.exports.handler= async (event:any) =>{
     }
     try{
         const data= await ecs.runTask(params).promise();
+        console.log("Task started, DATA: ", data);
         return data;
     }catch(error){
         console.log("Error starting task: ", error);

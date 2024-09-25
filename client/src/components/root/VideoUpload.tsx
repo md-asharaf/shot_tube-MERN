@@ -24,16 +24,26 @@ import {
     CardHeader,
     CardTitle,
 } from "@/components/ui/card";
-import { useState } from "react";
-import { Loader2 } from "lucide-react";
+import { useRef, useState } from "react";
 import { useToast } from "../ui/use-toast";
-import s3Services from "@/services/s3.services";
 import { getVideoDuration } from "@/lib/utils";
+import { S3Client } from "@aws-sdk/client-s3";
+import { Upload } from "@aws-sdk/lib-storage";
+const s3Client = new S3Client({
+    region: "ap-south-1",
+    credentials: {
+        accessKeyId: import.meta.env.VITE_AWS_ACCESS_KEY_ID,
+        secretAccessKey: import.meta.env.VITE_AWS_SECRET_ACCESS_KEY,
+    },
+});
+const BUCKET = import.meta.env.VITE_AWS_S3_BUCKET_NAME;
 
 const VideoUpload = () => {
     const dispatch = useDispatch();
     const { toast } = useToast();
-    const [loader, setLoader] = useState<boolean>(false);
+    const abortControllerRef = useRef(null);
+    const [uploadProgress, setUploadProgress] = useState<number>(0);
+    const [isUploading, setIsUploading] = useState<boolean>(false);
     const form = useForm<IVideoForm>({
         resolver: zodResolver(VideoFormValidation),
         defaultValues: {
@@ -45,45 +55,116 @@ const VideoUpload = () => {
     });
     const videoRef = form.register("video");
     const thumbnailRef = form.register("thumbnail");
-
-    const uploadVideo = async (values: IVideoForm) => {
-        setLoader(true);
-        const { title, description, video, thumbnail } = values;
+    const sanitizeFileName = (fileName:string) => {
+        // Replace all special characters (except for alphanumeric and period) with underscores
+        return fileName.replace(/[^a-zA-Z0-9.]/g, '_');
+    };
+    const uploadFile = async (file: File) => {
         try {
-            const videoFile = video[0];
-            const thumnailFile = thumbnail[0];
-            const videoUrl = await s3Services.uploadFile(videoFile);
-            const thumbnailUrl = await s3Services.uploadFile(thumnailFile);
+            // Generate a unique key for the file
+            const key = `uploads/user-uploads/${sanitizeFileName(file.name)}`;
+            const upload = new Upload({
+                client: s3Client,
+                params: {
+                    Bucket: BUCKET,
+                    Key: key,
+                    Body: file,
+                    ContentType: file.type,
+                },
+                abortController: abortControllerRef.current,
+            });
+    
+            // Track upload progress
+            upload.on("httpUploadProgress", (progress) => {
+                if (file.type.includes("video")) {
+                    setUploadProgress(
+                        Math.round((progress.loaded / progress.total) * 100)
+                    );
+                }
+            });
+    
+            // Await completion of upload
+            const response = await upload.done();
+            console.log("Uploaded file", response);
+        } catch (error) {
+            // Handle abort or other upload errors
+            if (error.name === "AbortError") {
+                console.log("Upload aborted by the user");
+                toast({
+                    title: "Upload aborted",
+                    description: "The upload was canceled",
+                });
+            } else {
+                console.error("Error uploading file", error);
+                toast({
+                    title: "Error",
+                    description: "Failed to upload file",
+                });
+            }
+    
+            // Throw the error so it can be caught in the calling function
+            throw error;
+        }
+    };
+    
+    const abortUpload = async () => {
+        if (abortControllerRef.current) {
+            console.log("Aborting upload");
+            abortControllerRef.current.abort();
+        }
+    };
+    
+    const uploadVideo = async (values: IVideoForm) => {
+        setIsUploading(true);
+        setUploadProgress(0);
+        
+        const { title, description, video, thumbnail } = values;
+        const videoFile = video[0];
+        const thumbnailFile = thumbnail[0];
+    
+        const abortController = new AbortController();
+        abortControllerRef.current = abortController;
+    
+        try {
+            
+            // Upload both video and thumbnail files
+            await Promise.all([uploadFile(videoFile), uploadFile(thumbnailFile)]);
+            
+            // Reset abort controller after successful upload
+            abortControllerRef.current = null;
+            
+            // Get video duration
             const duration = await getVideoDuration(video[0]);
-            console.log("video duration:",duration)
+            // encode file names to avoid special characters
+            const sanitizedVideoFileName = sanitizeFileName(videoFile.name);
+            const sanitizedThumbnailFileName = sanitizeFileName(thumbnailFile.name);
+            // Create video post only if both uploads are successful
             await videoService.upload({
                 title,
                 description,
-                video: {
-                    url: videoUrl,
-                    filename: videoFile.name,
-                },
-                thumbnail:{
-                    url:thumbnailUrl,
-                    filename:thumnailFile.name
-                },
-                duration
+                video: `https://public-shot-tube-videos.s3.ap-south-1.amazonaws.com/${sanitizedVideoFileName.split(".").slice(0, -1).join(".")}/master.m3u8`,
+                thumbnail: `https://shot-tube-videos.s3.ap-south-1.amazonaws.com/uploads/user-uploads/${sanitizedThumbnailFileName}`,
+                duration,
             });
+    
+            // Close video modal and notify success
             dispatch(toggleVideoModal());
             toast({
                 title: "Video uploaded successfully",
                 description: "Your video is now live",
             });
+    
         } catch (err) {
-            console.log(err);
+            console.error("Upload failed, no video post created:", err);
             toast({
                 title: "Error",
-                description: "Failed to upload video",
+                description: "Failed to upload video or thumbnail. No video post created.",
             });
         } finally {
-            setLoader(false);
+            setIsUploading(false);
         }
     };
+        
     return (
         <div className="w-screen h-screen fixed top-0 right-0 bg-[#0000009e] dark:bg-[#5756569e] z-30">
             <Card
@@ -184,19 +265,16 @@ const VideoUpload = () => {
                                     type="submit"
                                     className="mr-4"
                                 >
-                                    {loader ? (
-                                        <Loader2 className="animate-spin h-4 w-4">
-                                            Uploading...
-                                        </Loader2>
-                                    ) : (
-                                        "Publish"
-                                    )}
+                                    {isUploading
+                                        ? `${uploadProgress} %`
+                                        : "Publish"}
                                 </Button>
                                 <Button
                                     type="button"
                                     variant={"destructive"}
                                     onClick={() => {
                                         dispatch(toggleVideoModal());
+                                        abortUpload();
                                     }}
                                 >
                                     Cancel

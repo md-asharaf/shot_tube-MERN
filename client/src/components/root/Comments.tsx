@@ -2,8 +2,6 @@ import { RootState } from "@/provider";
 import commentServices from "@/services/comment.services";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useSelector } from "react-redux";
-import DefaultProfileImage from "@/assets/images/profile.png";
-import { Input } from "../ui/input";
 import { Button } from "../ui/button";
 import { formatDistanceToNow } from "date-fns";
 import likeServices from "@/services/like.services";
@@ -99,7 +97,7 @@ const Comments = ({ videoId }) => {
 
     if (commentsLoading || likedLoading)
         return (
-            <div className="flex flex-col space-y-4 w-full ">
+            <div className="flex flex-col space-y-4 w-full">
                 {[1, 2, 3, 4, 5, 6].map((key) => (
                     <Skeleton
                         key={key}
@@ -122,8 +120,7 @@ const Comments = ({ videoId }) => {
                     <div className="flex items-center gap-2">
                         <img
                             src={
-                                user.userData?.avatar?.url ||
-                                DefaultProfileImage
+                                user.userData?.avatar
                             }
                             className="rounded-full h-10 w-10"
                         />
@@ -167,8 +164,7 @@ const Comments = ({ videoId }) => {
                             >
                                 <img
                                     src={
-                                        comment.creator.avatar?.url ||
-                                        DefaultProfileImage
+                                        comment.creator.avatar
                                     }
                                     className="rounded-full h-10 w-10 cursor-pointer"
                                     onClick={() =>

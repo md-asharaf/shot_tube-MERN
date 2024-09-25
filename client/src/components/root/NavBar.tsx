@@ -6,7 +6,7 @@ import { IoNotificationsOutline } from "react-icons/io5";
 import { CiSearch } from "react-icons/ci";
 import { ImYoutube } from "react-icons/im";
 import { Button } from "@/components/ui/button";
-import ProfileImage from "@/assets/images/profile.png";
+import ProfileImage from "@/assets/images/noProfile.jpg";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -24,6 +24,7 @@ import { toggleVideoModal } from "@/provider/ui.slice";
 import authServices from "@/services/auth.services";
 import { DarkModeSwitch } from "react-toggle-dark-mode";
 import { toggleTheme } from "@/provider/theme.slice";
+import { FaSignOutAlt } from "react-icons/fa";
 
 const NavBar = () => {
     const navigate = useNavigate();
@@ -53,7 +54,7 @@ const NavBar = () => {
                     onClick={() => window.location.reload()}
                 >
                     <ImYoutube className="text-3xl w-10" />
-                    <h1 className="font-extrabold text-red-500">ShOtTube</h1>
+                    <h1 className="font-extrabold text-red-500">ShotTube</h1>
                 </button>
             </div>
             <div className="items-center gap-x-2 flex">
@@ -88,7 +89,7 @@ const NavBar = () => {
                         <DropdownMenu>
                             <DropdownMenuTrigger>
                                 <Avatar>
-                                    <AvatarImage src={userData?.avatar?.url} />
+                                    <AvatarImage src={userData?.avatar} />
                                     <AvatarFallback>
                                         {shortName(userData?.fullname)}
                                     </AvatarFallback>
@@ -105,11 +106,12 @@ const NavBar = () => {
                                 )}
                                 <DropdownMenuItem>
                                     <Button
-                                        className="w-full"
+                                        className="w-full space-x-2"
                                         onClick={onLogout}
                                         variant="destructive"
                                     >
-                                        Log out
+                                        <FaSignOutAlt className="text-xl"/>
+                                        <div>Sign out</div>
                                     </Button>
                                 </DropdownMenuItem>
                             </DropdownMenuContent>

@@ -2,17 +2,11 @@ import { Schema, model } from "mongoose";
 import MAP from "mongoose-aggregate-paginate-v2";
 const videoSchema = new Schema({
     video: {
-        type: {
-            url: String,
-            filename:String
-        },//cloudinary url
+        type:String,
         required: true
     },
     thumbnail: {
-        type: {
-            url: String,
-            filename:String
-        },//cloudinary url
+        type:String,
         required: true
     },
     title: {

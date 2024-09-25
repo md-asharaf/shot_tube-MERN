@@ -1,7 +1,6 @@
 import { IVideoData } from "@/interfaces";
 import { formatDistanceToNow } from "date-fns";
 import { useNavigate } from "react-router-dom";
-import DefaultProfileImage from "@/assets/images/profile.png";
 interface Props {
     video: IVideoData;
     isImage?: boolean;
@@ -9,17 +8,17 @@ interface Props {
 const VideoTitle: React.FC<Props> = ({ video, isImage = false }) => {
     const navigate = useNavigate();
     return (
-        <div className="flex items-center space-x-3 dark:text-white">
+        <div className="flex space-x-3 dark:text-white">
             {isImage && (
                 <img
                     className="w-10 h-10 rounded-full aspect-video object-cover"
-                    src={video.creator.avatar?.url || DefaultProfileImage}
+                    src={video.creator.avatar}
                     alt={video.creator.fullname}
                     loading="lazy"
                 />
             )}
-            <div className="flex-1 min-w-0">
-                <p className={`font-bold truncate ${!isImage && "text-xs"}`}>
+            <div className="flex-1">
+                <p className={`font-bold truncate text-wrap ${!isImage && "text-xs"}`}>
                     {video.title}
                 </p>
                 {isImage && (

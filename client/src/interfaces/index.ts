@@ -5,8 +5,8 @@ export interface IUser {
     _id: string;
     username: string;
     fullname: string;
-    avatar?: IFile;
-    coverImage?: IFile;
+    avatar?: string;
+    coverImage?: string;
     email: string;
     watchHistory?: [];
     isSubscribed?: boolean;
@@ -41,18 +41,12 @@ export interface IVideoForm {
     video: FileList;
     thumbnail: FileList;
 }
-export interface IFile {
-    _id?: string;
-    url: string;
-    filename:string;
-    m3u8?: string;
-}
 export interface IVideoData {
     _id: string;
     title: string;
     description: string;
-    video: IFile;
-    thumbnail: IFile;
+    video: string;
+    thumbnail: string;
     creator: IUser;
     views: number;
     duration: string;

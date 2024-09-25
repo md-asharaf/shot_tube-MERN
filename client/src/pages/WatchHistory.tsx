@@ -56,7 +56,7 @@ const WatchHistory = () => {
                             <div className="flex flex-col sm:flex-row gap-4 items-start p-2 hover:bg-zinc-200 hover:dark:bg-zinc-800 rounded-lg">
                                 <div className="relative">
                                     <img
-                                        src={video.thumbnail.url}
+                                        src={video.thumbnail}
                                         alt="Video Thumbnail"
                                         className="w-56 h-32 rounded-lg"
                                     />

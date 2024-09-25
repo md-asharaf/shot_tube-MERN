@@ -14,5 +14,6 @@ class VideoSevice {
         await Axios.post(`/videos/${videoId}/increase`);
     searchVideos = async (query: string) =>
         await Axios.get(`/videos/search/${query}`);
+    recommendedVideos = async () => await Axios.get("/videos/recommended");
 }
 export default new VideoSevice();

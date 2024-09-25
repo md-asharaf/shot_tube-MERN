@@ -1,4 +1,3 @@
-import { IVideoData } from "@/interfaces";
 import { createContext, useContext } from "react";
 const QueryContext = createContext({
     query: "",

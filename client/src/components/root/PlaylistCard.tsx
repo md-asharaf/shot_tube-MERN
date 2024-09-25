@@ -7,7 +7,7 @@ const PlaylistCard: React.FC<IPlaylist> = (playlist) => {
             <img
                 src={
                     playlist.videos.length > 0
-                        ? playlist.videos[0].thumbnail.url
+                        ? playlist.videos[0].thumbnail
                         : ""
                 }
                 alt="Video thumbnail"

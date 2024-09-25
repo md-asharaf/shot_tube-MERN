@@ -42,7 +42,7 @@ const Playlist = () => {
         <div className="px-1 flex-col flex md:flex-row gap-4 md:gap-1 relative w-full dark:text-white">
             <div className="dark:bg-zinc-700 bg-gray-200 p-5 space-y-3 rounded-xl md:max-w-md">
                 <img
-                    src={playlist.videos[0].thumbnail.url}
+                    src={playlist.videos[0].thumbnail}
                     alt="Playlist Thumbnail"
                     className="object-cover aspect-video w-full rounded-lg"
                 />
@@ -70,7 +70,7 @@ const Playlist = () => {
                             <div>{index + 1}</div>
                             <div className="relative">
                                 <img
-                                    src={video.thumbnail.url}
+                                    src={video.thumbnail}
                                     alt="Video Thumbnail"
                                     className="w-40 h-20 rounded-lg"
                                 />

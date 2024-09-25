@@ -1,3 +1,4 @@
+import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser"
@@ -11,10 +12,11 @@ import videoRoutes from "./routes/video.routes.js";
 import playlistRoutes from "./routes/playlist.routes.js";
 import bodyParser from "body-parser"
 const app = express();
-
 //middlewares
+const ORIGIN = process.env.ORIGIN
+console.log(process.env)
 app.use(cors({
-    origin: [process.env.ORIGIN_01,process.env.ORIGIN_02,process.env.ORIGIN_03],
+    origin: [ORIGIN],
     credentials: true
 }))
 app.use(bodyParser.json({

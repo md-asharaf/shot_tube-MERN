@@ -49,7 +49,7 @@ const PlaylistNhistory = () => {
         <div className="w-full dark:text-white overflow-auto space-y-2">
             <div className="space-x-8 justify-center rounded-2xl hidden sm:flex">
                 <img
-                    src={userData?.avatar?.url || DefaultAvatarImage}
+                    src={userData?.avatar || DefaultAvatarImage}
                     className="rounded-full h-32 w-32"
                     alt="User avatar"
                 />
