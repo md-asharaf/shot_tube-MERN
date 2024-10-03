@@ -116,7 +116,8 @@ const Comments = ({ videoId }) => {
         <div className="px-2">
             <div className="font-bold text-2xl text-zinc-600 dark:text-zinc-300">{`${comments.length} Comments`}</div>
             <div className="flex flex-col">
-                <div className="flex gap-y-1 flex-col justify-start">
+                {
+                    user.userData && <div className="flex gap-y-1 flex-col justify-start">
                     <div className="flex items-center gap-2">
                         <img
                             src={
@@ -125,7 +126,6 @@ const Comments = ({ videoId }) => {
                             className="rounded-full h-10 w-10"
                         />
                         <input
-                            disabled={!user.status}
                             value={content}
                             onChange={(e) => setContent(e.target.value)}
                             placeholder="Add a public comment..."
@@ -153,6 +153,7 @@ const Comments = ({ videoId }) => {
                         </Button>
                     </div>
                 </div>
+                }
 
                 <div className="flex flex-col space-y-4 mt-3">
                     {comments.map((comment, index) => {

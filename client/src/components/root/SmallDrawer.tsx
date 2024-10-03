@@ -47,18 +47,20 @@ const SmallDrawer = () => {
                         </div>
                     )}
                 </NavLink>
-                <NavLink to={`/${username}/playlist-n-history`}>
-                    {({ isActive }) => (
-                        <div className="flex flex-col items-center rounded-xl p-2">
-                            {isActive ? (
-                                <MdVideoLibrary className="text-xl" />
-                            ) : (
-                                <MdOutlineVideoLibrary className="text-xl" />
-                            )}
-                            <span className="text-[12px]">Library</span>
-                        </div>
-                    )}
-                </NavLink>
+                {username && (
+                    <NavLink to={`/${username}/playlist-n-history`}>
+                        {({ isActive }) => (
+                            <div className="flex flex-col items-center rounded-xl p-2">
+                                {isActive ? (
+                                    <MdVideoLibrary className="text-xl" />
+                                ) : (
+                                    <MdOutlineVideoLibrary className="text-xl" />
+                                )}
+                                <span className="text-[12px]">Library</span>
+                            </div>
+                        )}
+                    </NavLink>
+                )}
             </div>
         </div>
     );

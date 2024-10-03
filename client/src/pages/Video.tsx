@@ -214,7 +214,7 @@ const Video = () => {
                             <Button
                                 disabled={!userId}
                                 className={`${
-                                    isLiked && "text-blue-500"
+                                    isLiked && "text-blue-500 hover:text-blue-500"
                                 } dark:bg-zinc-600 border-none bg-zinc-200 h-7 sm:h-9`}
                                 variant="outline"
                                 onClick={() => toggleVideoLike()}

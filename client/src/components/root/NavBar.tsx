@@ -6,7 +6,7 @@ import { IoNotificationsOutline } from "react-icons/io5";
 import { CiSearch } from "react-icons/ci";
 import { ImYoutube } from "react-icons/im";
 import { Button } from "@/components/ui/button";
-import ProfileImage from "@/assets/images/noProfile.jpg";
+import NoUser from "@/assets/images/user.png";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -124,7 +124,7 @@ const NavBar = () => {
                             variant={"outline"}
                         >
                             <span>Log in</span>
-                            <img src={ProfileImage} height={30} width={30} />
+                            <img src={NoUser} height={25} width={25} />
                         </Button>
                     </Link>
                 )}
