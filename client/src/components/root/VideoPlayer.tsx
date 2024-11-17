@@ -37,7 +37,12 @@ const PlyrPlayer = ({ hlsUrl, subtitles = [], className = "" }) => {
 
             hlsRef.current.on(Hls.Events.MANIFEST_PARSED, (_, data) => {
                 console.log("Available levels:", data.levels);
-
+                const qualityMap = {
+                    "50000":"360",
+                    "100000":"480",
+                    "250000":"720",
+                    "500000":"1080",
+                }
                 // Get available qualities
                 const availableQualities = data.levels.map((level, index) => ({
                     id: index,
@@ -45,7 +50,7 @@ const PlyrPlayer = ({ hlsUrl, subtitles = [], className = "" }) => {
                     bitrate: level.bitrate,
                     name: level.height
                         ? `${level.height}p`
-                        : `${(level.bitrate / 1000).toFixed(0)} kbps`,
+                        : `${qualityMap[level.bitrate]}p`,
                 }));
                 setQualities(availableQualities);
 
@@ -65,8 +70,8 @@ const PlyrPlayer = ({ hlsUrl, subtitles = [], className = "" }) => {
         const initPlyr = (availableQualities) => {
             // Define quality options including auto
             const qualityOptions = {
-                default: -1, // -1 represents 'auto'
-                options: [-1, ...availableQualities.map((q) => q.id)],
+                default: "auto", // -1 represents 'auto'
+                options: ["auto", ...availableQualities.map((q) => q.name)],
                 forced: true,
                 onChange: (quality) => {
                     if (!hlsRef.current) return;

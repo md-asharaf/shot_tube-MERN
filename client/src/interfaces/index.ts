@@ -46,6 +46,7 @@ export interface IVideoData {
     title: string;
     description: string;
     video: string;
+    subtitle:string;
     thumbnail: string;
     creator: IUser;
     views: number;

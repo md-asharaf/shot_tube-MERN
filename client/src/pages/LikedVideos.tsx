@@ -3,11 +3,12 @@ import { IVideoData } from "@/interfaces";
 import { RootState } from "@/provider";
 import videoServices from "@/services/video.services";
 import { useQuery } from "@tanstack/react-query";
-import { formatDistanceToNow } from "date-fns";
+import {formatDuration} from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 import { useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import Thumbnail from "@/assets/images/defaultThumbnail.jpg";
+import { formatDistanceToNow } from "date-fns";
 
 const LikedVideos = () => {
     const userData = useSelector((state: RootState) => state.auth.userData);
@@ -118,7 +119,7 @@ const LikedVideos = () => {
                                     className="w-full h-[10vh] rounded-lg"
                                 />
                                 <span className="absolute bottom-2 bg-black right-2 bg-opacity-75 text-white px-2 text-xs">
-                                    {video.duration}
+                                    {formatDuration(video.duration)}
                                 </span>
                             </div>
                             <div>

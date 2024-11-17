@@ -5,7 +5,7 @@ echo "main.sh execution starting...."
 set -e
 
 # Ensure required environment variables are set
-if [ -z "$FILE_KEY" ] || [ -z "$INPUT_BUCKET" ] || [ -z "$OUTPUT_BUCKET" ]; then
+if [ -z "$FILE_KEY" ] || [ -z "$INPUT_BUCKET" ] || [ -z "$OUTPUT_BUCKET" ] || [ -z "$QUALITY" ] || [ -z "$BANDWIDTH" ] || [ -z "$SCALE" ]; then
   echo "Error: FILE_KEY, INPUT_BUCKET, and OUTPUT_BUCKET must be set."
   exit 1
 fi
@@ -24,18 +24,21 @@ if [ ! -d "$TEMP_DIR" ]; then
   exit 1
 fi
 
-# Initialize the master playlist
-MASTER_PLAYLIST="${TEMP_DIR}/master.m3u8"
-echo "#EXTM3U" > "$MASTER_PLAYLIST"
-echo "#EXT-X-VERSION:3" >> "$MASTER_PLAYLIST"
-
 # Function to process each resolution
-process_resolution() {
+transcode_and_upload_to_s3() {
   RESOLUTION=$1
   BANDWIDTH=$2
   SCALE=$3
   PLAYLIST_NAME="${RESOLUTION}p.m3u8"
+
+  echo "Checking if $RESOLUTION output already exists in S3..."
   
+  # Check if the playlist already exists in the bucket
+  if aws s3 ls "${OUTPUT_PATH}/${PLAYLIST_NAME}" >/dev/null 2>&1; then
+    echo "$RESOLUTION output already exists in S3. Skipping transcoding."
+    return
+  fi
+
   echo "Processing $RESOLUTION..."
 
   # Generate HLS playlist and segments for the resolution
@@ -45,23 +48,12 @@ process_resolution() {
   for file in "${TEMP_DIR}/${RESOLUTION}p_"*.ts "${TEMP_DIR}/${PLAYLIST_NAME}"; do
     aws s3 cp "$file" "${OUTPUT_PATH}/$(basename "$file")" || { echo "Error uploading $(basename "$file")"; exit 1; }
   done
-
-  # Append this resolution to the master playlist
-  echo "#EXT-X-STREAM-INF:BANDWIDTH=${BANDWIDTH}000,RESOLUTION=${SCALE}" >> "$MASTER_PLAYLIST"
-  echo "${PLAYLIST_NAME}" >> "$MASTER_PLAYLIST"
-  
-  # Upload the updated master playlist to S3
-  aws s3 cp "$MASTER_PLAYLIST" "${OUTPUT_PATH}/master.m3u8" || { echo "Error uploading master.m3u8"; exit 1; }
 }
 
-# Process each resolution and upload progressively
-process_resolution "360" 500 "640:360"
-process_resolution "480" 1000 "854:480"
-process_resolution "720" 2500 "1280:720"
-process_resolution "1080" 5000 "1920:1080"
+# Process the transcoding for each resolution
+transcode_and_upload_to_s3 "$QUALITY" "$BANDWIDTH" "$SCALE"
 
 # Clean up the temporary directory
 echo "Cleaning up temporary files..."
 rm -rf "$TEMP_DIR"
-
-echo "Processing complete."
+echo "main.sh execution completed successfully."

@@ -5,6 +5,7 @@ import { formatDistanceToNow } from "date-fns";
 import { Link } from "react-router-dom";
 import { useQuerry } from "@/provider/video.slice";
 import { Loader2 } from "lucide-react";
+import { formatDuration } from "@/lib/utils";
 const SearchedVideos = () => {
     const { query } = useQuerry();
     const { data: videos, isLoading } = useQuery<IVideoData[]>({
@@ -28,13 +29,6 @@ const SearchedVideos = () => {
                 {videos ? `No results for "${query}"` : "Go to home page"}
             </div>
         );
-        const formatDuration = (duration: string) => {
-            //convert string to number
-            const durationNumber = parseInt(duration);
-            const minutes = Math.floor(durationNumber / 60);
-            const seconds = durationNumber % 60;
-            return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
-        }
     return (
         <div className="lg:pl-40 dark:text-white text-black">
             {videos?.map((video) => (

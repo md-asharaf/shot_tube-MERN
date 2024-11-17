@@ -3,15 +3,9 @@ interface Props {
     video: IVideoData;
     className?: string;
 }
+import {formatDuration} from "../../lib/utils.ts";
 const VideoCard: React.FC<Props> = ({ video, className = "" }) => {
     //format video duration
-    const formatDuration = (duration: string) => {
-        //convert string to number
-        const durationNumber = parseInt(duration);
-        const minutes = Math.floor(durationNumber / 60);
-        const seconds = durationNumber % 60;
-        return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
-    };
     return (
         <div className="relative">
             <img

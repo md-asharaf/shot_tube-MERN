@@ -8,13 +8,14 @@ RUN apk update && \
 WORKDIR /home/app
 
 # Copy the main.sh script to the container
-COPY main.sh main.sh
+COPY transcode.sh transcode.sh
 
 # Make the script executable
-RUN chmod +x main.sh
+RUN chmod +x transcode.sh
 
 # Set the default command to execute the script
-CMD ["sh", "./main.sh"]
+CMD ["sh", "./transcode.sh"]
+
 
 
 

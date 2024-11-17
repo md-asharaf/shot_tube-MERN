@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { MdDelete } from "react-icons/md";
 import { formatDistanceToNow } from "date-fns";
 import { Loader2 } from "lucide-react";
+import { formatDuration } from "@/lib/utils";
 
 const WatchHistory = () => {
     const userId = useSelector((state: RootState) => state.auth.userData?._id);
@@ -44,13 +45,6 @@ const WatchHistory = () => {
     if (isError) {
         return <div>ERROR: {error.message}</div>;
     }
-    const formatDuration= (duration:string)=>{
-        //convert string to number
-        const durationNumber = parseInt(duration);
-        const minutes = Math.floor(durationNumber / 60);
-        const seconds = durationNumber % 60;
-        return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
-    }    
 return (
         <div className="w-full dark:text-white">
             <div className="text-4xl mb-6">

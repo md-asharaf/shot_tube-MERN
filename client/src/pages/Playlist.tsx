@@ -5,6 +5,7 @@ import { IPlaylist } from "@/interfaces";
 import { formatDistanceToNow } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { Loader2 } from "lucide-react";
+import { formatDuration } from "@/lib/utils";
 
 const Playlist = () => {
     const { playlistId } = useParams();
@@ -75,7 +76,7 @@ const Playlist = () => {
                                     className="w-40 h-20 rounded-lg"
                                 />
                                 <span className="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white px-2 text-xs">
-                                    {video.duration}
+                                    {formatDuration(video.duration)}
                                 </span>
                             </div>
                             <div>
