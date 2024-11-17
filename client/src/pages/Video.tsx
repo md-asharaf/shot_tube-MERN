@@ -6,7 +6,7 @@ import { Link, useParams } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { RootState } from "@/provider";
 import { IVideoData } from "@/interfaces";
-import { formatDistanceToNow, set } from "date-fns";
+import { formatDistanceToNow} from "date-fns";
 import DefaultProfileImage from "@/assets/images/profile.png";
 import videoService from "@/services/video.services";
 import subscriptionServices from "@/services/subscription.services";
@@ -168,7 +168,17 @@ const Video = () => {
             <div className="space-y-4 lg:w-4/5 xl:w-2/3">
                 <div className="flex flex-col space-y-2 px-2">
                     <VideoPlayer
-                        src={video.video}
+                        hlsUrl={video.video}
+                        subtitles={
+                            [
+                                {
+                                    kind: "subtitles",
+                                    label: "English",
+                                    srclang: "en",
+                                    src: video.subtitle,
+                                },
+                            ]
+                        }
                         className="w-full h-full rounded-xl"
                     />
                     <h1 className="font-bold text-xl">{video.title}</h1>

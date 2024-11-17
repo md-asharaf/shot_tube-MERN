@@ -28,7 +28,13 @@ const SearchedVideos = () => {
                 {videos ? `No results for "${query}"` : "Go to home page"}
             </div>
         );
-
+        const formatDuration = (duration: string) => {
+            //convert string to number
+            const durationNumber = parseInt(duration);
+            const minutes = Math.floor(durationNumber / 60);
+            const seconds = durationNumber % 60;
+            return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+        }
     return (
         <div className="lg:pl-40 dark:text-white text-black">
             {videos?.map((video) => (
@@ -41,7 +47,7 @@ const SearchedVideos = () => {
                                 className="w-full rounded-lg aspect-video object-cover "
                             />
                             <span className="absolute bottom-2 bg-black right-2 bg-opacity-75 text-white px-2 text-xs">
-                                {video.duration}
+                                {formatDuration(video.duration)}
                             </span>
                         </div>
                         <div className="w-1/2 xl:w-2/3 flex flex-col space-y-4">

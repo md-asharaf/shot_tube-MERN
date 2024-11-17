@@ -44,7 +44,14 @@ const WatchHistory = () => {
     if (isError) {
         return <div>ERROR: {error.message}</div>;
     }
-    return (
+    const formatDuration= (duration:string)=>{
+        //convert string to number
+        const durationNumber = parseInt(duration);
+        const minutes = Math.floor(durationNumber / 60);
+        const seconds = durationNumber % 60;
+        return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
+    }    
+return (
         <div className="w-full dark:text-white">
             <div className="text-4xl mb-6">
                 {videos?.length > 0 ? "Watch History" : "No History"}
@@ -61,7 +68,7 @@ const WatchHistory = () => {
                                         className="w-56 h-32 rounded-lg"
                                     />
                                     <span className="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white px-2 text-xs">
-                                        {video.duration}
+                                        {formatDuration(video.duration)}
                                     </span>
                                 </div>
                                 <div className="flex flex-col">

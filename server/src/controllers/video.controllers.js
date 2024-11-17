@@ -10,7 +10,7 @@ class VideoC {
     publishVideo = asyncHandler(async (req, res) => {
         try {
             //get title and description from request body
-            const { title, description,video,thumbnail,duration } = req.body;
+            const { title, description,video,thumbnail,duration,subtitle} = req.body;
             //get user id from request user object
             const userId = req.user?._id;
             //check if title and description are provided
@@ -23,12 +23,13 @@ class VideoC {
                 duration,
                 title,
                 description,
+                subtitle,
                 userId
             })
-            if (!video) {
+            if (!newVideo) {
                 throw new ApiError(500, "Failed to publish video")
             }
-            return res.status(200).json(new ApiResponse(200, video, "Video published successfully"))
+            return res.status(200).json(new ApiResponse(200, newVideo, "Video published successfully"))
         } catch (error) {
             console.log(error.message)
         }

@@ -118,7 +118,7 @@ const VideoUpload = () => {
         setIsUploading(true);
         setUploadProgress(0);
         
-        const { title, description, video, thumbnail } = values;
+        const { title, description, video, thumbnail} = values;
         const videoFile = video[0];
         const thumbnailFile = thumbnail[0];
     
@@ -145,6 +145,7 @@ const VideoUpload = () => {
                 video: `https://public-shot-tube-videos.s3.ap-south-1.amazonaws.com/${sanitizedVideoFileName.split(".").slice(0, -1).join(".")}/master.m3u8`,
                 thumbnail: `https://shot-tube-videos.s3.ap-south-1.amazonaws.com/uploads/user-uploads/${sanitizedThumbnailFileName}`,
                 duration,
+                subtitle: `https://public-shot-tube-videos.s3.ap-south-1.amazonaws.com/${sanitizedVideoFileName.split(".").slice(0, -1).join(".")}/subtitle.vtt`
             });
     
             // Close video modal and notify success
