@@ -11,6 +11,12 @@ const SearchBar = () => {
         <div className="flex items-center relative w-[40vw]">
             <input
                 id="search"
+                onKeyDown={(e) => {
+                    if (e.key === "Enter") {
+                        setQuery(input);
+                        navigate("/search");
+                    }
+                }}
                 onInput={(e) => setInput(e.currentTarget.value)}
                 type="text"
                 value={input}

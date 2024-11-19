@@ -168,7 +168,7 @@ const Video = () => {
             <div className="space-y-4 lg:w-4/5 xl:w-2/3">
                 <div className="flex flex-col space-y-2 px-2">
                     <VideoPlayer
-                        hlsUrl={video.video}
+                        source={video.video}
                         subtitles={
                             [
                                 {

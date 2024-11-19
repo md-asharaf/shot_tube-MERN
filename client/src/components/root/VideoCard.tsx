@@ -1,9 +1,9 @@
 import { IVideoData } from "@/interfaces";
+import {formatDuration} from "../../lib/utils.ts";
 interface Props {
     video: IVideoData;
     className?: string;
 }
-import {formatDuration} from "../../lib/utils.ts";
 const VideoCard: React.FC<Props> = ({ video, className = "" }) => {
     //format video duration
     return (

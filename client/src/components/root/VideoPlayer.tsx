@@ -1,192 +1,99 @@
-import React, { useEffect, useRef, useState } from "react";
+import { useEffect, useRef} from "react";
 import Plyr from "plyr";
 import Hls from "hls.js";
 import { Card } from "@/components/ui/card";
 import "plyr/dist/plyr.css";
 
-const PlyrPlayer = ({ hlsUrl, subtitles = [], className = "" }) => {
+const PlyrPlayer = ({ source, subtitles = [], className = "" }) => {
     const videoRef = useRef(null);
-    const playerRef = useRef(null);
-    const hlsRef = useRef(null);
-    const [currentQuality, setCurrentQuality] = useState("auto");
-    const [qualities, setQualities] = useState([]);
-    const [subtitlesEnabled, setSubtitlesEnabled] = useState(true);
+  const playerRef = useRef(null);
+  const hlsRef = useRef(null);
+  const bitrateToResolution = {
+    "500000": 360,
+    "1000000": 480,
+    "2500000": 720,
+    "5000000": 1080,
+  }
+  useEffect(() => {
+    const initializePlayer = () => {
+      const video = videoRef.current;
+      const defaultOptions:Plyr.Options = {};
 
-    useEffect(() => {
-        const setupHls = () => {
-            if (!Hls.isSupported()) {
-                console.warn("HLS is not supported");
-                return;
+      if (!Hls.isSupported()) {
+        video.src = source;
+        playerRef.current = new Plyr(video, defaultOptions);
+      } else {
+        const hls = new Hls();
+        hls.loadSource(source);
+
+        hls.on(Hls.Events.MANIFEST_PARSED, (event, data) => {
+          const availableQualities = hls.levels.map((l) => bitrateToResolution[l.bitrate]);
+          availableQualities.unshift(0); // Add 'Auto' option
+
+          // Update Plyr quality options
+          defaultOptions.quality = {
+            default: 0, // Default to "Auto"
+            options: availableQualities,
+            forced: true,
+            onChange: (newQuality) => updateQuality(newQuality),
+          };
+
+          // Add labels for Auto
+          defaultOptions.i18n = {
+            qualityLabel: {
+              0: "Auto",
+            },
+          };
+
+          hls.on(Hls.Events.LEVEL_SWITCHED, (event, data) => {
+            const qualityLabelElement = document.querySelector(
+              ".plyr__menu__container [data-plyr='quality'][value='0'] span"
+            );
+            if (hls.autoLevelEnabled) {
+              qualityLabelElement.innerHTML = `AUTO (${bitrateToResolution[hls.levels[data.level].bitrate]}p)`;
+            } else {
+              qualityLabelElement.innerHTML = "AUTO";
             }
+          });
 
-            hlsRef.current = new Hls({
-                maxLoadingDelay: 4,
-                defaultAudioCodec: "mp4a.40.2",
-                maxBufferLength: 30,
-                maxMaxBufferLength: 600,
-                autoStartLoad: true,
-                startLevel: -1,
-            });
+          // Initialize Plyr
+          playerRef.current = new Plyr(video, defaultOptions);
 
-            hlsRef.current.attachMedia(videoRef.current);
+          // Load subtitles
+          playerRef.current.on("ready", () => {
+            playerRef.current.captions.active = true;
+            playerRef.current.captions.language = "en";
+          });
+        });
 
-            hlsRef.current.on(Hls.Events.MEDIA_ATTACHED, () => {
-                console.log("HLS Media Attached");
-                hlsRef.current.loadSource(hlsUrl);
-            });
-
-            hlsRef.current.on(Hls.Events.MANIFEST_PARSED, (_, data) => {
-                console.log("Available levels:", data.levels);
-                const qualityMap = {
-                    "50000":"360",
-                    "100000":"480",
-                    "250000":"720",
-                    "500000":"1080",
-                }
-                // Get available qualities
-                const availableQualities = data.levels.map((level, index) => ({
-                    id: index,
-                    height: level.height || "Unknown",
-                    bitrate: level.bitrate,
-                    name: level.height
-                        ? `${level.height}p`
-                        : `${qualityMap[level.bitrate]}p`,
-                }));
-                setQualities(availableQualities);
-
-                // Initialize player
-                initPlyr(availableQualities);
-            });
-
-            hlsRef.current.on(Hls.Events.LEVEL_SWITCHING, (_, data) => {
-                const newQuality =
-                    data.level === -1
-                        ? "auto"
-                        : qualities[data.level]?.name || "auto";
-                setCurrentQuality(newQuality);
-            });
-        };
-
-        const initPlyr = (availableQualities) => {
-            // Define quality options including auto
-            const qualityOptions = {
-                default: "auto", // -1 represents 'auto'
-                options: ["auto", ...availableQualities.map((q) => q.name)],
-                forced: true,
-                onChange: (quality) => {
-                    if (!hlsRef.current) return;
-
-                    console.log("Quality change requested:", quality);
-                    hlsRef.current.currentLevel = parseInt(quality);
-
-                    const newQuality =
-                        quality === -1
-                            ? "auto"
-                            : qualities[quality]?.name || "auto";
-                    setCurrentQuality(newQuality);
-                },
-            };
-
-            // Initialize Plyr with quality options
-            playerRef.current = new Plyr(videoRef.current, {
-                controls: [
-                    "play-large",
-                    "play",
-                    "progress",
-                    "current-time",
-                    "duration",
-                    "mute",
-                    "volume",
-                    "captions",
-                    "settings",
-                    "pip",
-                    "fullscreen",
-                ],
-                settings: ["quality", "speed", "captions"],
-                quality: qualityOptions,
-            });
-
-            // Add custom quality labels
-            playerRef.current.on("ready", () => {
-                const instance = playerRef.current;
-                instance.quality = -1; // Start with auto
-
-                // Update quality labels in the settings menu
-                const labels = {
-                    "-1": "Auto",
-                    ...Object.fromEntries(
-                        availableQualities.map((q) => [q.id.toString(), q.name])
-                    ),
-                };
-
-                if (instance.elements.settings) {
-                    const qualityMenu =
-                        instance.elements.settings.panels.quality;
-                    if (qualityMenu) {
-                        const buttons =
-                            qualityMenu.getElementsByClassName("plyr__control");
-                        Array.from(buttons).forEach((button) => {
-                            const value = (button as HTMLElement).getAttribute(
-                                "data-plyr-quality"
-                            );
-                            if (value && labels[value]) {
-                                const label = (
-                                    button as HTMLElement
-                                ).getElementsByClassName(
-                                    "plyr__menu__value"
-                                )[0];
-                                if (label) {
-                                    label.textContent = labels[value];
-                                }
-                            }
-                        });
-                    }
-                }
-            });
-        };
-
-        setupHls();
-
-        return () => {
-            if (playerRef.current) {
-                playerRef.current.destroy();
-            }
-            if (hlsRef.current) {
-                hlsRef.current.destroy();
-            }
-        };
-    }, [hlsUrl]);
-
-    // Toggle subtitle visibility
-    const toggleSubtitles = () => {
-        setSubtitlesEnabled(!subtitlesEnabled);
-        if (playerRef.current) {
-            playerRef.current.captions.toggle();
-        }
+        hls.attachMedia(video);
+        hlsRef.current = hls;
+      }
     };
 
-    // Manual quality selection through buttons
-    const setQuality = (quality) => {
-        if (!hlsRef.current) return;
-
-        if (quality === "auto") {
-            hlsRef.current.currentLevel = -1;
-            setCurrentQuality("auto");
-            if (playerRef.current) {
-                playerRef.current.quality = -1;
-            }
-        } else {
-            const levelIndex = qualities.findIndex((q) => q.name === quality);
-            if (levelIndex !== -1) {
-                hlsRef.current.currentLevel = levelIndex;
-                setCurrentQuality(quality);
-                if (playerRef.current) {
-                    playerRef.current.quality = levelIndex;
-                }
-            }
-        }
+    const updateQuality = (newQuality) => {
+      if (newQuality === 0) {
+        hlsRef.current.currentLevel = -1; // Enable AUTO quality
+      } else {
+        hlsRef.current.levels.forEach((level, levelIndex) => {
+          if (bitrateToResolution[level.bitrate] === newQuality) {
+            hlsRef.current.currentLevel = levelIndex;
+          }
+        });
+      }
     };
 
+    initializePlayer();
+
+    return () => {
+      if (playerRef.current) {
+        playerRef.current.destroy();
+      }
+      if (hlsRef.current) {
+        hlsRef.current.destroy();
+      }
+    };
+  }, [source]);
     return (
         <Card className={`${className}`}>
             <div className="aspect-w-16 aspect-h-9">
@@ -202,7 +109,7 @@ const PlyrPlayer = ({ hlsUrl, subtitles = [], className = "" }) => {
                             label={subtitle.label}
                             srcLang={subtitle.srclang}
                             src={subtitle.src}
-                            default={index === 0 && subtitlesEnabled}
+                            default={index === 0}
                         />
                     ))}
                 </video>

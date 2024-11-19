@@ -6,7 +6,6 @@ import { IoNotificationsOutline } from "react-icons/io5";
 import { CiSearch } from "react-icons/ci";
 import { ImYoutube } from "react-icons/im";
 import { Button } from "@/components/ui/button";
-import NoUser from "@/assets/images/user.png";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -25,6 +24,7 @@ import authServices from "@/services/auth.services";
 import { DarkModeSwitch } from "react-toggle-dark-mode";
 import { toggleTheme } from "@/provider/theme.slice";
 import { FaSignOutAlt } from "react-icons/fa";
+import { User } from "lucide-react";
 
 const NavBar = () => {
     const navigate = useNavigate();
@@ -124,7 +124,8 @@ const NavBar = () => {
                             variant={"outline"}
                         >
                             <span>Log in</span>
-                            <img src={NoUser} height={25} width={25} />
+                            <User height={25} width={25}/>
+                            {/* <img src={NoUser} height={25} width={25} /> */}
                         </Button>
                     </Link>
                 )}
