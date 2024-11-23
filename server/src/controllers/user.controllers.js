@@ -30,7 +30,7 @@ class UserC {
     })
     //controller to get current user
     getCurrentUser = asyncHandler(async (req, res) => {
-        return res.status(200).json(new ApiResponse(200, req.user, "Current User found"))
+        return res.status(200).json(new ApiResponse(200, req.user, req.user?"User found":"User not found"))
     })
     //controller to update account details of a user
     updateAccountDetails = asyncHandler(async (req, res) => {

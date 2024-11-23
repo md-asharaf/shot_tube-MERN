@@ -32,11 +32,11 @@ import { Upload } from "@aws-sdk/lib-storage";
 const s3Client = new S3Client({
     region: "ap-south-1",
     credentials: {
-        accessKeyId: import.meta.env.VITE_AWS_ACCESS_KEY_ID,
-        secretAccessKey: import.meta.env.VITE_AWS_SECRET_ACCESS_KEY,
+        accessKeyId: import.meta.env.AWS_ACCESS_KEY_ID,
+        secretAccessKey: import.meta.env.AWS_SECRET_ACCESS_KEY,
     },
 });
-const BUCKET = import.meta.env.VITE_AWS_S3_BUCKET_NAME;
+const BUCKET = import.meta.env.AWS_S3_BUCKET_NAME;
 
 const VideoUpload = () => {
     const dispatch = useDispatch();

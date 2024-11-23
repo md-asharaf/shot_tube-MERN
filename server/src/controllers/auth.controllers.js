@@ -4,19 +4,29 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/asyncHandler.js";
 
 class Auth {
-    //function to generate and inject refresh and access tokens for current user
-    generateTokens = async (userId) => {
-        try {
-            const user = await User.findById(userId);
-            const accessToken = await user.generateAccessToken();
-            const refreshToken = await user.generateRefreshToken();
-            user.refreshToken = refreshToken;
-            await user.save({ validateBeforeSave: false });
-            return { accessToken, refreshToken };
-        } catch (error) {
-            throw new ApiError(500, "something went wrong while generating tokens")
+
+    googleSignIn = asyncHandler(async (req, res) => {
+        const { email, fullname, avatar, idToken } = req.body;
+        if (!email || !fullname) {
+            throw new ApiError(400, "Email and Fullname are required")
         }
-    }
+        const user = await User.findOne({ email }) || await User.create({
+            email,
+            fullname,
+            username: email.split("@")[0],
+            password: "1111111111"
+        });
+        user.avatar = avatar;
+        user.idToken = idToken;
+        await user.save({ validateBeforeSave: false });
+        const options = {
+            httpOnly: true,
+            secure: true,
+            maxAge: 24 * 60 * 60 * 1000,
+            sameSite: "none"
+        }
+        return res.status(200).cookie("idToken", idToken, options).json(new ApiResponse(200, { user }, "User logged in successfully"))
+    })
     //controller to register a user
     registerUser = asyncHandler(async (req, res) => {
         //get user details from front-end or postman
@@ -67,15 +77,16 @@ class Auth {
         //check if user exists
         const existedUser = await User.findOne({ email });
         if (!existedUser) {
-            throw new ApiError(400, "invalid email or password")
+            throw new ApiError(400, "invalid email")
         }
         //check if password is correct
         const isPasswordCorrect = await existedUser.isPasswordCorrect(password);
         if (!isPasswordCorrect) {
-            throw new ApiError(400, "invalid email or password")
+            throw new ApiError(400, "invalid password")
         }
         //generate token
-        const { accessToken, refreshToken } = await this.generateTokens(existedUser._id);
+        const accessToken = await existedUser.generateAccessToken();
+        const refreshToken = await existedUser.generateRefreshToken();
         console.log("Access Token", accessToken, "RefreshToken", refreshToken)
         //send response in cookies
         const loggedInUser = await User.findById(existedUser._id).select("-password -refreshToken");
@@ -83,8 +94,7 @@ class Auth {
             httpOnly: true,
             secure: true,
             maxAge: 24 * 60 * 60 * 1000,
-            sameSite: "none" // 7 days
-            // set to your Vercel base URL with leading dot for subdomains
+            sameSite: "none"
         };
         return res
             .cookie("accessToken", accessToken, options).cookie("refreshToken", refreshToken, options).json(new ApiResponse(200, {
@@ -99,43 +109,10 @@ class Auth {
             httpOnly: true,
             secure: true,
             maxAge: 10 * 60 * 60 * 1000,
-            sameSite: "none" // 7 days
-            // set to your Vercel base URL with leading dot for subdomains
+            sameSite: "none"
         };
-        return res.status(200).clearCookie("accessToken", options).clearCookie("refreshToken", options).json(new ApiResponse(200, null, "User logged out successfully"))
+        return res.status(200).clearCookie("idToken", options).clearCookie("accessToken", options).clearCookie("refreshToken", options).json(new ApiResponse(200, null, "User logged out successfully"))
     })
-    //controller to refresh users's access token
-    refreshTokens = asyncHandler(async (req, res) => {
-        try {
-            const incomingRefreshToken = req.cookies.refreshToken || req.body.refreshToken;
-            if (!incomingRefreshToken) {
-                throw new ApiError(400, "Refresh token is required")
-            }
-            const decodedToken = jwt.verify(incomingRefreshToken, process.env.REFRESH_TOKEN_SECRET);
-            const user = await User.findById(decodedToken?._id);
-            if (!user) {
-                throw new ApiError(400, "Invalid refresh token")
-            }
-            if (incomingRefreshToken !== user.refreshToken) {
-                throw new ApiError(400, "refresh token is expired or used")
-            }
-            const options = {
-                httpOnly: true,
-                secure: true,
-                maxAge: 10 * 60 * 60 * 1000,
-                sameSite: "none"// 7 days
-                // set to your Vercel base URL with leading dot for subdomains
-            };
-            const { accessToken, refreshToken } = this.generateTokens(user._id);
-            return res
-                .status(200)
-                .cookie("accessToken", accessToken, options).cookie("refreshToken", refreshToken, options).json(new ApiResponse(200, {
-                    accessToken,
-                    refreshToken,
-                }, "Access Token refreshed"))
-        } catch (error) {
-            console.log(error.message)
-        }
-    })
+
 }
 export default new Auth();

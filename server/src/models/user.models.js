@@ -25,7 +25,7 @@ const userSchema = new Schema({
         index: true
     },
     avatar: {
-        type:String
+        type: String
     },
     coverImage: {
         type: String
@@ -41,6 +41,9 @@ const userSchema = new Schema({
         required: [true, "Password is required"]
     },
     refreshToken: {
+        type: String
+    },
+    idToken: {
         type: String
     }
 }, { timestamps: true });

@@ -6,6 +6,7 @@ import { signInFormValidation } from "../ui/validation";
 import { useDispatch } from "react-redux";
 import { login } from "@/provider";
 import { useState } from "react";
+import { loginWithGoogle } from "@/services/firebase.services";
 import {
     Form,
     FormControl,
@@ -50,78 +51,110 @@ const SignIn = () => {
             console.log(error.message);
         }
     };
-
+    const googleSignIn = async () => {
+        try {
+            const userGoogleData = await loginWithGoogle();
+            const res = await authService.googleLogin(userGoogleData);
+            if(res.success){
+                toast({
+                    title: "Login successfull",
+                    description: "Welcome to ShotTube",
+                });
+                dispatch(login(res.data.user));
+                navigate("/");
+            }
+        } catch (error) {
+            console.log(error);
+        }
+    };
     return (
-        <div className="w-[80%] sm:w-1/2 md:w-1/3 lg:w-1/4 items-center justify-center flex flex-col gap-2 dark:text-white text-black">
-            <div className="flex space-x-4 items-center">
-                <IoLogoYoutube className="text-3xl" />
-                <div className="text-red-500 font-bold text-pretty">
-                    ShotTube
+        <div className="h-screen flex items-center justify-center">
+            <div className="bg-white p-6 md:p-8 rounded-lg shadow-lg w-full z-10">
+                <div className="text-center mb-6">
+                    <div className="flex justify-center space-x-1 items-center">
+                        <IoLogoYoutube className="text-3xl" />
+                        <div className="text-red-500 font-bold text-pretty">
+                            ShotTube
+                        </div>
+                    </div>
+                    <h2 className="text-xl sm:text-2xl font-semibold text-gray-800">
+                        Sign In
+                    </h2>
                 </div>
-            </div>
-            <div className="flex flex-col items-center justify-center">
-                <h1 className="font-semibold dark:text-zinc-200 text-zinc-800 text-sm border-b-[1px] pb-3 border-slate-500">
-                    Sign in to your account
-                </h1>
-            </div>
-            {error && <div className="text-red-500 font-semibold">{error}</div>}
-            <Form {...form}>
-                <form
-                    onSubmit={form.handleSubmit(onSubmit)}
-                    className="space-y-4 w-full px-4"
-                >
-                    <FormField
-                        control={form.control}
-                        name="email"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Email</FormLabel>
-                                <FormControl>
-                                    <Input
-                                        type="text"
-                                        placeholder="enter username or email address"
-                                        {...field}
-                                        required
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <FormField
-                        control={form.control}
-                        name="password"
-                        render={({ field }) => (
-                            <FormItem>
-                                <FormLabel>Password</FormLabel>
-                                <FormControl>
-                                    <Input
-                                        type="password"
-                                        placeholder="enter password"
-                                        {...field}
-                                        required
-                                    />
-                                </FormControl>
-                                <FormMessage />
-                            </FormItem>
-                        )}
-                    />
-                    <button
-                        type="submit"
-                        className="w-full rounded-full p-2 dark:bg-white bg-black text-white dark:text-black"
+
+                {error && (
+                    <div className="text-red-500 font-semibold">{error}</div>
+                )}
+                <Form {...form}>
+                    <form
+                        onSubmit={form.handleSubmit(onSubmit)}
+                        className="space-y-4 w-full"
                     >
-                        Sign in
+                        <FormField
+                            control={form.control}
+                            name="email"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormControl>
+                                        <Input
+                                            type="email"
+                                            placeholder="Email address"
+                                            {...field}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <FormField
+                            control={form.control}
+                            name="password"
+                            render={({ field }) => (
+                                <FormItem>
+                                    <FormControl>
+                                        <Input
+                                            type="password"
+                                            placeholder="Password"
+                                            {...field}
+                                        />
+                                    </FormControl>
+                                    <FormMessage />
+                                </FormItem>
+                            )}
+                        />
+                        <button
+                            type="submit"
+                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg"
+                        >
+                            Sign In
+                        </button>
+                    </form>
+                </Form>
+
+                <div className="mt-6">
+                    <button
+                        className="w-80 flex items-center justify-center bg-white border-2 border-gray-300 text-gray-700 py-1 px-6 rounded-lg hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        id="google-signin-btn"
+                        onClick={googleSignIn}
+                    >
+                        <img
+                            src="https://cdn-teams-slug.flaticon.com/google.jpg"
+                            alt="Google Icon"
+                            className="w-8 h-8 mr-3"
+                        />
+                        <span className="text-lg">Sign in with Google</span>
                     </button>
-                </form>
-            </Form>
-            <div className="flex gap-2 ">
-                <p className="tracking-wider">do not have any account?</p>
-                <Link
-                    to="/register"
-                    className="hover:underline font-sans text-blue-500"
-                >
-                    Sign up
-                </Link>
+                </div>
+
+                <div className="text-center text-sm mt-6">
+                    <p>Don't have an account?</p>
+                    <Link
+                        to="/register"
+                        className="text-blue-500 hover:underline"
+                    >
+                        Create account
+                    </Link>
+                </div>
             </div>
         </div>
     );

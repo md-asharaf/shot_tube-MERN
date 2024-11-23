@@ -5,10 +5,9 @@ import { multerUpload } from "../middlewares/multer.middlewares.js";
 import { verifyJWT } from "../middlewares/auth.middlewares.js";
 const router = Router();
 
-router.post("/register", Auth.registerUser)
-
+router.post("/register", Auth.registerUser);
+router.post("/google-login", Auth.googleSignIn);
 router.post("/login", Auth.loginUser);
-router.post("/refresh-token", Auth.refreshTokens);
 router.post("/watch-history/:videoId/add", verifyJWT, UserC.addVideoToWatchHistory)
 router.get("/logout", Auth.logoutUser);
 

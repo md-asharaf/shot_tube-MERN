@@ -8,16 +8,7 @@ router.get("/", VideoC.getAllVideos);
 router.get("/recommended", verifyJWT,VideoC.getRecommendedVideos);
 router.get("/:videoId", VideoC.getSingleVideo);
 router.get("/search/:query", VideoC.getVideosByQuery);
-router.post("/publish", verifyJWT, multerUpload.fields([
-    {
-        name: "video",
-        maxCount: 1
-    },
-    {
-        name: "thumbnail",
-        maxCount: 1
-    }
-]), VideoC.publishVideo);
+router.post("/publish", verifyJWT, VideoC.publishVideo);
 router.post("/:videoId/increase", VideoC.increaseViews)
 router.get("/:userId/videos", VideoC.getUserVideos);
 
