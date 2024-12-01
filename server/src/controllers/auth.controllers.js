@@ -7,18 +7,27 @@ class Auth {
 
     googleSignIn = asyncHandler(async (req, res) => {
         const { email, fullname, avatar, idToken } = req.body;
-        if (!email || !fullname) {
-            throw new ApiError(400, "Email and Fullname are required")
+        if (!email || !idToken) {
+            throw new ApiError(400, "Email and idToken is required")
         }
-        const user = await User.findOne({ email }) || await User.create({
-            email,
-            fullname,
-            username: email.split("@")[0],
-            password: "1111111111"
-        });
-        user.avatar = avatar;
-        user.idToken = idToken;
-        await user.save({ validateBeforeSave: false });
+        let user;
+        user = await User.findOne({ email })
+        if (user) {
+            user.idToken = idToken;
+            await user.save({ validateBeforeSave: false });
+        }
+        else{
+            if(!fullname||!avatar){
+                throw new ApiError(400, "Fullname and avatar is required");
+            }
+            user= await User.create({
+                email,
+                fullname,
+                username: email.split("@")[0],
+                avatar,
+                idToken
+            })
+        }
         const options = {
             httpOnly: true,
             secure: true,

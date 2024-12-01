@@ -55,7 +55,7 @@ class S3 {
             if (!response.ok) {
                 throw new Error("Failed to upload file to S3");
             }
-            return `http://shot-tube-videos.s3.amazonaws.com/uploads/user-uploads/${filename}`;
+            return `https://shot-tube-videos.s3.amazonaws.com/uploads/user-uploads/${filename}`;
         } catch (error) {
             console.log("Error uploading file: ", error);
             throw error;
