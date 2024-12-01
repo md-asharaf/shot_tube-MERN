@@ -154,20 +154,6 @@ const SignUp = () => {
                     </form>
                 </Form>
 
-                <div className="mt-6">
-                    {/* <button
-                        className="w-80 flex items-center justify-center bg-white border-2 border-gray-300 text-gray-700 py-1 px-6 rounded-lg hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
-                        id="google-signin-btn"
-                    >
-                        <img
-                            src="https://cdn-teams-slug.flaticon.com/google.jpg"
-                            alt="Google Icon"
-                            className="w-8 h-8 mr-3"
-                        />
-                        <span className="text-lg">Sign up with Google</span>
-                    </button> */}
-                </div>
-
                 <div className="text-center text-sm mt-6">
                     <p>Already have an account?</p>
                     <Link to="/login" className="text-blue-500 hover:underline">

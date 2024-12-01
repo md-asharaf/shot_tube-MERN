@@ -4,6 +4,7 @@ import {
     S3Client,
 } from "@aws-sdk/client-s3";
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import axios from "axios";
 const s3Client = new S3Client({
     region: "ap-south-1",
     credentials: {
@@ -56,6 +57,24 @@ class S3 {
             console.log("Error uploading file: ", error);
         }
     };
-    deleteObjectUrl
+    downloadImageAndUploadToS3= async (imageUrl, fileName)=>{
+        try {
+            // Step 1: Download the image as a Blob or Buffer
+            const response = await axios.get(imageUrl, { responseType: "arraybuffer" });
+            const fileType = response.headers["content-type"]; // Get the MIME type from response headers
+    
+            // Step 2: Convert to a File object
+            const file = new File([response.data], fileName, { type: fileType });
+    
+            // Step 3: Upload the File to S3
+            const s3Url = await this.uploadFile(file);
+    
+            console.log("File uploaded to S3 successfully:", s3Url);
+            return s3Url; // Return the uploaded file's URL from S3
+        } catch (error) {
+            console.error("Error downloading or uploading image:", error);
+            throw error;
+        }
+    }
 }
 export default new S3();

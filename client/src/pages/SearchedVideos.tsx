@@ -6,6 +6,7 @@ import { Link } from "react-router-dom";
 import { useQuerry } from "@/provider/video.slice";
 import { Loader2 } from "lucide-react";
 import { formatDuration } from "@/lib/utils";
+import DefaultAvatarImage from "@/assets/images/profile.png";
 const SearchedVideos = () => {
     const { query } = useQuerry();
     const { data: videos, isLoading } = useQuery<IVideoData[]>({
@@ -57,7 +58,7 @@ const SearchedVideos = () => {
                             </div>
                             <div className="flex items-center space-x-4">
                                 <img
-                                    src={video.creator.avatar}
+                                    src={video.creator.avatar || DefaultAvatarImage}
                                     className="w-10 h-10 rounded-full"
                                 />
                                 <div>{video.creator.fullname}</div>

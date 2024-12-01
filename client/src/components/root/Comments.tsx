@@ -14,6 +14,7 @@ import { useState } from "react";
 import { FaPlus } from "react-icons/fa";
 import { FiMinus } from "react-icons/fi";
 import { GoDot } from "react-icons/go";
+import DefaultProfileImage from "@/assets/images/profile.png"
 const Comments = ({ videoId }) => {
     const navigate = useNavigate();
     const user = useSelector((state: RootState) => state.auth);
@@ -121,7 +122,7 @@ const Comments = ({ videoId }) => {
                     <div className="flex items-center gap-2">
                         <img
                             src={
-                                user.userData?.avatar
+                                user.userData?.avatar || DefaultProfileImage
                             }
                             className="rounded-full h-10 w-10"
                         />
@@ -165,7 +166,7 @@ const Comments = ({ videoId }) => {
                             >
                                 <img
                                     src={
-                                        comment.creator.avatar
+                                        comment.creator.avatar || DefaultProfileImage
                                     }
                                     className="rounded-full h-10 w-10 cursor-pointer"
                                     onClick={() =>

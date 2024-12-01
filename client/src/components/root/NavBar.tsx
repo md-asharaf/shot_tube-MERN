@@ -126,7 +126,6 @@ const NavBar = () => {
                         >
                             <span>Log in</span>
                             <User height={25} width={25}/>
-                            {/* <img src={NoUser} height={25} width={25} /> */}
                         </Button>
                     </Link>
                 )}
