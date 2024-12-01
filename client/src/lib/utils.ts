@@ -35,3 +35,8 @@ export function formatDuration(duration: string) {
     const seconds = durationNumber % 60;
     return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
 }
+
+export function sanitizeFileName (fileName:string) {
+    // Replace all special characters (except for alphanumeric and period) with underscores
+    return fileName.replace(/[^a-zA-Z0-9.]/g, '_');
+};

@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/card";
 import { useRef, useState } from "react";
 import { useToast } from "../ui/use-toast";
-import { getVideoDuration } from "@/lib/utils";
+import { getVideoDuration, sanitizeFileName } from "@/lib/utils";
 import { S3Client } from "@aws-sdk/client-s3";
 import { Upload } from "@aws-sdk/lib-storage";
 const s3Client = new S3Client({
@@ -55,10 +55,6 @@ const VideoUpload = () => {
     });
     const videoRef = form.register("video");
     const thumbnailRef = form.register("thumbnail");
-    const sanitizeFileName = (fileName:string) => {
-        // Replace all special characters (except for alphanumeric and period) with underscores
-        return fileName.replace(/[^a-zA-Z0-9.]/g, '_');
-    };
     const uploadFile = async (file: File) => {
         try {
             // Generate a unique key for the file
@@ -101,8 +97,6 @@ const VideoUpload = () => {
                     description: "Failed to upload file",
                 });
             }
-    
-            // Throw the error so it can be caught in the calling function
             throw error;
         }
     };

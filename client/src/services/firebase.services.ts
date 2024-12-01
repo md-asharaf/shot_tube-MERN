@@ -28,9 +28,8 @@ export const loginWithGoogle = async () => {
         const idToken = await user.getIdToken();
         const fullname = user.displayName;
         const email = user.email;
+        // Download the image and upload it to S3
         const avatar = await s3Services.downloadImageAndUploadToS3(user.photoURL,`${user.uid}.jpg`);
-        //upload this avatar to s3 bucket
-
         // Return both tokens for further use
         return { fullname, idToken, email, avatar };
     } catch (error) {
