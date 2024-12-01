@@ -1,5 +1,6 @@
 import { initializeApp } from "firebase/app";
 import {
+    getAdditionalUserInfo,
     getAuth,
     GoogleAuthProvider,
     signInWithPopup,
@@ -20,18 +21,26 @@ const auth = getAuth(app);
 const googleProvider = new GoogleAuthProvider();
 googleProvider.setCustomParameters({
     prompt: "select_account",
-  });
+});
 export const loginWithGoogle = async () => {
     try {
         const result = await signInWithPopup(auth, googleProvider);
+        const { isNewUser } = getAdditionalUserInfo(result);
         const user = result.user;
-        const idToken = await user.getIdToken();
-        const fullname = user.displayName;
         const email = user.email;
-        // Download the image and upload it to S3
-        const avatar = await s3Services.downloadImageAndUploadToS3(user.photoURL,`${user.uid}.jpg`);
-        // Return both tokens for further use
-        return { fullname, idToken, email, avatar };
+        const idToken = await user.getIdToken();
+        if (isNewUser) {
+            // Add the user to the database
+            const fullname = user.displayName;
+            const avatar = await s3Services.downloadImageAndUploadToS3(
+                user.photoURL,
+                `${user.uid}.jpg`
+            );
+            return { fullname, idToken, email, avatar };
+        } else {
+            //login the user
+            return { email, idToken };
+        }
     } catch (error) {
         console.error("Error during login:", error);
     }
