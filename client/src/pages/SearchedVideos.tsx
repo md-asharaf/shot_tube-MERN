@@ -40,6 +40,7 @@ const SearchedVideos = () => {
                                 src={video.thumbnail}
                                 alt="Video Thumbnail"
                                 className="w-full rounded-lg aspect-video object-cover "
+                                loading="lazy"
                             />
                             <span className="absolute bottom-2 bg-black right-2 bg-opacity-75 text-white px-2 text-xs">
                                 {formatDuration(video.duration)}
@@ -60,6 +61,7 @@ const SearchedVideos = () => {
                                 <img
                                     src={video.creator.avatar || DefaultAvatarImage}
                                     className="w-10 h-10 rounded-full"
+                                    loading="lazy"
                                 />
                                 <div>{video.creator.fullname}</div>
                             </div>

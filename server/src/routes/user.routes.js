@@ -9,6 +9,7 @@ router.post("/register", Auth.registerUser);
 router.post("/google-login", Auth.googleSignIn);
 router.post("/login", Auth.loginUser);
 router.post("/watch-history/:videoId/add", verifyJWT, UserC.addVideoToWatchHistory)
+router.delete("/watch-history/:videoId/remove", verifyJWT, UserC.removeVideoFromWatchHistory)
 router.get("/logout", Auth.logoutUser);
 
 router.get("/current-user", verifyJWT, UserC.getCurrentUser);

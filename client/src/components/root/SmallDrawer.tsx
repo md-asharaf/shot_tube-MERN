@@ -19,7 +19,9 @@ const SmallDrawer = () => {
             <div className={`flex-col cursor-pointer dark:text-white`}>
                 <NavLink to={"/"}>
                     {({ isActive }) => (
-                        <div className="flex flex-col items-center rounded-xl p-2">
+                        <div
+                            className={`flex flex-col items-center rounded-xl p-2 hover:bg-zinc-200 dark:hover:bg-zinc-800`}
+                        >
                             {isActive ? (
                                 <GoHomeFill className="text-xl" />
                             ) : (
@@ -30,14 +32,18 @@ const SmallDrawer = () => {
                     )}
                 </NavLink>
                 <NavLink to={"/shorts"}>
-                    <div className="flex flex-col items-center rounded-xl p-2">
+                    <div
+                        className={`flex flex-col items-center rounded-xl p-2 hover:bg-zinc-200 dark:hover:bg-zinc-800`}
+                    >
                         <SiYoutubeshorts className="text-xl" />
                         <span className="text-[12px]">Shorts</span>
                     </div>
                 </NavLink>
                 <NavLink to={"/subscriptions"}>
                     {({ isActive }) => (
-                        <div className="flex flex-col items-center rounded-xl p-2">
+                        <div
+                            className={`flex flex-col items-center rounded-xl p-2 hover:bg-zinc-200 dark:hover:bg-zinc-800`}
+                        >
                             {isActive ? (
                                 <MdSubscriptions className="text-xl" />
                             ) : (
@@ -50,7 +56,9 @@ const SmallDrawer = () => {
                 {username && (
                     <NavLink to={`/${username}/playlist-n-history`}>
                         {({ isActive }) => (
-                            <div className="flex flex-col items-center rounded-xl p-2">
+                            <div
+                                className={`flex flex-col items-center rounded-xl p-2 hover:bg-zinc-200 dark:hover:bg-zinc-800`}
+                            >
                                 {isActive ? (
                                     <MdVideoLibrary className="text-xl" />
                                 ) : (

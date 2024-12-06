@@ -5,7 +5,7 @@ import { IPlaylist, IVideoData } from "@/interfaces";
 import { useQuery } from "@tanstack/react-query";
 import videoServices from "@/services/video.services";
 import playlistServices from "@/services/playlist.services";
-import Slider from "../components/root/Slider";
+import Library from "../components/root/Library";
 import subscriptionServices from "@/services/subscription.services";
 import { Loader2 } from "lucide-react";
 const PlaylistNhistory = () => {
@@ -52,6 +52,7 @@ const PlaylistNhistory = () => {
                     src={userData?.avatar || DefaultAvatarImage}
                     className="rounded-full h-32 w-32"
                     alt="User avatar"
+                    loading="lazy"
                 />
                 <div className="space-y-2">
                     <div className="font-bold text-3xl">
@@ -65,8 +66,8 @@ const PlaylistNhistory = () => {
                 </div>
             </div>
             <div className="space-y-16">
-                {videos?.length > 0 && <Slider videos={videos} />}
-                {playlists?.length > 0 && <Slider playlists={playlists} />}
+                {videos?.length > 0 && <Library videos={videos} />}
+                {playlists?.length > 0 && <Library playlists={playlists} />}
             </div>
         </div>
     );

@@ -1,37 +1,28 @@
 import { Button } from "@/components/ui/button";
-import { MdOutlinePlaylistAdd } from "react-icons/md";
-import { BiLike } from "react-icons/bi";
 import { useEffect, useState } from "react";
 import { Link, useParams } from "react-router-dom";
-import { useSelector } from "react-redux";
-import { RootState } from "@/provider";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState, toggleMenu } from "@/provider";
 import { IVideoData } from "@/interfaces";
-import { formatDistanceToNow} from "date-fns";
+import { formatDistanceToNow } from "date-fns";
 import DefaultProfileImage from "@/assets/images/profile.png";
 import videoService from "@/services/video.services";
 import subscriptionServices from "@/services/subscription.services";
 import likeService from "@/services/like.services";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger,
-} from "@/components/ui/popover";
 import SaveToPlaylist from "../components/root/SaveToPlaylist";
 import Comments from "@/components/root/Comments";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import playlistServices from "@/services/playlist.services";
-import userServices from "@/services/user.services";
 import videoServices from "@/services/video.services";
 import VideoPlayer from "@/components/root/VideoPlayer";
-import { Loader2 } from "lucide-react";
+import { Loader2, ThumbsUp } from "lucide-react";
 
 const Video = () => {
+    const dispatch = useDispatch();
     const [isExpanded, setIsExpanded] = useState(false);
     const [maxLength, setMaxLength] = useState(100); // Number of characters before truncating
 
     const userId = useSelector((state: RootState) => state.auth.userData?._id);
     const { videoId } = useParams();
-    const [playlistIds, setPlaylistIds] = useState<string[]>([]);
     const toggleExpanded = () => {
         setIsExpanded(!isExpanded);
     };
@@ -62,33 +53,11 @@ const Video = () => {
         refetchIsSubscribed();
         refetchSubscribersCount();
     };
-    const addVideoToPlaylist = async (playlistId: string) => {
-        const res = await playlistServices.addVideoToPlaylist(
-            videoId,
-            playlistId
-        );
-        return res.data;
-    };
-    const addToWatchHistoryMutation = async () => {
-        await userServices.addToWatchHistory(videoId);
-    };
-    const addToPlaylists = async () => {
-        await Promise.all(
-            playlistIds.map((playlistId) => {
-                add(playlistId);
-            })
-        );
-    };
     const increaseViews = async () =>
         await videoServices.incrementViews(videoId);
     const { mutate: incrementViews } = useMutation({
         mutationFn: increaseViews,
     });
-    const { mutate: add } = useMutation({
-        mutationFn: addVideoToPlaylist,
-        mutationKey: ["add-to-playlist", videoId],
-    });
-
     const {
         data: video,
         isLoading,
@@ -131,23 +100,19 @@ const Video = () => {
 
     const { mutate: toggleVideoLike } = useMutation({
         mutationFn: toggleVideoLikeMutation,
-        mutationKey: ["toggleLike", videoId, userId],
     });
 
     const { mutate: toggleSubscription } = useMutation({
         mutationFn: toggleSubscribeMutation,
-        mutationKey: ["subscribe", video?.creator._id, userId],
     });
 
-    const { mutate: addToWatchHistory } = useMutation({
-        mutationKey: ["watch-history", videoId, userId],
-        mutationFn: addToWatchHistoryMutation,
-    });
-
+    
+    useEffect(() => {
+        dispatch(toggleMenu(false));
+    }, []);
     useEffect(() => {
         if (video)
             setTimeout(() => {
-                addToWatchHistory();
                 incrementViews();
             }, 10000);
     }, [video]);
@@ -164,22 +129,20 @@ const Video = () => {
     }
     if (isError) return <div>Error: {error.message}</div>;
     return (
-        <div className="flex flex-col space-y-4 md:flex-row md:space-x-4 w-full dark:text-white">
-            <div className="space-y-4 lg:w-4/5 xl:w-2/3">
+        <div className="flex flex-col space-y-4 xl:flex-row w-full dark:text-white">
+            <div className="space-y-4 w-full xl:w-2/3 2xl:w-[70%]">
                 <div className="flex flex-col space-y-2 px-2">
                     <VideoPlayer
                         source={video.video}
-                        subtitles={
-                            [
-                                {
-                                    kind: "subtitles",
-                                    label: "English",
-                                    srclang: "en",
-                                    src: video.subtitle,
-                                },
-                            ]
-                        }
-                        className="w-full h-full rounded-xl"
+                        subtitles={[
+                            {
+                                kind: "subtitles",
+                                label: "English",
+                                srclang: "en",
+                                src: video.subtitle,
+                            },
+                        ]}
+                        className="w-full h-full object-cover aspect-video rounded-xl"
                     />
                     <h1 className="font-bold text-xl">{video.title}</h1>
                     <div className="flex justify-between flex-col sm:flex-row gap-y-2 sm:gap-0">
@@ -194,6 +157,7 @@ const Video = () => {
                                         DefaultProfileImage
                                     }
                                     className="rounded-full object-cover h-12 w-12"
+                                    loading="lazy"
                                 />
                                 <div className="flex flex-col gap-y-1 items-start">
                                     <div className="font-bold">
@@ -211,8 +175,8 @@ const Video = () => {
                                 variant="default"
                                 className={`${
                                     !isSubscribed
-                                        ? "bg-zinc-200 hover:bg-zinc-400"
-                                        : "bg-zinc-400 hover:bg-zinc-500"
+                                        ? "bg-red-400 hover:bg-red-600"
+                                        : "bg-gray-200 hover:bg-gray-400"
                                 } shadow-none text-black rounded-3xl`}
                                 onClick={() => toggleSubscription()}
                             >
@@ -224,36 +188,18 @@ const Video = () => {
                             <Button
                                 disabled={!userId}
                                 className={`${
-                                    isLiked && "text-blue-500 hover:text-blue-500"
+                                    isLiked &&
+                                    "text-blue-500 hover:text-blue-500"
                                 } dark:bg-zinc-600 border-none bg-zinc-200 h-7 sm:h-9`}
                                 variant="outline"
                                 onClick={() => toggleVideoLike()}
                             >
-                                <BiLike className="text-2xl" />
+                                <ThumbsUp />
                             </Button>
-                            <Popover
-                                onOpenChange={(open) => {
-                                    if (!open) {
-                                        addToPlaylists();
-                                    }
-                                }}
-                            >
-                                <PopoverTrigger>
-                                    <Button
-                                        disabled={!userId}
-                                        variant="outline"
-                                        className="dark:bg-zinc-600 border-none bg-zinc-200 h-7 sm:h-9"
-                                    >
-                                        <MdOutlinePlaylistAdd className="text-2xl" />
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-48 right-0 top-2 absolute bg-zinc-400">
-                                    <SaveToPlaylist
-                                        userId={userId}
-                                        setPLaylistIds={setPlaylistIds}
-                                    />
-                                </PopoverContent>
-                            </Popover>
+                            <SaveToPlaylist
+                                userId={userId}
+                                videoId={videoId}
+                            />
                         </div>
                     </div>
                     <div className="p-4 shadow-md rounded-xl bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-semibold">
@@ -291,16 +237,17 @@ const Video = () => {
                 </div>
                 <Comments videoId={videoId} />
             </div>
-            <div>
+            <div className="w-full xl:w-1/3 2xl:w-[30%]">
                 {recommendedVideos?.map((video) => (
                     <Link to={`/videos/${video._id}`} key={video._id}>
-                        <div className="flex gap-4 p-4">
+                        <div className="flex gap-4 px-4 pb-4 lg:min-w-[300px] lg:max-w-[500px] ">
                             <img
                                 src={video.thumbnail}
                                 className="h-28 w-40 object-cover rounded-lg"
+                                loading="lazy"
                             />
-                            <div className="flex flex-col gap-2">
-                                <h2 className="font-bold">{video.title}</h2>
+                            <div className="flex flex-col gap-2 overflow-hidden">
+                                <h2 className="font-bold truncate">{video.title}</h2>
                                 <div className="text-gray-500">
                                     {video.creator?.fullname}
                                 </div>

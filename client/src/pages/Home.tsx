@@ -56,25 +56,24 @@ const Home = () => {
                 <LoadingSkeleton />
             ) : (
                 <>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 w-full gap-y-6 dark:text-white text-black">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full dark:text-white text-black">
                         {data?.pages?.map((group) =>
-                            group.map((video: IVideoData, index: number) => {
-                                return (
-                                    <Link
-                                        to={`/videos/${video._id}`}
-                                        key={video._id}
-                                        className="group flex flex-col gap-2 rounded-xl transition-shadow duration-300 cursor-pointer p-2 hover:bg-zinc-200 hover:dark:bg-zinc-800"
-                                    >
-                                        <VideoCard
-                                            video={video}
-                                            className="group-hover:rounded-none"
-                                        />
-                                        <VideoTitle video={video} isImage />
-                                    </Link>
-                                );
-                            })
+                            group.map((video: IVideoData) => (
+                                <Link
+                                    to={`/videos/${video._id}`}
+                                    key={video._id}
+                                    className="group flex flex-col gap-2 rounded-xl transition-shadow duration-300 cursor-pointer p-2 hover:bg-zinc-200 hover:dark:bg-zinc-800"
+                                >
+                                    <VideoCard
+                                        video={video}
+                                        className="group-hover:rounded-none"
+                                    />
+                                    <VideoTitle video={video} isImage />
+                                </Link>
+                            ))
                         )}
                     </div>
+
                     <div
                         className="flex items-center justify-center h-10"
                         ref={loaderRef}

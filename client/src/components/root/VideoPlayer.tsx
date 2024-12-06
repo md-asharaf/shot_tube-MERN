@@ -17,7 +17,19 @@ const PlyrPlayer = ({ source, subtitles = [], className = "" }) => {
   useEffect(() => {
     const initializePlayer = () => {
       const video = videoRef.current;
-      const defaultOptions:Plyr.Options = {};
+      const defaultOptions:Plyr.Options = {
+        controls: [
+          "play",
+          "restart",
+          "progress",
+          "current-time",
+          "mute",
+          "captions",
+          "settings",
+          "fullscreen",
+      ],
+      settings: ["quality"],
+      };
 
       if (!Hls.isSupported()) {
         video.src = source;

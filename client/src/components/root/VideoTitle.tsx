@@ -18,8 +18,8 @@ const VideoTitle: React.FC<Props> = ({ video, isImage = false }) => {
                     loading="lazy"
                 />
             )}
-            <div className="flex-1">
-                <p className={`font-bold truncate text-wrap ${!isImage && "text-xs"}`}>
+            <div className="flex-1 overflow-hidden">
+                <p className={`font-bold truncate ${!isImage && "text-xs"}`}>
                     {video.title}
                 </p>
                 {isImage && (

@@ -8,24 +8,24 @@ import VideoTitle from "./VideoTitle";
 import PlaylistCard from "./PlaylistCard";
 import VideoTitle2 from "./VideoTitle2";
 
-const Slider = ({
+const Library = ({
     videos = null,
     playlists = null,
 }: {
     videos?: IVideoData[];
     playlists?: IPlaylist[];
 }) => {
-    const carouselRef = useRef(null);
+    const carouselRef = useRef<HTMLDivElement>(null);
 
     const scrollLeft = () => {
-        carouselRef.current.scrollBy({
+        carouselRef.current?.scrollBy({
             left: -carouselRef.current.clientWidth,
             behavior: "smooth",
         });
     };
 
     const scrollRight = () => {
-        carouselRef.current.scrollBy({
+        carouselRef.current?.scrollBy({
             left: carouselRef.current.clientWidth,
             behavior: "smooth",
         });
@@ -40,7 +40,7 @@ const Slider = ({
                 {videos && (
                     <Link to="/watch-history">
                         <button className="rounded-full bg-white dark:bg-black text-black shadow-none border-zinc-400 border-[1px] dark:text-white dark:border-[1px] dark:border-zinc-600 py-2 px-3">
-                            view all
+                            View all
                         </button>
                     </Link>
                 )}
@@ -56,7 +56,7 @@ const Slider = ({
                 {videos ? (
                     <div
                         ref={carouselRef}
-                        className="flex overflow-x-auto gap-4 no-scrollbar"
+                        className="flex overflow-x-auto gap-4 scrollbar-hide"
                         style={{ scrollBehavior: "smooth" }}
                     >
                         {videos.map((video) => (
@@ -76,7 +76,7 @@ const Slider = ({
                 ) : (
                     <div
                         ref={carouselRef}
-                        className="flex flex-col sm:flex-row sm:overflow-x-auto gap-4 no-scrollbar"
+                        className="flex flex-col sm:flex-row sm:overflow-x-auto gap-4 scrollbar-hide"
                         style={{ scrollBehavior: "smooth" }}
                     >
                         {playlists?.map((playlist) => (
@@ -104,4 +104,4 @@ const Slider = ({
     );
 };
 
-export default Slider;
+export default Library;

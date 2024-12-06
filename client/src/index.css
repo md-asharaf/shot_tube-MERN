@@ -3,6 +3,8 @@
 @tailwind components;
 @tailwind utilities;
 body {
+    height:100vh;
+    width:100vw;
     font-family: "Roboto", sans-serif;
 }
 /* src/styles/custom.css */
@@ -21,8 +23,12 @@ body {
 ::-webkit-scrollbar-thumb:hover {
     cursor: grab;
 }
-.no-scrollbar::-webkit-scrollbar {
+.scrollbar-hide::-webkit-scrollbar {
     display: none;
+}
+.scrollbar-hide {
+    -ms-overflow-style: none; /* Internet Explorer 10+ */
+    scrollbar-width: none; /* Firefox */
 }
 @layer base {
     :root {

@@ -1,19 +1,26 @@
 import { MdOutlineSubscriptions, MdSubscriptions } from "react-icons/md";
 import { SiYoutubeshorts } from "react-icons/si";
-import { useSelector } from "react-redux";
-import { RootState } from "@/provider";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState, toggleMenu } from "@/provider";
 import SubDrawer from "./SubDrawer";
 import subscriptionServices from "@/services/subscription.services";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { GoHome, GoHomeFill } from "react-icons/go";
-import { NavLink } from "react-router-dom";
+import { NavLink, useLocation,} from "react-router-dom";
+import { CiMenuBurger } from "react-icons/ci";
+import { ImYoutube } from "react-icons/im";
+import { useEffect, useState } from "react";
 
 interface IChannel {
     name: string;
     username: string;
 }
 const BigDrawer = () => {
+    const location = useLocation();
+    const dispatch = useDispatch();
+    const [isVideoPage, setIsVideoPage] = useState(false);
+    const [mediumScreenSize, setMediumScreenSize] = useState(false);
     const userId = useSelector((state: RootState) => state.auth.userData?._id);
     const username = useSelector(
         (state: RootState) => state.auth.userData?.username
@@ -159,71 +166,107 @@ const BigDrawer = () => {
         ...channel,
         route: `/${channel.username}/channel`,
     }));
+    useEffect(() => {
+        setMediumScreenSize(window.innerWidth < 1315);
+    }, [window.innerWidth]);
+    useEffect(() => {
+        setIsVideoPage(location.pathname.startsWith("/videos/"));
+    }, [location.pathname]);
     return (
-        <div className="w-full">
-            <div className="flex-col dark:text-white text-black`">
-                <NavLink to={"/"}>
-                    {({ isActive }) => (
-                        <div
-                            className={`flex gap-x-4 items-center rounded-xl p-2 ${
-                                isActive && "bg-zinc-200 dark:bg-zinc-800"
-                            }`}
+        <div
+            className={`${
+                (mediumScreenSize || isVideoPage) &&
+                "fixed inset-0 bg-black/50 z-40"
+            } w-full`}
+            onClick={() => {
+                if (mediumScreenSize || isVideoPage) dispatch(toggleMenu());
+            }}
+        >
+            <div className="pl-7 w-64 overflow-y-auto h-screen bg-white dark:bg-black">
+                {(mediumScreenSize || isVideoPage) && (
+                    <div className="pb-8 pl-1 pt-[14px] flex items-center gap-x-2 md:gap-x-4">
+                        <CiMenuBurger className="text-4xl dark:text-white hover:bg-zinc-400 dark:hover:bg-zinc-700 p-2 rounded-lg hidden sm:block" />
+                        <button
+                            className="flex items-center"
+                            onClick={() => window.location.href='/' }
                         >
-                            {isActive ? (
-                                <GoHomeFill className="text-xl" />
-                            ) : (
-                                <GoHome className="text-xl" />
-                            )}
-                            <span>Home</span>
-                        </div>
-                    )}
-                </NavLink>
-                <NavLink to={"/shorts"}>
-                    <div className="flex gap-x-4 items-center rounded-xl p-2">
-                        <SiYoutubeshorts className="text-xl" />
-                        <span>Shorts</span>
+                            <ImYoutube className="text-3xl w-10 dark:text-white text-black" />
+                            <h1 className="font-extrabold text-red-500">
+                                ShotTube
+                            </h1>
+                        </button>
                     </div>
-                </NavLink>
-                <NavLink to={"/subscriptions"}>
-                    {({ isActive }) => (
-                        <div
-                            className={`flex gap-x-4 items-center rounded-xl p-2 ${
-                                isActive && "bg-zinc-200 dark:bg-zinc-800"
-                            }`}
-                        >
-                            {isActive ? (
-                                <MdSubscriptions className="text-xl" />
-                            ) : (
-                                <MdOutlineSubscriptions className="text-xl" />
-                            )}
-                            <span>Subscriptions</span>
+                )}
+                <div className="flex-col dark:text-white text-black`">
+                    <NavLink to={"/"}>
+                        {({ isActive }) => (
+                            <div
+                                className={`flex gap-x-4 items-center rounded-xl p-2 ${
+                                    isActive && "bg-zinc-200 dark:bg-zinc-800"
+                                } hover:bg-zinc-200 dark:hover:bg-zinc-800`}
+                            >
+                                {isActive ? (
+                                    <GoHomeFill className="text-xl" />
+                                ) : (
+                                    <GoHome className="text-xl" />
+                                )}
+                                <span>Home</span>
+                            </div>
+                        )}
+                    </NavLink>
+                    <NavLink to={"/shorts"}>
+                        {({ isActive }) => (
+                            <div
+                                className={`flex gap-x-4 items-center rounded-xl p-2 ${
+                                    isActive && "bg-zinc-200 dark:bg-zinc-800"
+                                } hover:bg-zinc-200 dark:hover:bg-zinc-800`}
+                            >
+                                <SiYoutubeshorts className="text-xl" />
+                                <span>Shorts</span>
+                            </div>
+                        )}
+                    </NavLink>
+                    <NavLink to={"/subscriptions"}>
+                        {({ isActive }) => (
+                            <div
+                                className={`flex gap-x-4 items-center rounded-xl p-2 ${
+                                    isActive && "bg-zinc-200 dark:bg-zinc-800"
+                                } hover:bg-zinc-200 dark:hover:bg-zinc-800`}
+                            >
+                                {isActive ? (
+                                    <MdSubscriptions className="text-xl" />
+                                ) : (
+                                    <MdOutlineSubscriptions className="text-xl" />
+                                )}
+                                <span>Subscriptions</span>
+                            </div>
+                        )}
+                    </NavLink>
+                </div>
+                {userId && (
+                    <>
+                        <hr className="my-3" />
+                        <div>
+                            <SubDrawer options={options} />
                         </div>
-                    )}
-                </NavLink>
+                        {isLoading ? (
+                            <Skeleton className="h-4 w-full" />
+                        ) : (
+                            channels.length > 0 && (
+                                <>
+                                    <hr className="my-3" />
+                                    <p className="ml-2 mb-2 text-lg font-bold dark:text-white">
+                                        Subscriptions
+                                    </p>
+                                    <div>
+                                        <SubDrawer options={data} />
+                                    </div>
+                                </>
+                            )
+                        )}
+                    </>
+                )}
             </div>
-            {userId && (
-                <>
-                    <hr className="my-3" />
-                    <div>
-                        <SubDrawer options={options} />
-                    </div>
-                    {isLoading ? (
-                        <Skeleton className="h-4 w-full" />
-                    ) : (
-                        channels.length > 0 && (
-                            <>
-                                <hr className="my-3" />
-                                <p className="ml-2 mb-2 text-lg font-bold dark:text-white">
-                                    Subscriptions
-                                </p>
-                                <div>
-                                    <SubDrawer options={data} />
-                                </div>
-                            </>
-                        )
-                    )}
-                </>
-            )}
         </div>
     );
 };

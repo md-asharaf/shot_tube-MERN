@@ -5,8 +5,6 @@ import { useSelector } from "react-redux";
 import { Button } from "../ui/button";
 import { formatDistanceToNow } from "date-fns";
 import likeServices from "@/services/like.services";
-import { BiLike } from "react-icons/bi";
-import { RiDeleteBin6Line } from "react-icons/ri";
 import { IComment } from "@/interfaces";
 import { useNavigate } from "react-router-dom";
 import { Skeleton } from "../ui/skeleton";
@@ -15,6 +13,7 @@ import { FaPlus } from "react-icons/fa";
 import { FiMinus } from "react-icons/fi";
 import { GoDot } from "react-icons/go";
 import DefaultProfileImage from "@/assets/images/profile.png"
+import { ThumbsUp, Trash2 } from "lucide-react";
 const Comments = ({ videoId }) => {
     const navigate = useNavigate();
     const user = useSelector((state: RootState) => state.auth);
@@ -156,7 +155,7 @@ const Comments = ({ videoId }) => {
                 </div>
                 }
 
-                <div className="flex flex-col space-y-4 mt-3">
+                <div className="flex flex-col mt-2">
                     {comments.map((comment, index) => {
                         const sentiment = comment.sentiment?.toLowerCase();
                         return (
@@ -174,6 +173,7 @@ const Comments = ({ videoId }) => {
                                             `/${comment.creator.username}/channel`
                                         )
                                     }
+                                    loading="lazy"
                                 />
                                 <div>
                                     <div className="flex items-center space-x-2">
@@ -232,7 +232,7 @@ const Comments = ({ videoId }) => {
                                                     "text-blue-500 dark:hover:text-blue-500"
                                                 }`}
                                             >
-                                                <BiLike />
+                                                <ThumbsUp size={18} />
                                             </Button>
                                             {user.userData.username ===
                                                 comment.creator.username && (
@@ -245,7 +245,7 @@ const Comments = ({ videoId }) => {
                                                     variant="ghost"
                                                     className="rounded-full text-lg p-2 dark:hover:bg-zinc-800 dark:hover:text-white"
                                                 >
-                                                    <RiDeleteBin6Line />
+                                                    <Trash2 size={18} />
                                                 </Button>
                                             )}
                                         </div>

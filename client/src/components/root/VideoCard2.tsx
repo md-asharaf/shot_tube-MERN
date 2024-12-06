@@ -8,6 +8,7 @@ const VideoCard2: React.FC<IVideoData> = (video) => {
                     src={video.thumbnail}
                     alt="Video Thumbnail"
                     className="h-full w-full aspect-video object-cover"
+                    loading="lazy"
                 />
                 <span className="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white px-2 text-xs">
                     {formatDuration(video.duration)}

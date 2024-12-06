@@ -8,5 +8,7 @@ class PLaylistService {
         await Axios.patch(`/playlists/${playlistId}/${videoId}/add`);
     create = async (name: string) =>
         await Axios.post(`/playlists/create`, { name, description: "" });
+    removeVideoFromPlaylist = async (videoId: string, playlistId: string) =>
+        await Axios.patch(`/playlists/${playlistId}/${videoId}/remove`);
 }
 export default new PLaylistService();

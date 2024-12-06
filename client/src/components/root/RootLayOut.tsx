@@ -13,27 +13,19 @@ const RootLayOut = () => {
     const isMenuOpen = useSelector((state: RootState) => state.ui.isMenuOpen);
     return (
         <VideoProvider value={{ query, setQuery }}>
-            <div className="h-screen w-screen bg-white dark:bg-black">
-                <header>
-                    <nav>
-                        <NavBar />
-                    </nav>
-                </header>
-                <main className="flex pt-20 pr-1 space-x-4 h-screen w-screen custom-scrollbar">
-                    {isMenuOpen ? (
-                        <div className="pl-6 min-w-44 hidden sm:block overflow-auto">
-                            <BigDrawer />
-                        </div>
-                    ) : (
-                        <div className="min-w-12 hidden sm:block overflow-auto">
-                            <SmallDrawer />
-                        </div>
-                    )}
-                    <div className="overflow-y-auto w-full mb-12 sm:mb-0">
+            <div className={`w-screen bg-white dark:bg-black min-h-screen}`}>
+                <nav className="h-20">
+                    <NavBar />
+                </nav>
+                <div className="flex sm:px-1">
+                    <div className="hidden sm:flex">
+                        {isMenuOpen ? <BigDrawer /> : <SmallDrawer />}
+                    </div>
+                    <div className="flex-1 overflow-y-auto h-[calc(100vh-5rem)]" >
                         <Outlet />
                     </div>
-                </main>
-                <div className="block sm:hidden">
+                </div>
+                <div className="sm:hidden">
                     <BottomBar />
                 </div>
                 <Toaster />

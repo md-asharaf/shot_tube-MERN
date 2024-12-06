@@ -53,7 +53,6 @@ const Channel = () => {
             </div>
         );
     }
-
     return (
         <div className="space-y-2 w-full dark:text-white">
             {userData?.username === username && (
@@ -61,6 +60,7 @@ const Channel = () => {
                     className="w-full h-32 rounded-xl"
                     src={user?.coverImage || DefaultCoverImage}
                     alt="User cover"
+                    loading="lazy"
                 />
             )}
             <div className="flex space-x-8 justify-center rounded-2xl">

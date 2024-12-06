@@ -14,12 +14,10 @@ const SubDrawer: React.FC<{ options: IOption[] }> = ({ options }) => {
                     className={({ isActive }) =>
                         `flex items-center gap-x-4 rounded-xl p-2 ${
                             isActive && "bg-zinc-200 dark:bg-zinc-800"
-                        } `
+                        }  hover:bg-zinc-200 dark:hover:bg-zinc-800`
                     }
                 >
-                    {option.icon && (
-                        <span className="text-xl">{option.icon}</span>
-                    )}
+                    {option.icon && <span>{option.icon}</span>}
                     <span>{option.name}</span>
                 </NavLink>
             ))}

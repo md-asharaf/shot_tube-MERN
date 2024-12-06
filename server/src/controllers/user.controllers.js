@@ -148,14 +148,23 @@ class UserC {
     })
     addVideoToWatchHistory = asyncHandler(async (req, res) => {
         const { videoId } = req.params;
-        const user = await User.findById(req.user?._id);
-        if (user.watchHistory.includes(videoId)) {
-            return res.status(200).json(new ApiResponse(200, {}, "Video already in watch history"))
-        }
-        user.watchHistory.push(videoId);
-        await user.save({ validateBeforeSave: false });
-
+        const userId = req.user?._id;
+        const user = await User.findByIdAndUpdate(userId, {
+            $push:{
+                watchHistory: videoId
+            }
+        });
         return res.status(200).json(new ApiResponse(200, {}, "Video added to watch history"))
+    })
+    removeVideoFromWatchHistory = asyncHandler(async (req, res) => {
+        const { videoId } = req.params;
+        const userId = req.user?._id;
+        const user = await User.findByIdAndUpdate(userId, {
+            $pull: {
+                watchHistory: videoId
+            }
+        }, { new: true });
+        return res.status(200).json(new ApiResponse(200, user, "Video removed from watch history"))
     })
     // controller to get watch history of a user
     getWatchHistory = asyncHandler(async (req, res) => {
