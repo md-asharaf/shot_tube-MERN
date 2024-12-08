@@ -1,8 +1,8 @@
-import { asyncHandler } from '../utils/asyncHandler.js';
+import { asyncHandler } from '../utils/handler.js';
 import { ApiError } from '../utils/ApiError.js';
 import { User } from '../models/user.models.js';
-import { Cloudinary } from '../utils/cloudinary.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
+import mongoose from 'mongoose';
 
 class UserC {
     //controller to change current password of a user
@@ -34,58 +34,21 @@ class UserC {
     })
     //controller to update account details of a user
     updateAccountDetails = asyncHandler(async (req, res) => {
-        const { email, fullname } = req.body;
+        const { email, fullname,avatar,coverImage } = req.body;
+        if(!email || !fullname || !avatar || !coverImage){
+            throw new ApiError(400, "All fields are required")
+        }
         const user = await User.findByIdAndUpdate(req.user?._id, {
             $set: {
                 fullname,
-                email
+                email,
+                avatar,
+                coverImage
             }
         }, {
             new: true
         })?.select("-password -refreshToken");
         return res.status(200).json(new ApiResponse(200, user, "Account details updated successfully"))
-    })
-    //controller to update avatar of a user
-    updateAvatar = asyncHandler(async (req, res) => {
-        const avatarLocalPath = req.file?.path;
-        if (!avatarLocalPath) {
-            throw new ApiError(400, "Avatar is required")
-        }
-        const avatar = await Cloudinary.upload(avatarLocalPath, "image");
-        if (!avatar || !avatar.url) {
-            throw new ApiError(500, "Failed to upload avatar")
-        }
-        const user = await User.findById(req.user?._id).select("-password -refreshToken");
-        const public_id = user.avatar.public_id;
-        user.avatar = avatar;
-        await user.save({ validateBeforeSave: false });
-        await Cloudinary.delete(public_id);
-        return res.status(200).json(new ApiResponse(200, user, "Avatar updated successfully"))
-    })
-    //controller to update cover image of a user
-    updateCoverImage = asyncHandler(async (req, res) => {
-        const userId = req.user?._id;
-        if (!userId) {
-            throw new ApiError(400, "User id is required")
-        }
-        const coverImageLocalPath = req.file?.path;
-        if (!coverImageLocalPath) {
-            throw new ApiError(400, "cover image is required")
-        }
-        const coverImage = await Cloudinary.upload(coverImageLocalPath, "image");
-        if (!coverImage || !coverImage.url) {
-            throw new ApiError(500, "Failed to upload cover image")
-        }
-        const user = await User.findById(userId).select("-password -refreshToken");
-        if (!user) {
-            throw new ApiError(404, "User not found")
-        }
-        const public_id = user.coverImage?.public_id || "";
-        user.coverImage = coverImage;
-        user.save({ validateBeforeSave: false });
-        await Cloudinary.delete(public_id);
-        return res.status(200).json(new ApiResponse(200, user, "cover image updated successfully"))
-
     })
     //controller to get user profile details
     getUserDetails = asyncHandler(async (req, res) => {
@@ -149,9 +112,9 @@ class UserC {
     addVideoToWatchHistory = asyncHandler(async (req, res) => {
         const { videoId } = req.params;
         const userId = req.user?._id;
-        const user = await User.findByIdAndUpdate(userId, {
+        await User.findByIdAndUpdate(userId, {
             $push:{
-                watchHistory: videoId
+                watchHistory: new mongoose.Types.ObjectId(videoId)
             }
         });
         return res.status(200).json(new ApiResponse(200, {}, "Video added to watch history"))
@@ -159,12 +122,12 @@ class UserC {
     removeVideoFromWatchHistory = asyncHandler(async (req, res) => {
         const { videoId } = req.params;
         const userId = req.user?._id;
-        const user = await User.findByIdAndUpdate(userId, {
+        await User.findByIdAndUpdate(userId, {
             $pull: {
-                watchHistory: videoId
+                watchHistory: new mongoose.Types.ObjectId(videoId)
             }
         }, { new: true });
-        return res.status(200).json(new ApiResponse(200, user, "Video removed from watch history"))
+        return res.status(200).json(new ApiResponse(200,{}, "Video removed from watch history"))
     })
     // controller to get watch history of a user
     getWatchHistory = asyncHandler(async (req, res) => {
@@ -175,7 +138,7 @@ class UserC {
         const user = await User.aggregate([
             {
                 $match: {
-                    _id: userId
+                    _id: new mongoose.Types.ObjectId(userId)
                 }
             },
             {
@@ -217,8 +180,8 @@ class UserC {
     })
     clearWatchHistory = asyncHandler(async (req, res) => {
         const userId = req.user?._id;
-        const user = await User.findByIdAndUpdate(userId, { $set: { watchHistory: [] } }, { new: true });
-        return res.status(200).json(new ApiResponse(200, user, "Watch history cleared"))
+        await User.findByIdAndUpdate(userId, { $set: { watchHistory: [] } }, { new: true });
+        return res.status(200).json(new ApiResponse(200,{}, "Watch history cleared"))
     })
 }
 export default new UserC();

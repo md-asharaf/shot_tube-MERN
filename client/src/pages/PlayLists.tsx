@@ -10,18 +10,17 @@ import { Loader2 } from "lucide-react";
 
 const PlayLists = () => {
     const userId = useSelector((state: RootState) => state.auth.userData?._id);
-    const fetchPlaylists = async () => {
-        const res = await playlistServices.getPlaylists(userId);
-        return res.data;
-    };
     const {
         data: playlists,
         isError,
         error,
         isLoading,
-    } = useQuery<IPlaylist[]>({
+    } = useQuery({
         queryKey: ["playlists", userId],
-        queryFn: fetchPlaylists,
+        queryFn: async ():Promise<IPlaylist[]> => {
+            const res = await playlistServices.getPlaylists(userId);
+            return res.data;
+        },
         enabled: !!userId,
     });
     if (isLoading) {

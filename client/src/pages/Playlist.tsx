@@ -9,18 +9,17 @@ import { formatDuration } from "@/lib/utils";
 
 const Playlist = () => {
     const { playlistId } = useParams();
-    const fetchPlaylist = async () => {
-        const res = await playlistServices.getPlaylist(playlistId);
-        return res.data;
-    };
     const {
         data: playlist,
         isError,
         isLoading,
         error,
-    } = useQuery<IPlaylist>({
+    } = useQuery({
         queryKey: ["playlist", playlistId],
-        queryFn: fetchPlaylist,
+        queryFn: async ():Promise<IPlaylist> => {
+            const res = await playlistServices.getPlaylist(playlistId);
+            return res.data;
+        },
         enabled: !!playlistId,
     });
     if (isLoading) {

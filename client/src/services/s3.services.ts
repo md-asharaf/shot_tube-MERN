@@ -30,15 +30,12 @@ class S3 {
             Key: key,
         });
         const url = await getSignedUrl(s3Client, command);
-        console.log("presigned url: ", url);
         return url;
     };
 
     uploadFile = async (file) => {
         const filename = file.name;
         const contentType = file.type || "application/octet-stream"; // Add fallback content type
-        console.log("filename", filename);
-        console.log("contentType", contentType);
         try {
             const url = await this.putObjectUrl(
                 "shot-tube-videos",
@@ -53,12 +50,11 @@ class S3 {
                 },
             });
             if (!response.ok) {
-                throw new Error("Failed to upload file to S3");
+                console.error("Error uploading file:", response.statusText);
             }
             return `https://shot-tube-videos.s3.amazonaws.com/uploads/user-uploads/${filename}`;
         } catch (error) {
-            console.log("Error uploading file: ", error);
-            throw error;
+            console.error("Error uploading file: ", error);
         }
     };
 
@@ -76,11 +72,9 @@ class S3 {
             const file = new File([blob], fileName, { type: fileType });
 
             const s3Url = await this.uploadFile(file);
-            console.log("File uploaded to S3 successfully:", s3Url);
             return s3Url;
         } catch (error) {
             console.error("Error downloading or uploading image:", error);
-            throw error;
         }
     };
 }

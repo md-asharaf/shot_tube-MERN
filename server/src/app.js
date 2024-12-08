@@ -2,7 +2,7 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser"
-import errorHandler from "./utils/errorHandler.js";
+import {errorHandler} from "./utils/handler.js";
 import userRoutes from "./routes/user.routes.js";
 import tweetRoutes from "./routes/tweet.routes.js";
 import commentRoutes from "./routes/comment.routes.js";
@@ -14,7 +14,6 @@ import bodyParser from "body-parser"
 const app = express();
 //middlewares
 const ORIGIN = process.env.ORIGIN
-console.log(process.env)
 app.use(cors({
     origin: [ORIGIN],
     credentials: true

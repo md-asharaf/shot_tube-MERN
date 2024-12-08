@@ -1,4 +1,4 @@
-import { asyncHandler } from "../utils/asyncHandler.js";
+import { asyncHandler } from "../utils/handler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 import { Comment } from "../models/comment.models.js";
@@ -99,7 +99,7 @@ class CommentC {
             throw new ApiError(400, "Comment ID is required")
         }
         //find comment by id and user id
-        const comment = await Comment.findOneAndDelete({ _id: commentId, userId });
+        const comment = await Comment.findOneAndDelete({ _id: new mongoose.Types.ObjectId(commentId), userId:new mongoose.Types.ObjectId(userId) });
         if (!comment) {
             throw new ApiError(404, "Comment not found or you are not authorized to delete it")
         }
@@ -117,7 +117,7 @@ class CommentC {
         }
 
         //find comment by id and user id
-        const comment = await Comment.findById({ _id: commentId, userId });
+        const comment = await Comment.findOne({  _id: new mongoose.Types.ObjectId(commentId), userId:new mongoose.Types.ObjectId(userId) });
         if (!comment) {
             throw new ApiError(404, "Comment not found or you are not authorized to update it")
         }

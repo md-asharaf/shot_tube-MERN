@@ -17,32 +17,30 @@ const Channel = () => {
     const dispatch = useDispatch();
     const userData = useSelector((state: RootState) => state.auth.userData);
     const { username } = useParams<{ username: string }>();
-    const fetchUserData = async () => {
-        const res = await userServices.getUser(username);
-        return res.data;
-    };
-    const fetchUserVideos = async () => {
-        const res = await videoServices.allVideosByUser(user?._id);
-        return res.data;
-    };
     // Fetch user data
-    const { data: user, isLoading: userLoading } = useQuery<IUser>({
+    const { data: user, isLoading: userLoading } = useQuery({
         queryKey: ["user", username],
-        queryFn: fetchUserData,
+        queryFn: async ():Promise<IUser> => {
+            const res = await userServices.getUser(username);
+            return res.data;
+        },
         enabled: !!username,
     });
-    const { data: isSubscribed, refetch } = useQuery<boolean>({
+    const { data: isSubscribed, refetch } = useQuery({
         queryKey: ["isSubscribed", user?._id],
-        queryFn: async () => {
+        queryFn: async ():Promise<boolean> => {
             const res = await subscriptionServices.isSubscribed(user?._id);
             return res.data.isSubscribed;
         },
         enabled: !!user,
     });
     // Fetch videos by user
-    const { data: videos, isLoading: videosLoading } = useQuery<IVideoData[]>({
+    const { data: videos, isLoading: videosLoading } = useQuery({
         queryKey: ["videos", user?._id],
-        queryFn: fetchUserVideos,
+        queryFn: async ():Promise<IVideoData[]> => {
+            const res = await videoServices.allVideosByUser(user?._id);
+            return res.data;
+        },
         enabled: !!user,
     });
 

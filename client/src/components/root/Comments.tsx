@@ -12,43 +12,24 @@ import { useState } from "react";
 import { FaPlus } from "react-icons/fa";
 import { FiMinus } from "react-icons/fi";
 import { GoDot } from "react-icons/go";
-import DefaultProfileImage from "@/assets/images/profile.png"
+import DefaultProfileImage from "@/assets/images/profile.png";
 import { ThumbsUp, Trash2 } from "lucide-react";
-const Comments = ({ videoId }) => {
+const Comments = ({ videoId, playerRef }) => {
     const navigate = useNavigate();
     const user = useSelector((state: RootState) => state.auth);
     const [content, setContent] = useState<string>("");
-    const fetchComments = async () => {
-        const res = await commentServices.getComments(videoId);
-        return res.data.docs;
-    };
-    const fetchCommentsLike = async () => {
-        const likes: boolean[] = await Promise.all(
-            comments.map(async (comment) => {
-                const res = await likeServices.isLiked(comment._id, "comment");
-                return res.data;
-            })
-        );
-        return likes;
-    };
-    const addCommentMutation = async (content: string) => {
-        await commentServices.comment(videoId, content);
-    };
-    const deleteCommentMutation = async (commentId: string) => {
-        await commentServices.deleteComment(commentId);
-    };
-    const toggleCommentLikeMutation = async (commentId: string) => {
-        await likeServices.toggleLike(commentId, "comment");
-    };
     const {
         data: comments,
         isError: commentsError,
         isLoading: commentsLoading,
         error: commentsErrorObj,
         refetch: refetchComments,
-    } = useQuery<IComment[], Error>({
+    } = useQuery({
         queryKey: ["comments", videoId],
-        queryFn: fetchComments,
+        queryFn: async (): Promise<IComment[]> => {
+            const res = await commentServices.getComments(videoId);
+            return res.data.docs;
+        },
         enabled: !!videoId,
     });
 
@@ -58,25 +39,46 @@ const Comments = ({ videoId }) => {
         isLoading: likedLoading,
         error: likedErrorObj,
         refetch: refetchCommentsLike,
-    } = useQuery<boolean[], Error>({
+    } = useQuery({
         queryKey: ["commentsLike", videoId],
-        queryFn: fetchCommentsLike,
+        queryFn: async (): Promise<boolean[]> => {
+            const likes: boolean[] = await Promise.all(
+                comments.map(async (comment) => {
+                    const res = await likeServices.isLiked(
+                        comment._id,
+                        "comment"
+                    );
+                    return res.data;
+                })
+            );
+            return likes;
+        },
         enabled: !!comments, // Ensure this query runs only when `comments` is available
     });
 
-    const { mutate: addComment } = useMutation<void, Error, string>({
-        mutationFn: addCommentMutation,
+    const { mutate: addComment } = useMutation({
+        mutationFn: async ({
+            videoId,
+            content,
+        }: {
+            videoId: string;
+            content: string;
+        }) => {
+            await commentServices.comment(videoId, content);
+        },
         onSuccess: () => {
             setContent("");
             refetchComments();
         },
-        onError: (error: Error) => {
+        onError: (error) => {
             console.error("Error adding comment:", error);
         },
     });
 
-    const { mutate: toggleCommentLike } = useMutation<void, Error, string>({
-        mutationFn: toggleCommentLikeMutation,
+    const { mutate: toggleCommentLike } = useMutation({
+        mutationFn: async ({ commentId }: { commentId: string }) => {
+            await likeServices.toggleLike(commentId, "comment");
+        },
         onSuccess: () => {
             refetchCommentsLike();
         },
@@ -85,8 +87,10 @@ const Comments = ({ videoId }) => {
         },
     });
 
-    const { mutate: deleteComment } = useMutation<void, Error, string>({
-        mutationFn: deleteCommentMutation,
+    const { mutate: deleteComment } = useMutation({
+        mutationFn: async ({commentId}:{commentId: string}) => {
+            await commentServices.deleteComment(commentId);
+        },
         onSuccess: () => {
             refetchComments();
         },
@@ -112,48 +116,93 @@ const Comments = ({ videoId }) => {
                 ERROR: {commentsErrorObj?.message || likedErrorObj?.message}
             </div>
         );
+
+    const processComment = (
+        comment: string,
+        onTimestampClick: (seconds: number) => void
+    ) => {
+        const timestampRegex = /\b(\d{1,2}:\d{2})\b/g;
+
+        const parts = comment.split(timestampRegex);
+
+        return parts.map((part, index) => {
+            if (timestampRegex.test(part)) {
+                const [minutes, seconds] = part.split(":").map(Number);
+                const timeInSeconds = minutes * 60 + seconds;
+
+                return (
+                    <a
+                        key={index}
+                        href="#"
+                        className="text-blue-500"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            onTimestampClick(timeInSeconds);
+                        }}
+                    >
+                        {part}
+                    </a>
+                );
+            }
+
+            return <span key={index}>{part}</span>;
+        });
+    };
+    const onTimestampClick = (seconds: number) => {
+        if (playerRef.current) {
+            playerRef.current.currentTime = seconds;
+            window.scrollTo({
+                top: 0,
+                behavior: "smooth",
+            });
+            if (playerRef.current.paused) {
+                playerRef.current.play();
+            }
+        }
+    };
+
     return (
         <div className="px-2">
             <div className="font-bold text-2xl text-zinc-600 dark:text-zinc-300">{`${comments.length} Comments`}</div>
             <div className="flex flex-col">
-                {
-                    user.userData && <div className="flex gap-y-1 flex-col justify-start">
-                    <div className="flex items-center gap-2">
-                        <img
-                            src={
-                                user.userData?.avatar || DefaultProfileImage
-                            }
-                            className="rounded-full h-10 w-10"
-                        />
-                        <input
-                            value={content}
-                            onChange={(e) => setContent(e.target.value)}
-                            placeholder="Add a public comment..."
-                            className="outline-none shadow-none border-b-[1px] border-b-black dark:border-b-white dark:bg-black w-full"
-                        />
+                {user.userData && (
+                    <div className="flex gap-y-1 flex-col justify-start">
+                        <div className="flex items-center gap-2">
+                            <img
+                                src={
+                                    user.userData?.avatar || DefaultProfileImage
+                                }
+                                className="rounded-full h-10 w-10"
+                            />
+                            <input
+                                value={content}
+                                onChange={(e) => setContent(e.target.value)}
+                                placeholder="Add a public comment..."
+                                className="outline-none shadow-none border-b-[1px] border-b-black dark:border-b-white dark:bg-black w-full"
+                            />
+                        </div>
+                        <div className="flex space-x-2 justify-end">
+                            <Button
+                                disabled={!content}
+                                onClick={() => {
+                                    setContent("");
+                                }}
+                                variant="destructive"
+                                className="h-7 sm:h-9"
+                            >
+                                Cancel
+                            </Button>
+                            <Button
+                                disabled={!content}
+                                onClick={() => addComment({videoId,content})}
+                                variant="outline"
+                                className="hover:bg-blue-500 hover:text-white dark:text-black dark:bg-white dark:hover:bg-blue-500 h-7 sm:h-9 p-1 sm:p-2"
+                            >
+                                Comment
+                            </Button>
+                        </div>
                     </div>
-                    <div className="flex space-x-2 justify-end">
-                        <Button
-                            disabled={!content}
-                            onClick={() => {
-                                setContent("");
-                            }}
-                            variant="destructive"
-                            className="h-7 sm:h-9"
-                        >
-                            Cancel
-                        </Button>
-                        <Button
-                            disabled={!content}
-                            onClick={() => addComment(content)}
-                            variant="outline"
-                            className="hover:bg-blue-500 hover:text-white dark:text-black dark:bg-white dark:hover:bg-blue-500 h-7 sm:h-9 p-1 sm:p-2"
-                        >
-                            Comment
-                        </Button>
-                    </div>
-                </div>
-                }
+                )}
 
                 <div className="flex flex-col mt-2">
                     {comments.map((comment, index) => {
@@ -165,7 +214,8 @@ const Comments = ({ videoId }) => {
                             >
                                 <img
                                     src={
-                                        comment.creator.avatar || DefaultProfileImage
+                                        comment.creator.avatar ||
+                                        DefaultProfileImage
                                     }
                                     className="rounded-full h-10 w-10 cursor-pointer"
                                     onClick={() =>
@@ -217,13 +267,18 @@ const Comments = ({ videoId }) => {
                                             </span>
                                         </div>
                                     </div>
-                                    <div>{comment.content}</div>
+                                    <div>
+                                        {processComment(
+                                            comment.content,
+                                            onTimestampClick
+                                        )}
+                                    </div>
                                     {user.status && (
                                         <div className="space-x-2 flex items-center">
                                             <Button
                                                 onClick={() =>
                                                     toggleCommentLike(
-                                                        comment._id
+                                                        {commentId:comment._id}
                                                     )
                                                 }
                                                 variant="ghost"
@@ -239,7 +294,7 @@ const Comments = ({ videoId }) => {
                                                 <Button
                                                     onClick={() =>
                                                         deleteComment(
-                                                            comment._id
+                                                            {commentId:comment._id}
                                                         )
                                                     }
                                                     variant="ghost"

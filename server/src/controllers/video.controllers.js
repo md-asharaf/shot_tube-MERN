@@ -1,9 +1,8 @@
-import { asyncHandler } from "../utils/asyncHandler.js";
+import { asyncHandler } from "../utils/handler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 import { Video } from "../models/video.models.js";
 import mongoose from "mongoose";
-import { Cloudinary } from "../utils/cloudinary.js";
 import { User } from "../models/user.models.js";
 class VideoC {
     // controller to publish a video
@@ -31,7 +30,7 @@ class VideoC {
             }
             return res.status(200).json(new ApiResponse(200, newVideo, "Video published successfully"))
         } catch (error) {
-            console.log(error.message)
+            console.error(error.message)
         }
     })
 
@@ -48,9 +47,6 @@ class VideoC {
         if (video.userId.toString() !== userId.toString()) {
             throw new ApiError(400, "You are not authorized to delete this video")
         }
-        //delete video from cloudinary
-        await Cloudinary.delete(video.videoFile.public_id);
-        await Cloudinary.delete(video.thumbnail.public_id);
         //delete video from database
         await Video.findByIdAndDelete(video._id);
         return res.status(200).json(new ApiResponse(200, {}, "Video deleted successfully"))
@@ -61,12 +57,11 @@ class VideoC {
             //get video id from request params 
             const { videoId } = req.params;
             const userId = req.user?._id;
-            //get title, description and thumbnail from request body
+            //get title, description from request body
             const { title, description } = req.body;
-            const localThumbnailPath = req.file?.path || "";
             //check if title or description or thumbnail is provided
-            if (!title && !description && !localThumbnailPath) {
-                throw new ApiError(400, "Please provide title or description or thumbnail")
+            if (!title && !description) {
+                throw new ApiError(400, "Please provide title or description")
             }
             //find video by id
             const video = await Video.findById(videoId);
@@ -79,25 +74,11 @@ class VideoC {
             //update video
             if (title) video.title = title;
             if (description) video.description = description;
-            //upload thumbnail if provided
-            if (localThumbnailPath) {
-                //upload thumbnail on cloudinary
-                const thumbnail = await Cloudinary.upload(localThumbnailPath, "image");
-
-                if (!thumbnail) {
-                    throw new ApiError(500, "Failed to upload thumbnail")
-                }
-                let oldThumbnail = video.thumbnail;
-                //update thumbnail
-                video.thumbnail = thumbnail;
-                //delete old thumbnail from cloudinary
-                await Cloudinary.delete(oldThumbnail.public_id)
-            }
             //save video
             await video.save({ validateBeforeSave: false });
             return res.status(200).json(new ApiResponse(200, video, "Video updated successfully"))
         } catch (error) {
-            console.log("ERROR: ", error.message)
+            console.error("ERROR: ", error.message)
         }
     })
     // controller to toggle publish status of a video
@@ -156,7 +137,7 @@ class VideoC {
             ])
             return res.status(200).json(new ApiResponse(200, videos, "All videos fetched successfully"))
         } catch (error) {
-            console.log("ERROR: ", error.message)
+            console.error("ERROR: ", error.message)
         }
     })
 
@@ -230,7 +211,7 @@ class VideoC {
             ])
             return res.status(200).json(new ApiResponse(200, videos, "this channel's all videos fetched successfully"))
         } catch (error) {
-            console.log("ERROR: ", error.message)
+            console.error("ERROR: ", error.message)
         }
     })
 
@@ -287,61 +268,138 @@ class VideoC {
             ])
             return res.status(200).json(new ApiResponse(200, videos, "All videos by search query fetched successfully"))
         } catch (error) {
-            console.log("ERROR: ", error.message)
+            console.error("ERROR: ", error.message)
         }
     })
 
     getRecommendedVideos = asyncHandler(async (req, res) => {
-        const userId = req.user?._id;
-        // Check if userId is valid
-        if (!mongoose.Types.ObjectId.isValid(userId)) {
-            return res.status(400).json(new ApiResponse(400, null, 'Invalid user ID'));
-        }
-
         try {
-            const user = await User.findById(userId).populate('watchHistory').exec();
+            const { _id: userId } = req.user;
+            const { videoId } = req.params;
 
-
-            if (!user) {
-                return res.status(404).json(new ApiResponse(404, null, 'User not found'));
-            }
-            const watchedVideos = user.watchHistory.map(video => video._id);
-
-            // Find other users who have watched the same videos
-            const otherUsers = await User.find({
-                _id: { $ne: userId },
-                watchHistory: { $in: watchedVideos }
-            }).exec();
-
-            // Collect videos watched by these other users
-            let recommendedVideos = [];
-            for (const otherUser of otherUsers) {
-                recommendedVideos = recommendedVideos.concat(otherUser.watchHistory);
+            // Find the current video
+            const currentVideo = await Video.findById(videoId);
+            if (!currentVideo) {
+                return res.status(404).json({ message: 'Video not found' });
             }
 
-            // Filter out videos the user has already watched and remove duplicates
-            recommendedVideos = recommendedVideos
-                .filter(videoId => !watchedVideos.includes(videoId.toString()))
-                .filter((videoId, index, self) => index === self.findIndex(v => v.toString() === videoId.toString()));
+            // Fetch user's watch history
+            const user = await User.findById(userId).populate('watchHistory');
+            const watchedVideoIds = user.watchHistory.map(video => video._id);
 
-            // Populate video details
-            let detailedRecommendedVideos = await Video.find({ _id: { $in: recommendedVideos } }).populate({
-                path: 'userId',
-                select: 'fullname username'
-            }).lean().exec();
-            detailedRecommendedVideos = detailedRecommendedVideos.map((video) => {
-                video.creator = video.userId;
-                delete video.userId;
-                return video;
+            // Hybrid Recommendation Pipeline
+            const recommendations = await Video.aggregate([
+                {
+                    $match: {
+                        // Exclude current video and already watched videos
+                        _id: {
+                            $nin: [videoId, ...watchedVideoIds]
+                        },
+                        isPublished: true
+                    }
+                },
+                // Content-Based: Similar to current video
+                {
+                    $addFields: {
+                        contentScore: {
+                            $size: {
+                                $setIntersection: [
+                                    { $split: [{ $toLower: "$title" }, " "] },
+                                    { $split: [{ $toLower: currentVideo.title }, " "] }
+                                ]
+                            }
+                        }
+                    }
+                },
+                // Collaborative: Consider videos from same creators of watched videos
+                {
+                    $addFields: {
+                        collaborativeScore: {
+                            $cond: [
+                                { $in: ["$userId", user.watchHistory.map(v => v.userId)] },
+                                5, // Boost score for videos from creators of watched videos
+                                0
+                            ]
+                        }
+                    }
+                },
+                // Popularity Boost
+                {
+                    $addFields: {
+                        popularityScore: {
+                            $divide: [
+                                "$views",
+                                { $max: [1, "$views"] } // Prevent division by zero
+                            ]
+                        }
+                    }
+                },
+                // Combine Scoring
+                {
+                    $addFields: {
+                        totalScore: {
+                            $add: [
+                                { $multiply: ["$contentScore", 2] },   // Content similarity weight
+                                { $multiply: ["$collaborativeScore", 3] }, // Collaborative filtering weight
+                                { $multiply: ["$popularityScore", 1.5] }  // Popularity weight
+                            ]
+                        }
+                    }
+                },
+                // Sort by total score
+                { $sort: { totalScore: -1 } },
+                // Add some randomness
+                { $sample: { size: 5 } }, // Random selection among top recommendations
+                // Lookup creator details
+                {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'userId',
+                        foreignField: '_id',
+                        as: 'creator'
+                    }
+                },
+                { $unwind: '$creator' },
+                // Final limit
+                { $limit: 10 }
+            ]);
+
+            // If not enough recommendations, add truly random videos
+            if (recommendations.length < 10) {
+                const randomVideos = await Video.aggregate([
+                    {
+                        $match: {
+                            _id: {
+                                $nin: [
+                                    videoId,
+                                    ...watchedVideoIds,
+                                    ...recommendations.map(r => r._id)
+                                ]
+                            },
+                            isPublished: true
+                        }
+                    },
+                    { $sample: { size: 10 - recommendations.length } },
+                    {
+                        $lookup: {
+                            from: 'users',
+                            localField: 'userId',
+                            foreignField: '_id',
+                            as: 'creator'
+                        }
+                    },
+                    { $unwind: '$creator' },
+                ]);
+
+                recommendations.push(...randomVideos);
             }
 
-            )
-            return res.status(200).json(new ApiResponse(200, detailedRecommendedVideos, 'Recommended videos fetched successfully'));
+            return res.status(200).json(new ApiResponse(200, recommendations, 'Recommended videos fetched successfully'));
         } catch (error) {
-            console.log("ERROR: ", error.message);
-            return res.status(500).json(new ApiResponse(500, null, 'Internal server error'));
+            console.error('Recommendation error:', error);
         }
-    });
+    })
+
     increaseViews = asyncHandler(async (req, res) => {
         const { videoId } = req.params;
         const video = await Video.findById(videoId);

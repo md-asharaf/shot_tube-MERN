@@ -1,10 +1,10 @@
 import { Button } from "@/components/ui/button";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, toggleMenu } from "@/provider";
 import { IVideoData } from "@/interfaces";
-import { formatDistanceToNow } from "date-fns";
+import { add, formatDistanceToNow } from "date-fns";
 import DefaultProfileImage from "@/assets/images/profile.png";
 import videoService from "@/services/video.services";
 import subscriptionServices from "@/services/subscription.services";
@@ -15,97 +15,99 @@ import { useQuery, useMutation } from "@tanstack/react-query";
 import videoServices from "@/services/video.services";
 import VideoPlayer from "@/components/root/VideoPlayer";
 import { Loader2, ThumbsUp } from "lucide-react";
+import userServices from "@/services/user.services";
 
 const Video = () => {
     const dispatch = useDispatch();
-    const [isExpanded, setIsExpanded] = useState(false);
-    const [maxLength, setMaxLength] = useState(100); // Number of characters before truncating
-
-    const userId = useSelector((state: RootState) => state.auth.userData?._id);
+    const playerRef = useRef(null);
     const { videoId } = useParams();
+    const [isExpanded, setIsExpanded] = useState(false);
+    const [maxLength, setMaxLength] = useState(100);
+    const userId = useSelector((state: RootState) => state.auth.userData?._id);
+
     const toggleExpanded = () => {
         setIsExpanded(!isExpanded);
     };
-    const fetchVideo = async () => {
-        const res = await videoService.singleVideo(videoId);
-        return res.data;
-    };
-    const fetchIsLiked = async () => {
-        const res = await likeService.isLiked(videoId, "video");
-        return res.data;
-    };
-    const fetchIsSubscribed = async () => {
-        const res = await subscriptionServices.isSubscribed(video.creator._id);
-        return res.data.isSubscribed;
-    };
-    const fetchSubscribersCount = async () => {
-        const res = await subscriptionServices.getSubscribersCount(
-            video.creator._id
-        );
-        return res.data;
-    };
-    const toggleVideoLikeMutation = async () => {
-        await likeService.toggleLike(videoId, "video");
-        refetchIsLiked();
-    };
-    const toggleSubscribeMutation = async () => {
-        await subscriptionServices.toggleSubscription(video.creator._id);
-        refetchIsSubscribed();
-        refetchSubscribersCount();
-    };
-    const increaseViews = async () =>
-        await videoServices.incrementViews(videoId);
-    const { mutate: incrementViews } = useMutation({
-        mutationFn: increaseViews,
-    });
+
     const {
         data: video,
         isLoading,
         isError,
         error,
-    } = useQuery<IVideoData>({
+    } = useQuery({
         queryKey: ["video", videoId],
-        queryFn: fetchVideo,
-        enabled: !!videoId,
-    });
-
-    const { data: isLiked, refetch: refetchIsLiked } = useQuery<boolean>({
-        queryKey: ["isLiked", videoId],
-        queryFn: fetchIsLiked,
-        enabled: !!videoId && !!userId,
-    });
-
-    const { data: isSubscribed, refetch: refetchIsSubscribed } =
-        useQuery<boolean>({
-            queryKey: ["subscribe", video?.creator._id, userId],
-            queryFn: fetchIsSubscribed,
-            enabled: !!video && !!userId,
-        });
-
-    const { data: subscribersCount, refetch: refetchSubscribersCount } =
-        useQuery<number>({
-            queryKey: ["subscribersCount", video?.creator._id],
-            queryFn: fetchSubscribersCount,
-            enabled: !!video,
-        });
-
-    const { data: recommendedVideos } = useQuery<IVideoData[]>({
-        queryKey: ["recommendedVideos", videoId],
-        queryFn: async () => {
-            const res = await videoService.recommendedVideos();
+        queryFn: async ():Promise<IVideoData> => {
+            const res = await videoService.singleVideo(videoId);
             return res.data;
         },
         enabled: !!videoId,
     });
 
+    const { data: isLiked, refetch: refetchIsLiked } = useQuery({
+        queryKey: ["isLiked", videoId],
+        queryFn: async ():Promise<boolean> => {
+            const res = await likeService.isLiked(videoId, "video");
+            return res.data;
+        },
+        enabled: !!videoId && !!userId,
+    });
+
+    const { data: isSubscribed, refetch: refetchIsSubscribed } =
+        useQuery({
+            queryKey: ["subscribe", video?.creator._id, userId],
+            queryFn: async ():Promise<boolean> => {
+                const res = await subscriptionServices.isSubscribed(video.creator._id);
+                return res.data.isSubscribed;
+            },
+            enabled: !!video && !!userId,
+        });
+
+    const { data: subscribersCount, refetch: refetchSubscribersCount } =
+        useQuery({
+            queryKey: ["subscribersCount", video?.creator._id],
+            queryFn: async ():Promise<number> => {
+                const res = await subscriptionServices.getSubscribersCount(
+                    video.creator._id
+                );
+                return res.data;
+            },
+            enabled: !!video,
+        });
+
+    const { data: recommendedVideos } = useQuery({
+        queryKey: ["recommendedVideos", videoId],
+        queryFn: async ():Promise<IVideoData[]> => {
+            const res = await videoService.recommendedVideos(videoId);
+            return res.data;
+        },
+        enabled: !!videoId,
+    });
+
+    const { mutate: incrementViews } = useMutation({
+        mutationFn: async () =>
+            await videoServices.incrementViews(videoId),
+    });
+
     const { mutate: toggleVideoLike } = useMutation({
-        mutationFn: toggleVideoLikeMutation,
+        mutationFn: async () => {
+            await likeService.toggleLike(videoId, "video");
+            refetchIsLiked();
+        },
     });
 
     const { mutate: toggleSubscription } = useMutation({
-        mutationFn: toggleSubscribeMutation,
+        mutationFn: async () => {
+            await subscriptionServices.toggleSubscription(video.creator._id);
+            refetchIsSubscribed();
+            refetchSubscribersCount();
+        },
     });
 
+    const { mutate: addToWatchHistory } = useMutation({
+        mutationFn: async ({videoId}:{videoId:string}) => { 
+            await userServices.addToWatchHistory(videoId)
+        },
+    });
     
     useEffect(() => {
         dispatch(toggleMenu(false));
@@ -114,12 +116,14 @@ const Video = () => {
         if (video)
             setTimeout(() => {
                 incrementViews();
+                addToWatchHistory({videoId});
             }, 10000);
     }, [video]);
 
     useEffect(() => {
         setMaxLength(window.innerWidth * 0.1);
     }, [window.innerWidth]);
+
     if (isLoading) {
         return (
             <div className="flex w-[90%] justify-center">
@@ -127,6 +131,7 @@ const Video = () => {
             </div>
         );
     }
+
     if (isError) return <div>Error: {error.message}</div>;
     return (
         <div className="flex flex-col space-y-4 xl:flex-row w-full dark:text-white">
@@ -142,6 +147,7 @@ const Video = () => {
                                 src: video.subtitle,
                             },
                         ]}
+                        playerRef={playerRef}
                         className="w-full h-full object-cover aspect-video rounded-xl"
                     />
                     <h1 className="font-bold text-xl">{video.title}</h1>
@@ -235,7 +241,7 @@ const Video = () => {
                         </div>
                     </div>
                 </div>
-                <Comments videoId={videoId} />
+                <Comments videoId={videoId} playerRef={playerRef}/>
             </div>
             <div className="w-full xl:w-1/3 2xl:w-[30%]">
                 {recommendedVideos?.map((video) => (
@@ -243,16 +249,16 @@ const Video = () => {
                         <div className="flex gap-4 px-4 pb-4 lg:min-w-[300px] lg:max-w-[500px] ">
                             <img
                                 src={video.thumbnail}
-                                className="h-28 w-40 object-cover rounded-lg"
+                                className="h-24 w-44 object-cover rounded-lg"
                                 loading="lazy"
                             />
-                            <div className="flex flex-col gap-2 overflow-hidden">
-                                <h2 className="font-bold truncate">{video.title}</h2>
+                            <div className="flex flex-col overflow-hidden">
+                                <p className="font-bold line-clamp-2 overflow-hidden text-ellipsis">{video.title}</p>
                                 <div className="text-gray-500">
                                     {video.creator?.fullname}
                                 </div>
                                 <div className="text-gray-500">
-                                    {`${video.views} views`}
+                                    {`${video.views} views • ${formatDistanceToNow(video.createdAt, { addSuffix: true })}`}
                                 </div>
                             </div>
                         </div>

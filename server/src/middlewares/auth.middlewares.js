@@ -1,8 +1,7 @@
 import jwt from "jsonwebtoken"
 import { ApiError } from "../utils/ApiError.js"
 import { User } from "../models/user.models.js"
-import { asyncHandler } from "../utils/asyncHandler.js";
-import { ApiResponse } from "../utils/ApiResponse.js";
+import { asyncHandler } from "../utils/handler.js";
 import admin from "firebase-admin";
 import fs from "fs";
 import path from "path";
@@ -19,7 +18,6 @@ admin.initializeApp({
 });
 
 export const verifyJWT = asyncHandler(async (req, res, next) => {
-    console.log('INSIDE VERIFYJWT');
     const { idToken, accessToken, refreshToken } = req.cookies;
 
     try {

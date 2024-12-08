@@ -48,7 +48,7 @@ const SignIn = () => {
                 setError(res.message);
             }
         } catch (error: any) {
-            console.log(error.message);
+            console.error(error.message);
         }
     };
     const googleSignIn = async () => {
@@ -64,7 +64,7 @@ const SignIn = () => {
                 navigate("/");
             }
         } catch (error) {
-            console.log(error);
+            console.error(error.message);
         }
     };
     return (

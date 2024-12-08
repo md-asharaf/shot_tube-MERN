@@ -3,24 +3,16 @@ import { useSelector } from "react-redux";
 import DefaultAvatarImage from "@/assets/images/profile.png";
 import { IPlaylist, IVideoData } from "@/interfaces";
 import { useQuery } from "@tanstack/react-query";
-import videoServices from "@/services/video.services";
 import playlistServices from "@/services/playlist.services";
 import Library from "../components/root/Library";
 import subscriptionServices from "@/services/subscription.services";
 import { Loader2 } from "lucide-react";
+import userServices from "@/services/user.services";
 const PlaylistNhistory = () => {
     const userData = useSelector((state: RootState) => state.auth.userData);
-    const fetchUserVideos = async () => {
-        const res = await videoServices.allVideosByUser(userData?._id);
-        return res.data;
-    };
-    const fetchPlaylists = async () => {
-        const res = await playlistServices.getPlaylists(userData?._id);
-        return res.data;
-    };
-    const { data: subscriberCount } = useQuery<number>({
+    const { data: subscriberCount } = useQuery({
         queryKey: ["subscriberCount", userData?._id],
-        queryFn: async () => {
+        queryFn: async ():Promise<number> => {
             const res = await subscriptionServices.getSubscribersCount(
                 userData?._id
             );
@@ -28,14 +20,20 @@ const PlaylistNhistory = () => {
         },
         enabled: !!userData,
     });
-    const { data: videos, isLoading: videosLoading } = useQuery<IVideoData[]>({
+    const { data: videos} = useQuery({
         queryKey: ["videos", userData?._id],
-        queryFn: fetchUserVideos,
+        queryFn: async ():Promise<IVideoData[]> => {
+            const res = await userServices.watchHistory();
+            return res.data;
+        },
         enabled: !!userData,
     });
-    const { data: playlists, isLoading } = useQuery<IPlaylist[]>({
+    const { data: playlists, isLoading } = useQuery({
         queryKey: ["playlists", userData?._id],
-        queryFn: fetchPlaylists,
+        queryFn: async ():Promise<IPlaylist[]> => {
+            const res = await playlistServices.getPlaylists(userData?._id);
+            return res.data;
+        },
         enabled: !!userData?._id,
     });
     if (isLoading) {

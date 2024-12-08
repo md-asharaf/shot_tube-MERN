@@ -1,7 +1,7 @@
 import { User } from "../models/user.models.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
-import { asyncHandler } from "../utils/asyncHandler.js";
+import { asyncHandler } from "../utils/handler.js";
 
 class Auth {
 
@@ -96,7 +96,6 @@ class Auth {
         //generate token
         const accessToken = await existedUser.generateAccessToken();
         const refreshToken = await existedUser.generateRefreshToken();
-        console.log("Access Token", accessToken, "RefreshToken", refreshToken)
         //send response in cookies
         const loggedInUser = await User.findById(existedUser._id).select("-password -refreshToken");
         const options = {

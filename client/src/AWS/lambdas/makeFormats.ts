@@ -5,13 +5,9 @@ const ecs = new AWS.ECS({
 
 // Spins the ECS Fargate container for video format maker (transcoding)
 module.exports.handler = async (event: any) => {
-  console.log("ENV: ", process.env);
   const eventBody = JSON.parse(event.Records[0].body);
-  console.log("EVENT BODY: ", eventBody);
   const FILE_KEY = eventBody.Records[0].s3.object.key;
   const INPUT_BUCKET = eventBody.Records[0].s3.bucket.name;
-  console.log("FILE_KEY: ", FILE_KEY);
-  console.log("INPUT_BUCKET: ", INPUT_BUCKET);
   const resolutions = [
     {
       quality: "360",
@@ -131,7 +127,7 @@ module.exports.handler = async (event: any) => {
     console.log("All transcoding and transcription tasks have been started.");
 
   } catch (error) {
-    console.log("Error starting ECS tasks: ", error);
+    console.error("Error starting ECS tasks: ", error);
     throw error;
   }
 };

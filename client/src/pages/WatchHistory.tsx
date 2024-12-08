@@ -21,28 +21,31 @@ import {
 
 const WatchHistory = () => {
     const userId = useSelector((state: RootState) => state.auth.userData?._id);
-    const fetchWatchHistory = async () => {
-        const res = await userServices.watchHistory();
-        return res.data;
-    };
-    const clearAllHistoryMutation = async () => {
-        await userServices.clearHistory();
-        refetch();
-    };
     const {
         data: videos,
         isError,
         isLoading,
         error,
         refetch,
-    } = useQuery<IVideoData[]>({
+    } = useQuery({
         queryKey: ["watch-history", userId],
-        queryFn: fetchWatchHistory,
+        queryFn: async (): Promise<IVideoData[]> => {
+            const res = await userServices.watchHistory();
+            return res.data;
+        },
         enabled: !!userId,
     });
-
+    const { mutate: remove } = useMutation({
+        mutationFn: async ({ videoId }: { videoId: string }) => {
+            await userServices.removeFromWatchHistory(videoId);
+            refetch();
+        },
+    });
     const { mutate: clearAllHistory } = useMutation({
-        mutationFn: clearAllHistoryMutation,
+        mutationFn: async () => {
+            await userServices.clearHistory();
+            refetch();
+        },
     });
     if (isLoading) {
         return (
@@ -126,10 +129,12 @@ const WatchHistory = () => {
                             </div>
                         </Link>
 
-                        <X size={50} className="w-28" onClick={()=>{
-                            userServices.removeFromWatchHistory(video._id);
-                            refetch();
-                        }} />
+                        <button className="w-20" >
+                        <X
+                            size={50}
+                            onClick={() => remove({ videoId: video._id })}
+                        />
+                        </button>
                     </div>
                 ))}
             </div>

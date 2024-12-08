@@ -29,7 +29,7 @@ function App() {
         userServices
             .getCurrentUser()
             .then(({ data }) => dispatch(data ? login(data) : logout()))
-            .catch((err) => console.log("error occurred: ", err.message));
+            .catch((err) => console.error("error occurred: ", err.message));
     }, []);
     return (
         <div className={`${theme}`}>

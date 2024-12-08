@@ -9,9 +9,9 @@ import { formatDuration } from "@/lib/utils";
 import DefaultAvatarImage from "@/assets/images/profile.png";
 const SearchedVideos = () => {
     const { query } = useQuerry();
-    const { data: videos, isLoading } = useQuery<IVideoData[]>({
+    const { data: videos, isLoading } = useQuery({
         queryKey: ["searched-videos", query],
-        queryFn: async () => {
+        queryFn: async ():Promise<IVideoData[]> => {
             const res = await videoServices.searchVideos(query);
             return res.data;
         },

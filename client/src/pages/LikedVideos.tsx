@@ -13,20 +13,18 @@ import { formatDistanceToNow } from "date-fns";
 const LikedVideos = () => {
     const userData = useSelector((state: RootState) => state.auth.userData);
 
-    const fetchLikedVideos = async () => {
-        const res = await videoServices.likedVideos();
-        return res.data;
-    };
-
     const {
         data: videos,
         isError,
         error,
         isLoading,
         isFetching,
-    } = useQuery<IVideoData[]>({
+    } = useQuery({
         queryKey: ["liked-videos"],
-        queryFn: fetchLikedVideos,
+        queryFn: async ():Promise<IVideoData[]> => {
+            const res = await videoServices.likedVideos();
+            return res.data;
+        },
     });
 
     if (isLoading || isFetching) {
@@ -72,7 +70,7 @@ const LikedVideos = () => {
 
     return (
         <div className="flex flex-col gap-4 lg:flex-row h-full  w-full dark:text-white">
-            <div className="flex flex-col space-y-4 sm:space-x-4 sm:flex-row lg:flex-col dark:bg-zinc-700 bg-gray-200 p-5  rounded-xl lg:h-full lg:w-1/3">
+            <div className="flex flex-col space-y-4 sm:space-x-4 sm:flex-row lg:flex-col dark:bg-zinc-700 bg-gray-200 p-5  rounded-xl lg:h-full lg:w-1/3 pointer-events-none">
                 <img
                     src={
                         filteredVideos && filteredVideos[0]?.thumbnail
@@ -110,7 +108,7 @@ const LikedVideos = () => {
                 </div>
             </div>
 
-            <div className="flex flex-col w-full lg:w-2/3">
+            <div className="flex flex-col w-full lg:w-2/3 overflow-auto">
                 {filteredVideos?.map((video, index) => (
                     <Link to={`/videos/${video._id}`} key={video._id}>
                         <div className="flex items-start p-1 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-lg transition duration-200 ease-in-out">

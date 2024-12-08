@@ -1,7 +1,6 @@
 import UserC from "../controllers/user.controllers.js"
 import Auth from "../controllers/auth.controllers.js"
 import { Router } from "express";
-import { multerUpload } from "../middlewares/multer.middlewares.js";
 import { verifyJWT } from "../middlewares/auth.middlewares.js";
 const router = Router();
 
@@ -22,9 +21,6 @@ router.patch("/account/change-password", verifyJWT, UserC.changeCurrentPassword)
 
 router.patch("/account/update", verifyJWT, UserC.updateAccountDetails);
 
-router.patch("/update-avatar", verifyJWT, multerUpload.single("avatar"), UserC.updateAvatar);
-
-router.patch("/update-cover-image", verifyJWT, multerUpload.single("coverImage"), UserC.updateCoverImage);
 router.delete("/watch-history/clear", verifyJWT, verifyJWT, UserC.clearWatchHistory)
 
 

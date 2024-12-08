@@ -25,18 +25,17 @@ const BigDrawer = () => {
     const username = useSelector(
         (state: RootState) => state.auth.userData?.username
     );
-    const fetchChannels = async () => {
-        const res = await subscriptionServices.getSubscribedChannels(userId);
-        return res.data.subscribedChannels;
-    };
     const {
         data: channels,
         isError,
         error,
         isLoading,
-    } = useQuery<IChannel[]>({
+    } = useQuery({
         queryKey: ["channels"],
-        queryFn: fetchChannels,
+        queryFn: async ():Promise<IChannel[]> => {
+            const res = await subscriptionServices.getSubscribedChannels(userId);
+            return res.data.subscribedChannels;
+        },
         enabled: !!userId,
     });
     const options = [

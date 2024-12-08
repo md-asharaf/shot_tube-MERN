@@ -12,7 +12,7 @@ const Home = () => {
     const loaderRef = useRef(null);
     const { data, isLoading, hasNextPage, fetchNextPage } = useInfiniteQuery({
         queryKey: ["videos"],
-        queryFn: async ({ pageParam }) => {
+        queryFn: async ({ pageParam }):Promise<IVideoData[]> => {
             const res = await videoServices.allVideos(12, pageParam);
             return res.data;
         },
@@ -56,9 +56,9 @@ const Home = () => {
                 <LoadingSkeleton />
             ) : (
                 <>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 w-full dark:text-white text-black">
+                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 sm:gap-y-2 w-full dark:text-white text-black">
                         {data?.pages?.map((group) =>
-                            group.map((video: IVideoData) => (
+                            group.map((video) => (
                                 <Link
                                     to={`/videos/${video._id}`}
                                     key={video._id}

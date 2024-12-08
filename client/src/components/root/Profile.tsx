@@ -2,7 +2,6 @@ import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { IUser } from "@/interfaces/index";
 import { shortName } from "@/lib/utils";
 import { useNavigate } from "react-router-dom";
-import { AiTwotoneProfile } from "react-icons/ai";
 const Profile: React.FC<IUser> = (user) => {
     const navigate = useNavigate();
     const { username, fullname, avatar } = user;
@@ -20,18 +19,13 @@ const Profile: React.FC<IUser> = (user) => {
                     <div className="text-zinc-700">@{username}</div>
                 </div>
             </div>
-            <div className="space-y-2">
-                <div
-                    onClick={() => {
-                        navigate(`/channel/${username}`);
-                    }}
-                    className="hover:underline"
-                >
-                    View your channel
-                </div>
-                <div className="flex items-center hover:underline">
-                    <AiTwotoneProfile /> Profile
-                </div>
+            <div
+                onClick={() => {
+                    navigate(`/${username}/channel`);
+                }}
+                className="hover:underline"
+            >
+                View your channel
             </div>
         </div>
     );

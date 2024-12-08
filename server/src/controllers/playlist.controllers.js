@@ -1,4 +1,4 @@
-import { asyncHandler } from "../utils/asyncHandler.js";
+import { asyncHandler } from "../utils/handler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 import { PlayList } from "../models/playlist.models.js";
@@ -164,7 +164,7 @@ class PlayListC {
         //add video to playlist
         const playlist = await PlayList.findByIdAndUpdate(playlistId, {
             $push: {
-                videos: videoId
+                videos: new mongoose.Types.ObjectId(videoId)
             }
         }, {
             new: true
@@ -185,14 +185,14 @@ class PlayListC {
             throw new ApiError(404, "Playlist not found");
         }
         //check if video exists in playlist
-        const video = await playlist.videos.find(v => v == videoId);
+        const video = playlist.videos.find(v => v == videoId);
         if (!video) {
             throw new ApiError(404, "Video not found in playlist");
         }
         //remove video from playlist
         const updatedPlaylist = await PlayList.findByIdAndUpdate(playlist._id, {
             $pull: {
-                videos: videoId
+                videos: new mongoose.Types.ObjectId(videoId)
             },
         }, {
             new: true

@@ -3,7 +3,6 @@ class ApiError extends Error {
         super(message);
         this.status = status;
         this.message = message;
-        //did not understand this part
         Error.captureStackTrace(this, this.constructor)
     }
 }

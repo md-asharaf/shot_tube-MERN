@@ -81,23 +81,20 @@ const VideoUpload = () => {
     
             // Await completion of upload
             const response = await upload.done();
-            console.log("Uploaded file", response);
         } catch (error) {
+            console.error("Error uploading file", error);
             // Handle abort or other upload errors
             if (error.name === "AbortError") {
-                console.log("Upload aborted by the user");
                 toast({
                     title: "Upload aborted",
                     description: "The upload was canceled",
                 });
             } else {
-                console.error("Error uploading file", error);
                 toast({
                     title: "Error",
                     description: "Failed to upload file",
                 });
             }
-            throw error;
         }
     };
     
@@ -161,7 +158,7 @@ const VideoUpload = () => {
     };
         
     return (
-        <div className="w-screen h-screen fixed top-0 right-0 bg-[#0000009e] dark:bg-[#2625259e] z-30">
+        <div className="fixed inset-0 bg-black/60 z-50">
             <Card
                 className={`shadow-xl shadow-transparent border-[1px] border-gray-500 dark:border-zinc-600 rounded-md p-4 fixed left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 dark:bg-black z-40 sm:w-[500px] w-[90vw]`}
             >

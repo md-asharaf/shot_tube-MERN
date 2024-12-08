@@ -29,36 +29,23 @@ const SaveToPlaylist: React.FC<Props> = ({ userId, videoId }) => {
         setIsNewPlaylistPopoverOpen(false);
     };
 
-    const getPlaylists = async () => {
-        const res = await playlistServices.getPlaylists(userId);
-        return res.data;
-    };
-
-    const createPlaylistMutation = async () => {
-        await playlistServices.create(playlistName);
-        closePopovers();
-        refetch();
-    };
-
-    const addVideoToPlaylist = async (playlistId: string) => {
-        const res = await playlistServices.addVideoToPlaylist(
-            videoId,
-            playlistId
-        );
-        return res.data;
-    };
-    const removeVideoFromPlaylist = async (playlistId: string) => {
-        const res = await playlistServices.removeVideoFromPlaylist(
-            videoId,
-            playlistId
-        );
-        return res.data;
-    };
     const { mutate: add } = useMutation({
-        mutationFn: addVideoToPlaylist,
+        mutationFn: async ({playlistId}:{playlistId: string}) => {
+            const res = await playlistServices.addVideoToPlaylist(
+                videoId,
+                playlistId
+            );
+            return res.data;
+        },
     });
     const { mutate: remove } = useMutation({
-        mutationFn: removeVideoFromPlaylist,
+        mutationFn: async ({playlistId}:{playlistId: string}) => {
+            const res = await playlistServices.removeVideoFromPlaylist(
+                videoId,
+                playlistId
+            );
+            return res.data;
+        },
     });
     const {
         data: playlists,
@@ -66,13 +53,20 @@ const SaveToPlaylist: React.FC<Props> = ({ userId, videoId }) => {
         error,
         isLoading,
         refetch,
-    } = useQuery<IPlaylist[]>({
+    } = useQuery({
         queryKey: ["playlists", userId],
-        queryFn: getPlaylists,
+        queryFn: async ():Promise<IPlaylist[]> => {
+            const res = await playlistServices.getPlaylists(userId);
+            return res.data;
+        },
     });
 
     const { mutate: createPlaylist } = useMutation({
-        mutationFn: createPlaylistMutation,
+        mutationFn: async () => {
+            await playlistServices.create(playlistName);
+            closePopovers();
+            refetch();
+        },
     });
 
     if (isLoading) return <div>Loading...</div>;
@@ -82,7 +76,7 @@ const SaveToPlaylist: React.FC<Props> = ({ userId, videoId }) => {
         <>
             {(isMainPopoverOpen || isNewPlaylistPopoverOpen) && (
                 <div
-                    className="fixed inset-0 bg-black/50 z-40"
+                    className="fixed inset-0 bg-black/60 z-40"
                     onClick={closePopovers}
                 />
             )}
@@ -116,9 +110,9 @@ const SaveToPlaylist: React.FC<Props> = ({ userId, videoId }) => {
                                             className="h-5 w-5"
                                             onChange={(e) => {
                                                 if (e.target.checked) {
-                                                    add(playlist._id);
+                                                    add({playlistId:playlist._id});
                                                 } else {
-                                                    remove(playlist._id);
+                                                    remove({playlistId:playlist._id});
                                                 }
                                             }}
                                         />

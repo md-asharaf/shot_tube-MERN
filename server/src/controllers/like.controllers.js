@@ -1,4 +1,4 @@
-import { asyncHandler } from "../utils/asyncHandler.js";
+import { asyncHandler } from "../utils/handler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 import { Like } from "../models/like.models.js";
@@ -14,7 +14,7 @@ class LikeC {
         //check if comment id is provided
         if (!commentId) throw new ApiError(400, "Comment id is required");
         //find if user has liked the comment
-        const dbLike = await Like.findOne({ commentId, userId })
+        const dbLike = await Like.findOne({ commentId:new mongoose.Types.ObjectId(commentId), userId:new mongoose.Types.ObjectId(userId) })
         let response;
         //if user has liked the comment, delete the like, else create a like
         if (!dbLike) {
@@ -35,7 +35,7 @@ class LikeC {
         const { videoId } = req.params;
         const userId = req.user._id;
         if (!videoId) throw new ApiError(400, "Video id is required");
-        const dbLike = await Like.findOne({ videoId, userId });
+        const dbLike = await Like.findOne({videoId:new mongoose.Types.ObjectId(videoId), userId:new mongoose.Types.ObjectId(userId) });
         let response;
         if (!dbLike) {
             response = await Like.create({
@@ -55,7 +55,7 @@ class LikeC {
         const { tweetId } = req.params;
         const userId = req.user._id;
         if (!tweetId) throw new ApiError(400, "Comment id is required");
-        const dbLike = await Like.findOne({ tweetId, userId })
+        const dbLike = await Like.findOne({ tweetId:new mongoose.Types.ObjectId(tweetId), userId:new mongoose.Types.ObjectId(userId) })
         let response;
         if (!dbLike) {
             response = await Like.create({
@@ -133,15 +133,15 @@ class LikeC {
         if (!commentId && !videoId && !tweetId) throw new ApiError(400, "Comment id, video id or tweet id is required");
         let liked = false;
         if (commentId) {
-            const dbLike = await Like.findOne({ commentId, userId });
+            const dbLike = await Like.findOne({ commentId:new mongoose.Types.ObjectId(commentId), userId:new mongoose.Types.ObjectId(userId) });
             liked = dbLike ? true : false;
         }
         if (videoId) {
-            const dbLike = await Like.findOne({ videoId, userId });
+            const dbLike = await Like.findOne({videoId:new mongoose.Types.ObjectId(videoId), userId:new mongoose.Types.ObjectId(userId) });
             liked = dbLike ? true : false;
         }
         if (tweetId) {
-            const dbLike = await Like.findOne({ tweetId, userId });
+            const dbLike = await Like.findOne({ tweetId:new mongoose.Types.ObjectId(tweetId), userId:new mongoose.Types.ObjectId(userId) });
             liked = dbLike ? true : false;
         }
         return res.status(200).json(new ApiResponse(200, liked, `user has${liked ? "" : " not"} liked this video`))

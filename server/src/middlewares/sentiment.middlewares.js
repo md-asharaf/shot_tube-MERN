@@ -17,6 +17,6 @@ export async function detectEmotion(req, res, next) {
         req.body.sentiment = response.choices[0].message.content || "neutral";
         next();
     } catch (error) {
-        console.log(error.message)
+        console.error(error.message)
     }
 }
