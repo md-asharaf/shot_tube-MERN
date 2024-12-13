@@ -65,7 +65,7 @@ export const verifyJWT = asyncHandler(async (req, res, next) => {
                 user.refreshToken = newRefreshToken;
                 await user.save({ validateBeforeSave: false });
 
-                const options = { httpOnly: true, secure: true, maxAge: 10 * 60 * 60 * 1000, sameSite: "none" };
+                const options = { httpOnly: true, secure: true,sameSite: "none" };
                 res.cookie("accessToken", newAccessToken, options);
                 res.cookie("refreshToken", newRefreshToken, options);
 

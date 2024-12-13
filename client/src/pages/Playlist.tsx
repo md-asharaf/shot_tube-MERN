@@ -59,7 +59,7 @@ const Playlist = () => {
                         {playlist.creator?.fullname}
                     </p>
                     <p className="text-xs text-gray-400">
-                        {`${playlist.videos?.length} videos • ${totalViews} views • Last updated on ${playlist.updatedAt.toDateString()}`}
+                        {`${playlist.videos?.length} videos • ${totalViews} views • Last updated on ${(new Date(playlist.updatedAt)).toDateString()}`}
                     </p>
 
                     {/* Buttons */}
@@ -104,7 +104,7 @@ const Playlist = () => {
 
                             {/* Video Details */}
                             <div className="flex-1 ml-4">
-                                <h3 className="text-lg font-semibold text-black dark:text-white truncate w-full overflow-hidden">
+                                <h3 className="text-lg text-black dark:text-white truncate w-full overflow-hidden">
                                     {video.title}
                                 </h3>
                                 <p className="text-gray-400 text-sm">

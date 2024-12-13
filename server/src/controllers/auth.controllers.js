@@ -32,7 +32,6 @@ class Auth {
         const options = {
             httpOnly: true,
             secure: true,
-            maxAge: 24 * 60 * 60 * 1000,
             sameSite: "none"
         }
         return res.status(200).cookie("idToken", idToken, options).json(new ApiResponse(200, { user }, "User logged in successfully"))
@@ -102,7 +101,6 @@ class Auth {
         const options = {
             httpOnly: true,
             secure: true,
-            maxAge: 24 * 60 * 60 * 1000,
             sameSite: "none"
         };
         return res
@@ -117,7 +115,6 @@ class Auth {
         const options = {
             httpOnly: true,
             secure: true,
-            maxAge: 10 * 60 * 60 * 1000,
             sameSite: "none"
         };
         return res.status(200).clearCookie("idToken", options).clearCookie("accessToken", options).clearCookie("refreshToken", options).json(new ApiResponse(200, null, "User logged out successfully"))

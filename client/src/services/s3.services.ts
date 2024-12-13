@@ -4,6 +4,7 @@ import {
     PutObjectCommand,
     S3Client,
 } from "@aws-sdk/client-s3";
+
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
 
 const s3Client = new S3Client({
@@ -17,12 +18,12 @@ const s3Client = new S3Client({
 class S3 {
     putObjectUrl = async (
         bucket: string,
-        filename: string,
+        key: string,
         contentType: string
     ) => {
         const command = new PutObjectCommand({
             Bucket: bucket,
-            Key: `uploads/user-uploads/${filename}`,
+            Key: key,
             ContentType: contentType,
         });
         return await getSignedUrl(s3Client, command, { expiresIn: 3600 }); // Set an expiration time
@@ -38,27 +39,30 @@ class S3 {
     };
 
     uploadFile = async (file: File) => {
-        const filename = file.name;
-        const contentType = file.type || "application/octet-stream"; // Add fallback content type
+        const contentType = file.type || "application/octet-stream"; 
+        const key = `uploads/user-uploads/${Date.now()}.${file.type}`;
+        // Add fallback content type
         try {
             const url = await this.putObjectUrl(
                 "shot-tube-videos",
-                filename,
+                key,
                 contentType
             );
             const response = await fetch(url, {
                 method: "PUT",
                 body: file,
-                headers: {
+                headers: {        //generate unique key for each file
                     "Content-Type": contentType,
                 },
             });
             if (!response.ok) {
-                console.error("Error uploading file:", response.statusText);
+                console.error("Error uploading file:", response.statusText);        //generate unique key for each file
+
             }
-            return `https://shot-tube-videos.s3.amazonaws.com/uploads/user-uploads/${filename}`;
+            return `https://shot-tube-videos.s3.amazonaws.com/${key}`;
         } catch (error) {
-            console.error("Error uploading file: ", error);
+            console.error("Error uploading file: ", error);        //generate unique key for each file
+
         }
     };
 

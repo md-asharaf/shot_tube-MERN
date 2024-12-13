@@ -19,17 +19,17 @@ export const signInFormValidation = z
     })
     .required();
 
-export const VideoFormValidation = z
-    .object({
-        title: z.string().min(2, "Title must be at least 2 characters"),
-        description: z
-            .string()
-            .min(2, "Description must be at least 2 characters"),
+    export const VideoFormValidation = z.object({
+        title: z.string().nonempty("Title is required"),
+        description: z.string().nonempty("Description is required"),
         video: z
-            .instanceof(FileList)
-            .refine((file) => file?.length == 1, "File is required."),
+            .instanceof(File, { message: "Please provide a valid video file" })
+            .refine(file => file.type.startsWith("video/"), {
+                message: "Only video files are allowed",
+            }),
         thumbnail: z
-            .instanceof(FileList)
-            .refine((file) => file?.length == 1, "File is required."),
-    })
-    .required();
+            .instanceof(File, { message: "Please provide a valid thumbnail" })
+            .refine(file => file.type.startsWith("image/"), {
+                message: "Only image files are allowed",
+            }),
+    }).required()

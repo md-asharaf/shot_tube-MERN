@@ -38,8 +38,8 @@ export interface IAction {
 export interface IVideoForm {
     title: string;
     description: string;
-    video: FileList;
-    thumbnail: FileList;
+    video: File;
+    thumbnail: File;
 }
 export interface IVideoData {
     _id: string;
