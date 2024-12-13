@@ -15,7 +15,11 @@ const s3Client = new S3Client({
 });
 
 class S3 {
-    putObjectUrl = async (bucket, filename, contentType) => {
+    putObjectUrl = async (
+        bucket: string,
+        filename: string,
+        contentType: string
+    ) => {
         const command = new PutObjectCommand({
             Bucket: bucket,
             Key: `uploads/user-uploads/${filename}`,
@@ -24,7 +28,7 @@ class S3 {
         return await getSignedUrl(s3Client, command, { expiresIn: 3600 }); // Set an expiration time
     };
 
-    getObjectUrl = async (bucket, key) => {
+    getObjectUrl = async (bucket: string, key: string) => {
         const command = new GetObjectCommand({
             Bucket: bucket,
             Key: key,
@@ -33,7 +37,7 @@ class S3 {
         return url;
     };
 
-    uploadFile = async (file) => {
+    uploadFile = async (file: File) => {
         const filename = file.name;
         const contentType = file.type || "application/octet-stream"; // Add fallback content type
         try {
@@ -58,7 +62,7 @@ class S3 {
         }
     };
 
-    downloadImageAndUploadToS3 = async (imageUrl, fileName) => {
+    downloadImageAndUploadToS3 = async (imageUrl: string, fileName: string) => {
         try {
             const response = await axios.get(imageUrl, {
                 responseType: "arraybuffer", // Get binary data

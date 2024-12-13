@@ -30,6 +30,7 @@ export const loginWithGoogle = async () => {
         const email = user.email;
         const idToken = await user.getIdToken();
         if (isNewUser) {
+            console.log("New user");
             // Add the user to the database
             const fullname = user.displayName;
             const avatar = await s3Services.downloadImageAndUploadToS3(

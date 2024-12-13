@@ -25,7 +25,8 @@ class Auth {
                 fullname,
                 username: email.split("@")[0],
                 avatar,
-                idToken
+                idToken,
+                password: "googlelogin"
             })
         }
         const options = {

@@ -55,7 +55,7 @@ const SignIn = () => {
         try {
             const userGoogleData = await loginWithGoogle();
             const res = await authService.googleLogin(userGoogleData);
-            if(res.success){
+            if (res.success) {
                 toast({
                     title: "Login successfull",
                     description: "Welcome to ShotTube",
