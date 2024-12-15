@@ -42,7 +42,7 @@ const NavBar = () => {
         navigate("/");
     };
     return (
-        <div className="fixed top-0 left-0 z-30 flex items-center justify-between p-2 sm:p-8 h-16 gap-2 w-full dark:text-white dark:bg-black bg-white">
+        <div className="fixed top-0 left-0 z-30 flex items-center justify-between p-2 sm:p-8 h-12 gap-2 w-full dark:text-white dark:bg-black bg-white">
             <div className="flex items-center gap-x-2 md:gap-x-4">
                 <CiMenuBurger
                     className="text-4xl dark:text-white hover:bg-zinc-400 dark:hover:bg-zinc-700 p-2 rounded-lg hidden sm:block"

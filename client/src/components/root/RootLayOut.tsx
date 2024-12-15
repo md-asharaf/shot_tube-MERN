@@ -8,20 +8,22 @@ import VideoProvider from "@/provider/video.slice";
 import { useState } from "react";
 import { Toaster } from "../ui/toaster";
 import BottomBar from "./BottomBar";
+
 const RootLayOut = () => {
     const [query, setQuery] = useState("");
     const isMenuOpen = useSelector((state: RootState) => state.ui.isMenuOpen);
+
     return (
         <VideoProvider value={{ query, setQuery }}>
-            <div className={`w-screen bg-white dark:bg-black h-screen`}>
-                <nav className="h-14 sm:h-20">
+            <div className="w-screen bg-white dark:bg-black h-screen flex flex-col">
+                <nav className="h-12 sm:h-16">
                     <NavBar />
                 </nav>
-                <div className="flex sm:px-1">
+                <div className="flex flex-1 overflow-hidden sm:px-1">
                     <div className="hidden sm:flex">
                         {isMenuOpen ? <BigDrawer /> : <SmallDrawer />}
                     </div>
-                    <div className="flex-1 overflow-y-auto h-[calc(100vh-5rem)]" >
+                    <div className="flex-1 overflow-y-auto">
                         <Outlet />
                     </div>
                 </div>
