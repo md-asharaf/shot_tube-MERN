@@ -2,13 +2,13 @@ import Axios from "@/config/request";
 
 class SubService {
     toggleSubscription = async (channelId: string) =>
-        await Axios.post(`/subscriptions/${channelId}/toggle-subscription`);
+        await Axios.post(`/subscriptions/toggle-subscription/${channelId}`);
     getSubscribersCount = async (channelId: string) =>
-        await Axios.get(`/subscriptions/${channelId}/subscribers-count`);
-    isSubscribed = async (channelId: string) =>
-        await Axios.get(`/subscriptions/${channelId}`);
+        await Axios.get(`/subscriptions/subscribers-count/${channelId}`);
+    isChannelSubscribed = async (channelId: string) =>
+        await Axios.get(`/subscriptions/is-subscribed/${channelId}`);
     getSubscribedChannels = async (id: string) =>
-        await Axios.get(`/subscriptions/${id}/subscriptions`);
+        await Axios.get(`/subscriptions/subscribed-channels/${id}`);
 }
 
 export default new SubService();

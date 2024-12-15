@@ -2,9 +2,7 @@ import { User } from "../models/user.models.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/handler.js";
-
 class Auth {
-
     googleSignIn = asyncHandler(async (req, res) => {
         const { email, fullname, avatar, idToken } = req.body;
         if (!email || !idToken) {
@@ -16,11 +14,11 @@ class Auth {
             user.idToken = idToken;
             await user.save({ validateBeforeSave: false });
         }
-        else{
-            if(!fullname||!avatar){
+        else {
+            if (!fullname || !avatar) {
                 throw new ApiError(400, "Fullname and avatar is required");
             }
-            user= await User.create({
+            user = await User.create({
                 email,
                 fullname,
                 username: email.split("@")[0],

@@ -41,17 +41,15 @@ const PlyrPlayer = ({ source, subtitles = [], className = "",playerRef}) => {
                     const availableQualities = hls.levels.map(
                         (l) => bitrateToResolution[l.bitrate]
                     );
-                    availableQualities.unshift(0); // Add 'Auto' option
+                    availableQualities.unshift(0); 
 
-                    // Update Plyr quality options
                     defaultOptions.quality = {
-                        default: 0, // Default to "Auto"
+                        default: 0, 
                         options: availableQualities,
                         forced: true,
                         onChange: (newQuality) => updateQuality(newQuality),
                     };
 
-                    // Add labels for Auto
                     defaultOptions.i18n = {
                         qualityLabel: {
                             0: "Auto",
@@ -73,10 +71,8 @@ const PlyrPlayer = ({ source, subtitles = [], className = "",playerRef}) => {
                         }
                     });
 
-                    // Initialize Plyr
                     playerRef.current = new Plyr(video, defaultOptions);
 
-                    // Load subtitles
                     playerRef.current.on("ready", () => {
                         playerRef.current.captions.active = true;
                         playerRef.current.captions.language = "en";
@@ -90,7 +86,7 @@ const PlyrPlayer = ({ source, subtitles = [], className = "",playerRef}) => {
 
         const updateQuality = (newQuality) => {
             if (newQuality === 0) {
-                hlsRef.current.currentLevel = -1; // Enable AUTO quality
+                hlsRef.current.currentLevel = -1;
             } else {
                 hlsRef.current.levels.forEach((level, levelIndex) => {
                     if (bitrateToResolution[level.bitrate] === newQuality) {
@@ -113,11 +109,10 @@ const PlyrPlayer = ({ source, subtitles = [], className = "",playerRef}) => {
     }, [source]);
     return (
         <Card className={`${className}`}>
-            <div className="aspect-w-16 aspect-h-9">
                 <video
                     autoPlay
                     ref={videoRef}
-                    className="plyr-react plyr w-full"
+                    className="plyr-react plyr w-full aspect-video"
                     crossOrigin="anonymous"
                 >
                     {subtitles.map((subtitle, index) => (
@@ -131,7 +126,6 @@ const PlyrPlayer = ({ source, subtitles = [], className = "",playerRef}) => {
                         />
                     ))}
                 </video>
-            </div>
         </Card>
     );
 };

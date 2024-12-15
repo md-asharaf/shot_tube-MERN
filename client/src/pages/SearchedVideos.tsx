@@ -11,7 +11,7 @@ const SearchedVideos = () => {
     const { query } = useQuerry();
     const { data: videos, isLoading } = useQuery({
         queryKey: ["searched-videos", query],
-        queryFn: async ():Promise<IVideoData[]> => {
+        queryFn: async (): Promise<IVideoData[]> => {
             const res = await videoServices.searchVideos(query);
             return res.data;
         },
@@ -31,43 +31,51 @@ const SearchedVideos = () => {
             </div>
         );
     return (
-        <div className="lg:pl-40 dark:text-white text-black">
+        <div className="flex flex-col gap-y-4 px-4 md:px-12 lg:px-40 dark:text-gray-100 text-gray-900 min-h-screen">
             {videos?.map((video) => (
                 <Link to={`/videos/${video._id}`} key={video._id}>
-                    <div className="flex space-x-2 p-2 rounded-lg h-1/4">
-                        <div className="relative mr-5 w-1/2 xl:w-1/3">
+                    <div className="flex gap-x-4 bg-white dark:bg-gray-800 rounded-lg">
+                        <div className="relative flex-shrink-0 w-3/5 sm:w-1/3 aspect-video">
                             <img
                                 src={video.thumbnail}
                                 alt="Video Thumbnail"
-                                className="w-full rounded-lg aspect-video object-cover "
+                                className="w-full h-full rounded-lg object-cover aspect-video"
                                 loading="lazy"
                             />
-                            <span className="absolute bottom-2 bg-black right-2 bg-opacity-75 text-white px-2 text-xs">
+                            <span className="absolute bottom-2 right-2 bg-black bg-opacity-70 text-white px-2 py-1 text-xs rounded">
                                 {formatDuration(video.duration)}
                             </span>
                         </div>
-                        <div className="w-1/2 xl:w-2/3 flex flex-col space-y-4">
-                            <div>
-                                <div className="text-xl">{video.title}</div>
-                                <div className="text-gray-400">
+                        <div className="flex flex-col justify-between flex-1 overflow-hidden">
+                            <div className="flex flex-col gap-2">
+                                <h2 className="text-lg lg:text-xl font-semibold truncate">
+                                    {video.title}
+                                </h2>
+                                <p className="text-sm lg:text-base text-gray-500">
                                     {`${
                                         video.views
                                     } views • ${formatDistanceToNow(
                                         new Date(video.createdAt)
                                     ).replace("about", "")} ago`}
-                                </div>
+                                </p>
                             </div>
-                            <div className="flex items-center space-x-4">
+                            <div className="flex items-center gap-3 mt-4">
                                 <img
-                                    src={video.creator.avatar || DefaultAvatarImage}
-                                    className="w-10 h-10 rounded-full"
+                                    src={
+                                        video.creator.avatar ||
+                                        DefaultAvatarImage
+                                    }
+                                    alt="Creator Avatar"
+                                    className="w-10 h-10 rounded-full object-cover"
                                     loading="lazy"
                                 />
-                                <div>{video.creator.fullname}</div>
+                                <p className="text-sm lg:text-base font-medium">
+                                    {video.creator.fullname}
+                                </p>
                             </div>
-                            <div className="text-gray-400">
+                            <p className="text-sm lg:text-base text-gray-500 mt-4 line-clamp-3">
                                 {video.description}
-                            </div>
+                            </p>
                         </div>
                     </div>
                 </Link>

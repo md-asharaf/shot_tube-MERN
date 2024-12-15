@@ -5,7 +5,6 @@ interface Props {
     className?: string;
 }
 const VideoCard: React.FC<Props> = ({ video, className = "" }) => {
-    //format video duration
     return (
         <div className="relative">
             <img

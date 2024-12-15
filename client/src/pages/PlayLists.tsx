@@ -18,7 +18,7 @@ const PlayLists = () => {
     } = useQuery({
         queryKey: ["playlists", userId],
         queryFn: async ():Promise<IPlaylist[]> => {
-            const res = await playlistServices.getPlaylists(userId);
+            const res = await playlistServices.getAllPlaylists(userId);
             return res.data;
         },
         enabled: !!userId,

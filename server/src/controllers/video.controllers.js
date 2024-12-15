@@ -217,7 +217,7 @@ class VideoC {
 
     getVideosByQuery = asyncHandler(async (req, res) => {
 
-        const { query } = req.params;
+        const { query } = req.query;
         //query will be parameter
         try {
             const videos = await Video.aggregate([

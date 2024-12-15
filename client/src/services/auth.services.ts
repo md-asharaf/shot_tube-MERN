@@ -6,7 +6,10 @@ class AuthService {
     logout = async () => await Axios.get("/users/logout");
     register = async (data: IRegisterForm) =>
         await Axios.post("/users/register", data);
-    googleLogin = async (data: any) => await Axios.post("/users/google-login", data);
+    googleLogin = async (data: Object) =>
+        await Axios.post("/users/google-login", data);
+    sendResetLinkOnEmail = async (email: string) =>
+        await Axios.post("/users/forget-password", { email });
 }
 
 export default new AuthService();

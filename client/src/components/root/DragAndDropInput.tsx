@@ -9,7 +9,6 @@ const DragDropInput = ({ label, accept, name, form }) => {
     const [file, setFile] = useState<File | null>(null);
     const [filePreviewUrl, setFilePreviewUrl] = useState<string | null>(null);
 
-    // Handle drag events
     const handleDragEnter = (e) => {
         e.preventDefault();
         e.stopPropagation();
@@ -76,7 +75,6 @@ const DragDropInput = ({ label, accept, name, form }) => {
                         >
                             {file ? (
                                 <div className="flex items-center justify-center space-x-4">
-                                    {/* Preview */}
                                     <div className="flex-shrink-0">
                                         {accept.includes("image") && filePreviewUrl && (
                                             <img
@@ -97,7 +95,6 @@ const DragDropInput = ({ label, accept, name, form }) => {
                                             </video>
                                         )}
                                     </div>
-                                    {/* Remove File button */}
                                     <div>
                                         <Button
                                             type="button"

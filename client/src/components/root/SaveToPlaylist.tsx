@@ -56,14 +56,14 @@ const SaveToPlaylist: React.FC<Props> = ({ userId, videoId }) => {
     } = useQuery({
         queryKey: ["playlists", userId],
         queryFn: async ():Promise<IPlaylist[]> => {
-            const res = await playlistServices.getPlaylists(userId);
+            const res = await playlistServices.getAllPlaylists(userId);
             return res.data;
         },
     });
 
     const { mutate: createPlaylist } = useMutation({
         mutationFn: async () => {
-            await playlistServices.create(playlistName);
+            await playlistServices.createPlaylist(playlistName);
             closePopovers();
             refetch();
         },

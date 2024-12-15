@@ -17,7 +17,7 @@ export function getVideoDuration(file: File) {
         video.preload = "metadata";
 
         video.onloadedmetadata = function () {
-            window.URL.revokeObjectURL(video.src); // Clean up
+            window.URL.revokeObjectURL(video.src);
             resolve(video.duration);
         };
 
@@ -25,11 +25,10 @@ export function getVideoDuration(file: File) {
             reject("Error loading video metadata");
         };
 
-        video.src = URL.createObjectURL(file); // Set video source
+        video.src = URL.createObjectURL(file);
     });
 }
 export function formatDuration(duration: string) {
-    //convert string to number
     const durationNumber = parseInt(duration);
     const minutes = Math.floor(durationNumber / 60);
     const seconds = durationNumber % 60;
@@ -37,6 +36,5 @@ export function formatDuration(duration: string) {
 }
 
 export function sanitizeFileName (fileName:string) {
-    // Replace all special characters (except for alphanumeric and period) with underscores
     return fileName.replace(/[^a-zA-Z0-9.]/g, '_');
 };

@@ -19,6 +19,7 @@ import { IoLogoYoutube } from "react-icons/io";
 import authService from "@/services/auth.services";
 import { ILoginForm } from "@/interfaces";
 import { useToast } from "../ui/use-toast";
+import PasswordInput from "../root/PasswordInput";
 
 const SignIn = () => {
     const { toast } = useToast();
@@ -112,8 +113,7 @@ const SignIn = () => {
                             render={({ field }) => (
                                 <FormItem>
                                     <FormControl>
-                                        <Input
-                                            type="password"
+                                        <PasswordInput
                                             placeholder="Password"
                                             {...field}
                                         />
@@ -122,16 +122,24 @@ const SignIn = () => {
                                 </FormItem>
                             )}
                         />
+                        <div className="mt-2">
+                            <Link
+                                to="/forgot-password"
+                                className="text-blue-500 text-sm hover:underline"
+                            >
+                                Forgot Password?
+                            </Link>
+                        </div>
                         <button
                             type="submit"
                             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg"
                         >
-                            Sign In
+                            Sign in
                         </button>
                     </form>
                 </Form>
 
-                <div className="mt-6">
+                <div className="mt-4">
                     <button
                         className="w-80 flex items-center justify-center bg-white border-2 border-gray-300 text-gray-700 py-1 px-6 rounded-lg hover:border-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500"
                         id="google-signin-btn"

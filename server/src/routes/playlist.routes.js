@@ -4,12 +4,12 @@ import PlayListC from "../controllers/playlist.controllers.js"
 const router = Router();
 
 router.get("/:playlistId", PlayListC.getPlaylistById);
-router.get("/:userId/all-playlists", PlayListC.getUserPlaylists);
-router.post("/create", verifyJWT, PlayListC.createPlaylist);
-router.patch("/:playlistId/update", verifyJWT, PlayListC.updatePlaylist);
-router.patch("/:playlistId/:videoId/add", verifyJWT, PlayListC.addVideoToPlaylist);
-router.patch("/:playlistId/:videoId/remove", verifyJWT, PlayListC.removeVideoFromPlaylist);
-router.delete("/:playlistId/delete", verifyJWT, PlayListC.deletePlaylist);
+router.get("/all-playlists/:userId", PlayListC.getUserPlaylists);
+router.post("/create-playlist", verifyJWT, PlayListC.createPlaylist);
+router.patch("/update-playlist/:playlistId", verifyJWT, PlayListC.updatePlaylist);
+router.patch("/add-video-to-playlist/:playlistId/:videoId", verifyJWT, PlayListC.addVideoToPlaylist);
+router.patch("/remove-video-from-playlist/:playlistId/:videoId", verifyJWT, PlayListC.removeVideoFromPlaylist);
+router.delete("/delete-playlist/:playlistId", verifyJWT, PlayListC.deletePlaylist);
 
 
 export default router;

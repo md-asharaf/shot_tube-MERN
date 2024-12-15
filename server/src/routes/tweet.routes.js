@@ -4,12 +4,9 @@ import TweetC from "../controllers/tweet.controllers.js";
 
 const router = Router();
 
-router.get("/:userId", TweetC.getUserTweets);
-
-router.post("/create", verifyJWT, TweetC.createTweet);
-
-router.patch("/:tweetId/update", verifyJWT, TweetC.updateTweet);
-
-router.delete("/:tweetId/delete", verifyJWT, TweetC.deleteTweet);
+router.get("/all-tweets/:userId", TweetC.getUserTweets);
+router.post("/create-tweet", verifyJWT, TweetC.createTweet);
+router.patch("/update-tweet/:tweetId", verifyJWT, TweetC.updateTweet);
+router.delete("/delete-tweet/:tweetId", verifyJWT, TweetC.deleteTweet);
 
 export default router;

@@ -13,7 +13,7 @@ const RootLayOut = () => {
     const isMenuOpen = useSelector((state: RootState) => state.ui.isMenuOpen);
     return (
         <VideoProvider value={{ query, setQuery }}>
-            <div className={`w-screen bg-white dark:bg-black min-h-screen}`}>
+            <div className={`w-screen bg-white dark:bg-black h-screen`}>
                 <nav className="h-20">
                     <NavBar />
                 </nav>

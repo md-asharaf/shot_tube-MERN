@@ -21,7 +21,7 @@ const Channel = () => {
     const { data: user, isLoading: userLoading } = useQuery({
         queryKey: ["user", username],
         queryFn: async ():Promise<IUser> => {
-            const res = await userServices.getUser(username);
+            const res = await userServices.getUserChannel(username);
             return res.data;
         },
         enabled: !!username,
@@ -29,7 +29,7 @@ const Channel = () => {
     const { data: isSubscribed, refetch } = useQuery({
         queryKey: ["isSubscribed", user?._id],
         queryFn: async ():Promise<boolean> => {
-            const res = await subscriptionServices.isSubscribed(user?._id);
+            const res = await subscriptionServices.isChannelSubscribed(user?._id);
             return res.data.isSubscribed;
         },
         enabled: !!user,

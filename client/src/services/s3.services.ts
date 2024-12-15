@@ -26,7 +26,7 @@ class S3 {
             Key: key,
             ContentType: contentType,
         });
-        return await getSignedUrl(s3Client, command, { expiresIn: 3600 }); // Set an expiration time
+        return await getSignedUrl(s3Client, command, { expiresIn: 3600 });
     };
 
     getObjectUrl = async (bucket: string, key: string) => {
@@ -41,7 +41,6 @@ class S3 {
     uploadFile = async (file: File) => {
         const contentType = file.type || "application/octet-stream"; 
         const key = `uploads/user-uploads/${Date.now()}.${file.type}`;
-        // Add fallback content type
         try {
             const url = await this.putObjectUrl(
                 "shot-tube-videos",
@@ -51,17 +50,17 @@ class S3 {
             const response = await fetch(url, {
                 method: "PUT",
                 body: file,
-                headers: {        //generate unique key for each file
+                headers: {     
                     "Content-Type": contentType,
                 },
             });
             if (!response.ok) {
-                console.error("Error uploading file:", response.statusText);        //generate unique key for each file
+                console.error("Error uploading file:", response.statusText);  
 
             }
             return `https://shot-tube-videos.s3.amazonaws.com/${key}`;
         } catch (error) {
-            console.error("Error uploading file: ", error);        //generate unique key for each file
+            console.error("Error uploading file: ", error);      
 
         }
     };
@@ -69,13 +68,12 @@ class S3 {
     downloadImageAndUploadToS3 = async (imageUrl: string, fileName: string) => {
         try {
             const response = await axios.get(imageUrl, {
-                responseType: "arraybuffer", // Get binary data
+                responseType: "arraybuffer", 
             });
 
             const fileType =
                 response.headers["content-type"] || "application/octet-stream";
 
-            // Convert buffer to Blob/File (depends on environment)
             const blob = new Blob([response.data], { type: fileType });
             const file = new File([blob], fileName, { type: fileType });
 

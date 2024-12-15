@@ -36,7 +36,6 @@ const LikedVideos = () => {
     }
 
     if (isError) {
-        // More detailed error handling
         const errorMessage = error?.message || "Something went wrong.";
         return (
             <div className="flex items-center justify-center h-full text-xl text-red-500">
@@ -112,12 +111,10 @@ const LikedVideos = () => {
                 {filteredVideos?.map((video, index) => (
                     <Link to={`/videos/${video._id}`} key={video._id}>
                         <div className="flex items-start p-1 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-lg transition duration-200 ease-in-out">
-                            {/* Video Index */}
                             <div className="text-gray-500 text-xl mr-2 font-semibold">
                                 {index + 1}
                             </div>
 
-                            {/* Video Thumbnail */}
                             <div className="relative w-36 h-24 sm:w-44 sm:h-28 flex-shrink-0">
                                 <img
                                     src={video.thumbnail}
@@ -130,9 +127,8 @@ const LikedVideos = () => {
                                 </span>
                             </div>
 
-                            {/* Video Details */}
                             <div className="flex-1 ml-4">
-                                <h3 className="text-lg font-semibold text-black dark:text-white truncate w-full overflow-hidden">
+                                <h3 className="text-lg text-black dark:text-white truncate w-full overflow-hidden">
                                     {video.title}
                                 </h3>
                                 <p className="text-gray-400 text-sm">

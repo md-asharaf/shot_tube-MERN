@@ -77,4 +77,7 @@ userSchema.methods.generateRefreshToken = function () {
     }
     )
 }
+userSchema.methods.generatePasswordResetToken = function () {
+    return jwt.sign({ _id: this._id }, process.env.PASSWORD_RESET_TOKEN_SECRET, { expiresIn: process.env.PASSWORD_RESET_TOKEN_EXPIRY })
+}
 export const User = model("User", userSchema)

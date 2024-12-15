@@ -56,7 +56,7 @@ const Video = () => {
         useQuery({
             queryKey: ["subscribe", video?.creator._id, userId],
             queryFn: async ():Promise<boolean> => {
-                const res = await subscriptionServices.isSubscribed(video.creator._id);
+                const res = await subscriptionServices.isChannelSubscribed(video.creator._id);
                 return res.data.isSubscribed;
             },
             enabled: !!video && !!userId,
@@ -105,7 +105,7 @@ const Video = () => {
 
     const { mutate: addToWatchHistory } = useMutation({
         mutationFn: async ({videoId}:{videoId:string}) => { 
-            await userServices.addToWatchHistory(videoId)
+            await userServices.addVideoToWatchHistory(videoId)
         },
     });
     

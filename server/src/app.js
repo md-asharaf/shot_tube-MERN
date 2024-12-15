@@ -13,7 +13,7 @@ import playlistRoutes from "./routes/playlist.routes.js";
 import bodyParser from "body-parser"
 const app = express();
 //middlewares
-const ORIGIN = process.env.ORIGIN
+const ORIGIN = process.env.CLIENT_URL
 app.use(cors({
     origin: [ORIGIN],
     credentials: true

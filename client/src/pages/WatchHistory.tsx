@@ -30,7 +30,7 @@ const WatchHistory = () => {
     } = useQuery({
         queryKey: ["watch-history", userId],
         queryFn: async (): Promise<IVideoData[]> => {
-            const res = await userServices.watchHistory();
+            const res = await userServices.getWatchHistory();
             return res.data;
         },
         enabled: !!userId,
@@ -43,7 +43,7 @@ const WatchHistory = () => {
     });
     const { mutate: clearAllHistory } = useMutation({
         mutationFn: async () => {
-            await userServices.clearHistory();
+            await userServices.clearWatchHistory();
             refetch();
         },
     });

@@ -15,7 +15,7 @@ const BottomBar = () => {
         (state: RootState) => state.auth.userData?.username
     );
     return (
-        <div className="fixed bottom-0 left-0 w-full flex items-center justify-around bg-white dark:bg-black dark:text-white h-12 z-10">
+        <div className="fixed bottom-0 flex items-center justify-around bg-white dark:bg-black dark:text-white h-12 z-10">
             <NavLink to={"/"}>
                 {({ isActive }) => (
                     <div className="flex flex-col items-center">

@@ -17,7 +17,7 @@ const Playlist = () => {
     } = useQuery({
         queryKey: ["playlist", playlistId],
         queryFn: async ():Promise<IPlaylist> => {
-            const res = await playlistServices.getPlaylist(playlistId);
+            const res = await playlistServices.getPlaylistById(playlistId);
             return res.data;
         },
         enabled: !!playlistId,
@@ -40,9 +40,7 @@ const Playlist = () => {
     );
     return (
         <div className="flex flex-col gap-4 lg:flex-row h-full  w-full dark:text-white">
-            {/* Left Section: Playlist Info */}
             <div className="flex flex-col space-y-4 sm:space-x-4 sm:flex-row lg:flex-col dark:bg-zinc-700 bg-gray-200 p-5  rounded-xl lg:h-full lg:w-1/3">
-                {/* Playlist Thumbnail */}
                 <img
                     src={playlist.videos[0].thumbnail}
                     alt="Playlist Thumbnail"
@@ -51,7 +49,6 @@ const Playlist = () => {
                 />
 
                 <div className="space-y-3">
-                    {/* Playlist Details */}
                     <h1 className="text-2xl font-bold truncate">
                         {playlist.name}
                     </h1>
@@ -62,7 +59,6 @@ const Playlist = () => {
                         {`${playlist.videos?.length} videos • ${totalViews} views • Last updated on ${(new Date(playlist.updatedAt)).toDateString()}`}
                     </p>
 
-                    {/* Buttons */}
                     <div className="flex justify-between gap-2 w-full">
                         <Button className="bg-white text-black hover:bg-black hover:text-white transition-colors py-2 px-4 rounded-full w-1/2">
                             Play all
@@ -72,24 +68,20 @@ const Playlist = () => {
                         </Button>
                     </div>
 
-                    {/* Description */}
                     <p className="text-sm text-gray-500">
                         {playlist.description}
                     </p>
                 </div>
             </div>
 
-            {/* Right Section: Video List */}
             <div className="flex flex-col w-full lg:w-2/3">
                 {playlist.videos?.map((video, index) => (
                     <Link to={`/videos/${video._id}`} key={video._id}>
                         <div className="flex items-start p-1 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-lg transition duration-200 ease-in-out">
-                            {/* Video Index */}
                             <div className="text-gray-500 text-xl mr-2 font-semibold">
                                 {index + 1}
                             </div>
 
-                            {/* Video Thumbnail */}
                             <div className="relative w-36 h-24 sm:w-44 sm:h-28 flex-shrink-0">
                                 <img
                                     src={video.thumbnail}
@@ -102,7 +94,6 @@ const Playlist = () => {
                                 </span>
                             </div>
 
-                            {/* Video Details */}
                             <div className="flex-1 ml-4">
                                 <h3 className="text-lg text-black dark:text-white truncate w-full overflow-hidden">
                                     {video.title}

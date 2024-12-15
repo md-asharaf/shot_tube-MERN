@@ -3,32 +3,54 @@
 @tailwind components;
 @tailwind utilities;
 body {
-    height:100vh;
-    width:100vw;
     font-family: "Roboto", sans-serif;
 }
-/* src/styles/custom.css */
+
+/* WebKit browsers (Chrome, Safari, newer Edge) */
 ::-webkit-scrollbar {
+    width: 5px;
     border-radius: 50px;
     border: none;
-    width: 8px;
 }
 
 ::-webkit-scrollbar-thumb {
+    background-color: rgba(104, 102, 105, 0.7);
     border-radius: 50px;
-    border: none;
-    background-color: rgba(175, 159, 159, 0.782);
+}
+::-webkit-scrollbar-thumb:hover{
+    cursor:grab;
+}
+/* Internet Explorer and Edge (legacy) */
+body {
+    -ms-overflow-style: -ms-autohiding-scrollbar;
 }
 
-::-webkit-scrollbar-thumb:hover {
-    cursor: grab;
+/* Responsive behavior */
+@media (max-width: 639px) {
+    * {
+        scrollbar-width: none;
+    }
+
+    /* WebKit browsers */
+    body::-webkit-scrollbar {
+        display: none;
+    }
+
+    /* Internet Explorer and Edge */
+    body {
+        -ms-overflow-style: none;
+    }
+
+    /* Prevent vertical scrolling on mobile */
+    body {
+        overflow-y: hidden;
+    }
 }
-.scrollbar-hide::-webkit-scrollbar {
-    display: none;
-}
-.scrollbar-hide {
-    -ms-overflow-style: none; /* Internet Explorer 10+ */
-    scrollbar-width: none; /* Firefox */
+
+@media (min-width: 640px) {
+    body {
+        overflow-y: auto;
+    }
 }
 @layer base {
     :root {

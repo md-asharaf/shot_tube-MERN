@@ -53,7 +53,7 @@ const Comments = ({ videoId, playerRef }) => {
             );
             return likes;
         },
-        enabled: !!comments, // Ensure this query runs only when `comments` is available
+        enabled: !!comments,
     });
 
     const { mutate: addComment } = useMutation({

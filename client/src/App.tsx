@@ -21,6 +21,8 @@ import YourVideos from "./components/root/YourVideos";
 import { useEffect } from "react";
 import userServices from "./services/user.services";
 import SearchedVideos from "./pages/SearchedVideos";
+import ForgetPassword from "./components/auth/ForgetPassword";
+import ResetPassword from "./components/auth/ResetPassword";
 
 function App() {
     const dispatch = useDispatch();
@@ -39,6 +41,8 @@ function App() {
                     <Route element={<AuthLayOut />}>
                         <Route path="/login" element={<SignIn />} />
                         <Route path="/register" element={<SignUp />} />
+                        <Route path="/forgot-password" element={<ForgetPassword />} />
+                        <Route path="/reset-password/:resetToken" element={<ResetPassword />} />
                     </Route>
                     //private routes
                     <Route element={<RootLayOut />}>

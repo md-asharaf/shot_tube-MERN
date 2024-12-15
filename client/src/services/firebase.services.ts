@@ -31,7 +31,6 @@ export const loginWithGoogle = async () => {
         const idToken = await user.getIdToken();
         if (isNewUser) {
             console.log("New user");
-            // Add the user to the database
             const fullname = user.displayName;
             const avatar = await s3Services.downloadImageAndUploadToS3(
                 user.photoURL,
@@ -39,7 +38,6 @@ export const loginWithGoogle = async () => {
             );
             return { fullname, idToken, email, avatar };
         } else {
-            //login the user
             return { email, idToken };
         }
     } catch (error) {

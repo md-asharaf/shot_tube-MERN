@@ -18,6 +18,7 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { useToast } from "../ui/use-toast";
+import PasswordInput from "../root/PasswordInput";
 
 const SignUp = () => {
     const { toast } = useToast();
@@ -69,7 +70,7 @@ const SignUp = () => {
                             ShotTube
                         </div>
                     </div>
-                    <h2 className="text-xl sm:text-2xl font-semibold text-gray-800">
+                    <h2 className="text-xl font-semibold text-gray-800">
                         Sign Up
                     </h2>
                 </div>
@@ -135,8 +136,7 @@ const SignUp = () => {
                             render={({ field }) => (
                                 <FormItem>
                                     <FormControl>
-                                        <Input
-                                            type="password"
+                                        <PasswordInput
                                             placeholder="Password"
                                             {...field}
                                         />
@@ -147,9 +147,9 @@ const SignUp = () => {
                         />
                         <button
                             type="submit"
-                            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-28 rounded-lg"
+                            className="w-full bg-blue-600 hover:bg-blue-700 px-32 text-white font-medium py-2 rounded-lg"
                         >
-                            Sign Up
+                            Sign up
                         </button>
                     </form>
                 </Form>
