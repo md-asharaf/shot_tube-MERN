@@ -14,7 +14,7 @@ const RootLayOut = () => {
     return (
         <VideoProvider value={{ query, setQuery }}>
             <div className={`w-screen bg-white dark:bg-black h-screen`}>
-                <nav className="h-20">
+                <nav className="h-14 sm:h-20">
                     <NavBar />
                 </nav>
                 <div className="flex sm:px-1">
