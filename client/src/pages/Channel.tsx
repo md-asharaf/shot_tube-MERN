@@ -55,20 +55,20 @@ const Channel = () => {
         <div className="space-y-2 w-full dark:text-white">
             {userData?.username === username && (
                 <img
-                    className="w-full h-32 rounded-xl"
+                    className="w-full h-24 sm:h-32 rounded-xl"
                     src={user?.coverImage || DefaultCoverImage}
                     alt="User cover"
                     loading="lazy"
                 />
             )}
-            <div className="flex space-x-8 justify-center rounded-2xl">
+            <div className="flex space-x-4 sm:space-x-8 justify-center rounded-2xl">
                 <img
                     src={user?.avatar || DefaultAvatarImage}
-                    className="rounded-full h-40 w-40"
+                    className="rounded-full h-24 w-24 sm:h-40 sm:w-40"
                     alt="User avatar"
                 />
                 <div className="space-y-2">
-                    <div className="font-bold text-3xl">{user?.fullname}</div>
+                    <div className="font-bold text-2xl sm:text-3xl">{user?.fullname}</div>
                     <div className="text-gray-500 dark:text-zinc-300">{`@${
                         user?.username
                     } • ${user?.subscriberCount} subscribers • ${

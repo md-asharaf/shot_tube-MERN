@@ -5,8 +5,15 @@
 body {
     font-family: "Roboto", sans-serif;
 }
+.scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+}
 
-/* WebKit browsers (Chrome, Safari, newer Edge) */
+.scrollbar-hide::-webkit-scrollbar {
+    display: none;
+}
+
 ::-webkit-scrollbar {
     width: 5px;
     border-radius: 50px;
@@ -17,31 +24,26 @@ body {
     background-color: rgba(104, 102, 105, 0.7);
     border-radius: 50px;
 }
-::-webkit-scrollbar-thumb:hover{
-    cursor:grab;
+::-webkit-scrollbar-thumb:hover {
+    cursor: grab;
 }
-/* Internet Explorer and Edge (legacy) */
 body {
-    -ms-overflow-style: -ms-autohiding-scrollbar;
+    -ms-overflow-style: auto;
 }
 
-/* Responsive behavior */
 @media (max-width: 639px) {
     * {
         scrollbar-width: none;
     }
 
-    /* WebKit browsers */
     body::-webkit-scrollbar {
         display: none;
     }
 
-    /* Internet Explorer and Edge */
     body {
         -ms-overflow-style: none;
     }
 
-    /* Prevent vertical scrolling on mobile */
     body {
         overflow-y: hidden;
     }

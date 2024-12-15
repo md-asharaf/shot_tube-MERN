@@ -33,11 +33,11 @@ const PlayLists = () => {
     if (isError) return <div>Error: {error.message}</div>;
     return (
         <div className="px-2 dark:text-white w-full">
-            <h1 className="text-4xl font-bold mb-3">
+            <h1 className="text-2xl sm:text-3xl mb-3">
                 {playlists?.length > 0 ? "Playlists" : "No playlists yet"}
             </h1>
             <hr />
-            <div className="mt-5 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
+            <div className="mt-2 grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5 gap-2">
                 {playlists?.map((playlist) => (
                     <Link
                         to={`/playlist/${playlist._id}`}

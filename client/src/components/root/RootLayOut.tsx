@@ -16,18 +16,24 @@ const RootLayOut = () => {
     return (
         <VideoProvider value={{ query, setQuery }}>
             <div className="w-screen bg-white dark:bg-black h-screen flex flex-col">
-                <nav className="h-12 sm:h-16">
+                <nav className="fixed top-0 left-0 h-12 sm:h-16 w-full">
                     <NavBar />
                 </nav>
-                <div className="flex flex-1 overflow-hidden sm:px-1">
+                <div className="flex flex-1 overflow-hidden sm:px-1 mt-12 sm:mt-16">
                     <div className="hidden sm:flex">
                         {isMenuOpen ? <BigDrawer /> : <SmallDrawer />}
                     </div>
-                    <div className="flex-1 overflow-y-auto">
+                    <div
+                        className="flex-1 overflow-y-auto"
+                        style={{
+                            paddingBottom: "3rem", // Height of BottomBar
+                            WebkitOverflowScrolling: "touch", // Smooth scrolling for iOS and mobile
+                        }}
+                    >
                         <Outlet />
                     </div>
                 </div>
-                <div className="sm:hidden">
+                <div className="sm:hidden h-12 fixed bottom-0 left-0 w-full">
                     <BottomBar />
                 </div>
                 <Toaster />

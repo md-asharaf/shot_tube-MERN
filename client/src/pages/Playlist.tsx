@@ -94,8 +94,8 @@ const Playlist = () => {
                                 </span>
                             </div>
 
-                            <div className="flex-1 ml-4">
-                                <h3 className="text-lg text-black dark:text-white truncate w-full overflow-hidden">
+                            <div className="flex-1 ml-4 overflow-hidden">
+                                <h3 className="text-lg text-black dark:text-white truncate">
                                     {video.title}
                                 </h3>
                                 <p className="text-gray-400 text-sm">

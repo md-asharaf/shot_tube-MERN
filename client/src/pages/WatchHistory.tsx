@@ -59,8 +59,8 @@ const WatchHistory = () => {
     }
     return (
         <div className="w-full dark:text-white">
-            <div className="flex justify-between sm:px-4">
-                <div className="text-4xl mb-4">
+            <div className="flex justify-between items-center px-2 sm:px-4 mb-2">
+                <div className="text-2xl sm:text-4xl">
                     {videos?.length > 0 ? "Watch History" : "No History"}
                 </div>
 

@@ -183,7 +183,7 @@ const BigDrawer = () => {
         >
             <div className="pl-7 w-64 overflow-y-auto h-full bg-white dark:bg-black">
                 {(mediumScreenSize || isVideoPage) && (
-                    <div className="pb-8 pl-1 pt-[14px] flex items-center gap-x-2 md:gap-x-4">
+                    <div className="pb-4 pl-1 pt-[14px] flex items-center gap-x-2 md:gap-x-4">
                         <CiMenuBurger className="text-4xl dark:text-white hover:bg-zinc-400 dark:hover:bg-zinc-700 p-2 rounded-lg hidden sm:block" />
                         <button
                             className="flex items-center"
