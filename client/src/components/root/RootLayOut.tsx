@@ -26,14 +26,14 @@ const RootLayOut = () => {
                     <div
                         className="flex-1 overflow-y-auto"
                         style={{
-                            paddingBottom: "3rem", // Height of BottomBar
-                            WebkitOverflowScrolling: "touch", // Smooth scrolling for iOS and mobile
+                            paddingBottom: "38px",
+                            WebkitOverflowScrolling: "touch",
                         }}
                     >
                         <Outlet />
                     </div>
                 </div>
-                <div className="sm:hidden h-12 fixed bottom-0 left-0 w-full">
+                <div className="sm:hidden fixed bottom-0 left-0 w-full">
                     <BottomBar />
                 </div>
                 <Toaster />

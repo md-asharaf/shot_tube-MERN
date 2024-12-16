@@ -21,7 +21,7 @@ class UserC {
             throw new ApiError(400, "User not found")
         }
         const resetToken = await user.generatePasswordResetToken();
-        const resetLink = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
+        const resetLink = `https://${process.env.CLIENT_URL}/reset-password/${resetToken}`;
         // send Email
         const { error } = await resend.emails.send({
             to: email,
@@ -29,9 +29,8 @@ class UserC {
             subject: "Password Reset",
             text: `Click the link to reset your password: ${resetLink}`
         })
-        console.log("ERROR",error)
         if (error) {
-            throw new ApiError(500, "Failed to send email")
+            throw new ApiError(500, error.message)
         }
         return res.status(200).json(new ApiResponse(200, { password_reset_link: resetLink }, "Reset link sent to email"))
     })

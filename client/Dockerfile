@@ -1,18 +1,23 @@
 FROM node:20-alpine
+
+# Set the working directory
 WORKDIR /app
 
 # Copy package.json and install dependencies
 COPY package*.json ./
-RUN npm install
 
 # Install serve globally
 RUN npm install -g serve
 
 # Copy the rest of the files
 COPY . .
-# Replace the existing RUN command with this:
-RUN NODE_OPTIONS="--max-old-space-size=4096" npm run build
+
 # Build the frontend
+RUN NODE_OPTIONS="--max-old-space-size=4096" npm run build
+
+# Expose the port
 EXPOSE 3000
+
+#run the server
 CMD ["serve", "-s", "dist", "-l", "3000"]
 
