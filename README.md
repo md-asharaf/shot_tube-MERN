@@ -1,4 +1,4 @@
-# Shot Tube MERN
+# Shot Tube
 
 ## Description
 
@@ -8,7 +8,10 @@ Shot Tube MERN is a full-stack web application built using the MERN (MongoDB, Ex
 
 - User authentication and authorization
 - Video upload and playback
+- HLS streaming with support for multiple resolutions
+- Video transcription for enhanced accessibility and search
 - Commenting and liking system
+- Email verification for account creation and password reset
 - User profile management
 - Responsive design
 
