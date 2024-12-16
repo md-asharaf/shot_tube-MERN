@@ -6,6 +6,12 @@ WORKDIR /app
 # Copy package.json and install dependencies
 COPY package*.json ./
 
+# Install dependencies
+RUN npm install 
+
+# Update npm
+RUN npm update
+
 # Install serve globally
 RUN npm install -g serve
 
