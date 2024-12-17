@@ -22,7 +22,5 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
-bun.lockb
-package-lock.json
 .env
 */.serverless

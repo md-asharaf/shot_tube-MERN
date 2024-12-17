@@ -1,4 +1,4 @@
-FROM node:20-alpine
+FROM node:20.11.1-slim
 
 # Set the working directory
 WORKDIR /app
@@ -6,11 +6,10 @@ WORKDIR /app
 # Copy package.json and install dependencies
 COPY package*.json ./
 
-# Install dependencies
-RUN npm install 
+ENV NODE_OPTIONS="--max-old-space-size=4096"
 
-# Update npm
-RUN npm update
+# Install dependencies
+RUN npm install --legacy-peer-deps
 
 # Install serve globally
 RUN npm install -g serve
@@ -19,7 +18,7 @@ RUN npm install -g serve
 COPY . .
 
 # Build the frontend
-RUN NODE_OPTIONS="--max-old-space-size=4096" npm run build
+RUN npm run build
 
 # Expose the port
 EXPOSE 3000
