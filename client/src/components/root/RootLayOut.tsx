@@ -16,7 +16,7 @@ const RootLayOut = () => {
     return (
         <VideoProvider value={{ query, setQuery }}>
             <div className="w-screen bg-white dark:bg-black h-screen flex flex-col">
-                <nav className="fixed top-0 left-0 h-12 sm:h-16 w-full">
+                <nav className="z-30 fixed top-0 left-0 h-12 sm:h-16 w-full">
                     <NavBar />
                 </nav>
                 <div className="flex flex-1 overflow-hidden sm:px-1 mt-12 sm:mt-16">
@@ -33,7 +33,7 @@ const RootLayOut = () => {
                         <Outlet />
                     </div>
                 </div>
-                <div className="sm:hidden fixed bottom-0 left-0 w-full">
+                <div className="sm:hidden fixed z-10 bottom-0 left-0 w-full">
                     <BottomBar />
                 </div>
                 <Toaster />

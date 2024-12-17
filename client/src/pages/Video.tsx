@@ -36,7 +36,7 @@ const Video = () => {
         error,
     } = useQuery({
         queryKey: ["video", videoId],
-        queryFn: async ():Promise<IVideoData> => {
+        queryFn: async (): Promise<IVideoData> => {
             const res = await videoService.singleVideo(videoId);
             return res.data;
         },
@@ -45,27 +45,28 @@ const Video = () => {
 
     const { data: isLiked, refetch: refetchIsLiked } = useQuery({
         queryKey: ["isLiked", videoId],
-        queryFn: async ():Promise<boolean> => {
+        queryFn: async (): Promise<boolean> => {
             const res = await likeService.isLiked(videoId, "video");
             return res.data;
         },
         enabled: !!videoId && !!userId,
     });
 
-    const { data: isSubscribed, refetch: refetchIsSubscribed } =
-        useQuery({
-            queryKey: ["subscribe", video?.creator._id, userId],
-            queryFn: async ():Promise<boolean> => {
-                const res = await subscriptionServices.isChannelSubscribed(video.creator._id);
-                return res.data.isSubscribed;
-            },
-            enabled: !!video && !!userId,
-        });
+    const { data: isSubscribed, refetch: refetchIsSubscribed } = useQuery({
+        queryKey: ["subscribe", video?.creator._id, userId],
+        queryFn: async (): Promise<boolean> => {
+            const res = await subscriptionServices.isChannelSubscribed(
+                video.creator._id
+            );
+            return res.data.isSubscribed;
+        },
+        enabled: !!video && !!userId,
+    });
 
     const { data: subscribersCount, refetch: refetchSubscribersCount } =
         useQuery({
             queryKey: ["subscribersCount", video?.creator._id],
-            queryFn: async ():Promise<number> => {
+            queryFn: async (): Promise<number> => {
                 const res = await subscriptionServices.getSubscribersCount(
                     video.creator._id
                 );
@@ -76,7 +77,7 @@ const Video = () => {
 
     const { data: recommendedVideos } = useQuery({
         queryKey: ["recommendedVideos", videoId],
-        queryFn: async ():Promise<IVideoData[]> => {
+        queryFn: async (): Promise<IVideoData[]> => {
             const res = await videoService.recommendedVideos(videoId);
             return res.data;
         },
@@ -84,8 +85,7 @@ const Video = () => {
     });
 
     const { mutate: incrementViews } = useMutation({
-        mutationFn: async () =>
-            await videoServices.incrementViews(videoId),
+        mutationFn: async () => await videoServices.incrementViews(videoId),
     });
 
     const { mutate: toggleVideoLike } = useMutation({
@@ -104,11 +104,11 @@ const Video = () => {
     });
 
     const { mutate: addToWatchHistory } = useMutation({
-        mutationFn: async ({videoId}:{videoId:string}) => { 
-            await userServices.addVideoToWatchHistory(videoId)
+        mutationFn: async ({ videoId }: { videoId: string }) => {
+            await userServices.addVideoToWatchHistory(videoId);
         },
     });
-    
+
     useEffect(() => {
         dispatch(toggleMenu(false));
     }, []);
@@ -116,7 +116,7 @@ const Video = () => {
         if (video)
             setTimeout(() => {
                 incrementViews();
-                addToWatchHistory({videoId});
+                addToWatchHistory({ videoId });
             }, 10000);
     }, [video]);
 
@@ -202,10 +202,7 @@ const Video = () => {
                             >
                                 <ThumbsUp />
                             </Button>
-                            <SaveToPlaylist
-                                userId={userId}
-                                videoId={videoId}
-                            />
+                            <SaveToPlaylist userId={userId} videoId={videoId} />
                         </div>
                     </div>
                     <div className="p-4 shadow-md rounded-xl bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-semibold">
@@ -241,7 +238,9 @@ const Video = () => {
                         </div>
                     </div>
                 </div>
-                <Comments videoId={videoId} playerRef={playerRef}/>
+                <div className="hidden xl:block">
+                    <Comments videoId={videoId} playerRef={playerRef} />
+                </div>
             </div>
             <div className="w-full xl:w-1/3 2xl:w-[30%]">
                 {recommendedVideos?.map((video) => (
@@ -253,17 +252,27 @@ const Video = () => {
                                 loading="lazy"
                             />
                             <div className="flex flex-col overflow-hidden">
-                                <p className="font-bold line-clamp-2 overflow-hidden text-ellipsis">{video.title}</p>
+                                <p className="font-bold line-clamp-2 overflow-hidden text-ellipsis">
+                                    {video.title}
+                                </p>
                                 <div className="text-gray-500">
                                     {video.creator?.fullname}
                                 </div>
                                 <div className="text-gray-500">
-                                    {`${video.views} views • ${formatDistanceToNow(video.createdAt, { addSuffix: true })}`}
+                                    {`${
+                                        video.views
+                                    } views • ${formatDistanceToNow(
+                                        video.createdAt,
+                                        { addSuffix: true }
+                                    )}`}
                                 </div>
                             </div>
                         </div>
                     </Link>
                 ))}
+            </div>
+            <div className="xl:hidden">
+                <Comments videoId={videoId} playerRef={playerRef} />
             </div>
         </div>
     );
