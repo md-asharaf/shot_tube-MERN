@@ -1,7 +1,7 @@
 import Axios from "@/config/request";
 
 class VideoSevice {
-    upload = async (data: any) => await Axios.post("/videos/publish", data);
+    upload = async (data: any) => await Axios.post("/videos/publish-video", data);
     allVideos = async (limit: number, page: number) =>
         await Axios.get(`/videos/all-videos?page=${page}&limit=${limit}`);
     singleVideo = async (videoId: string) =>
