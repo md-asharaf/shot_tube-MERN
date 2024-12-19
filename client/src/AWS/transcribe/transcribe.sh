@@ -5,14 +5,14 @@ echo "main.sh execution starting...."
 set -e
 
 # Ensure required environment variables are set
-if [ -z "$FILE_KEY" ] || [ -z "$INPUT_BUCKET" ] || [ -z "$OUTPUT_BUCKET" ] || [ -z "$MAX_RES" ]; then
-  echo "Error: FILE_KEY, INPUT_BUCKET, and OUTPUT_BUCKET must be set."
+if [ -z "$FILE_KEY" ] || [ -z "$INPUT_BUCKET" ] || [ -z "$OUTPUT_BUCKET" ] || [ -z "$HEIGHT" ] || [ -z "$WIDTH"]; then
+  echo "Error: FILE_KEY, INPUT_BUCKET, OUTPUT_BUCKET, HEIGHT, and WIDTH must be set."
   exit 1
 fi
 
 # Define base name from the FILE_KEY
 BASE_NAME=$(basename "$FILE_KEY" .mp4)
-MAX_RES_INT=$((MAX_RES))
+
 # Define input and output paths
 INPUT_FILE="https://s3.ap-south-1.amazonaws.com/${INPUT_BUCKET}/${FILE_KEY}"
 OUTPUT_PATH="s3://${OUTPUT_BUCKET}/${BASE_NAME}"
@@ -28,24 +28,45 @@ fi
 MASTER_PLAYLIST="${TEMP_DIR}/master.m3u8"
 echo "#EXTM3U" > "$MASTER_PLAYLIST"
 echo "#EXT-X-VERSION:3" >> "$MASTER_PLAYLIST"
-# Check MAX_RES value and append only relevant resolutions
-if [[ "$MAX_RES_INT" -ge 360 ]]; then
-    echo "#EXT-X-STREAM-INF:BANDWIDTH=500000,RESOLUTION=640:360" >> "$MASTER_PLAYLIST"
-    echo "360p.m3u8" >> "$MASTER_PLAYLIST"
-fi
-if [[ "$MAX_RES_INT" -ge 480 ]]; then
-    echo "#EXT-X-STREAM-INF:BANDWIDTH=1000000,RESOLUTION=854:480" >> "$MASTER_PLAYLIST"
-    echo "480p.m3u8" >> "$MASTER_PLAYLIST"
-fi
-if [[ "$MAX_RES_INT" -ge 720 ]]; then
-    echo "#EXT-X-STREAM-INF:BANDWIDTH=2500000,RESOLUTION=1280:720" >> "$MASTER_PLAYLIST"
-    echo "720p.m3u8" >> "$MASTER_PLAYLIST"
-fi
-if [[ "$MAX_RES_INT" -ge 1080 ]]; then
-    echo "#EXT-X-STREAM-INF:BANDWIDTH=5000000,RESOLUTION=1920:1080" >> "$MASTER_PLAYLIST"
-    echo "1080p.m3u8" >> "$MASTER_PLAYLIST"
-fi
 
+# Determine resolution based on height and width, considering both landscape and portrait orientations
+if [[ "$HEIGHT" -ge "$WIDTH" ]]; then
+    # Portrait mode (height >= width)
+    if [[ "$HEIGHT" -ge 360 ]] && [[ "$WIDTH" -ge 640 ]]; then
+        echo "#EXT-X-STREAM-INF:BANDWIDTH=500000,RESOLUTION=640x360" >> "$MASTER_PLAYLIST"
+        echo "360p.m3u8" >> "$MASTER_PLAYLIST"
+    fi
+    if [[ "$HEIGHT" -ge 480 ]] && [[ "$WIDTH" -ge 854 ]]; then
+        echo "#EXT-X-STREAM-INF:BANDWIDTH=1000000,RESOLUTION=854x480" >> "$MASTER_PLAYLIST"
+        echo "480p.m3u8" >> "$MASTER_PLAYLIST"
+    fi
+    if [[ "$HEIGHT" -ge 720 ]] && [[ "$WIDTH" -ge 1280 ]]; then
+        echo "#EXT-X-STREAM-INF:BANDWIDTH=2500000,RESOLUTION=1280x720" >> "$MASTER_PLAYLIST"
+        echo "720p.m3u8" >> "$MASTER_PLAYLIST"
+    fi
+    if [[ "$HEIGHT" -ge 1080 ]] && [[ "$WIDTH" -ge 1920 ]]; then
+        echo "#EXT-X-STREAM-INF:BANDWIDTH=5000000,RESOLUTION=1920x1080" >> "$MASTER_PLAYLIST"
+        echo "1080p.m3u8" >> "$MASTER_PLAYLIST"
+    fi
+else
+    # Landscape mode (width > height)
+    if [[ "$WIDTH" -ge 360 ]] && [[ "$HEIGHT" -ge 640 ]]; then
+        echo "#EXT-X-STREAM-INF:BANDWIDTH=500000,RESOLUTION=360x640" >> "$MASTER_PLAYLIST"
+        echo "360p.m3u8" >> "$MASTER_PLAYLIST"
+    fi
+    if [[ "$WIDTH" -ge 480 ]] && [[ "$HEIGHT" -ge 854 ]]; then
+        echo "#EXT-X-STREAM-INF:BANDWIDTH=1000000,RESOLUTION=480x854" >> "$MASTER_PLAYLIST"
+        echo "480p.m3u8" >> "$MASTER_PLAYLIST"
+    fi
+    if [[ "$WIDTH" -ge 720 ]] && [[ "$HEIGHT" -ge 1280 ]]; then
+        echo "#EXT-X-STREAM-INF:BANDWIDTH=2500000,RESOLUTION=720x1280" >> "$MASTER_PLAYLIST"
+        echo "720p.m3u8" >> "$MASTER_PLAYLIST"
+    fi
+    if [[ "$WIDTH" -ge 1080 ]] && [[ "$HEIGHT" -ge 1920 ]]; then
+        echo "#EXT-X-STREAM-INF:BANDWIDTH=5000000,RESOLUTION=1080x1920" >> "$MASTER_PLAYLIST"
+        echo "1080p.m3u8" >> "$MASTER_PLAYLIST"
+    fi
+fi
 
 # Upload the master playlist to S3
 aws s3 cp "$MASTER_PLAYLIST" "${OUTPUT_PATH}/master.m3u8" || { echo "Error uploading master.m3u8"; exit 1; }

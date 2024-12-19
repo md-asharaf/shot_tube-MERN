@@ -11,15 +11,18 @@ export function shortName(name: string | undefined) {
     }
     return splitName[0][0].toUpperCase();
 }
-export function getVideMetadata(file: File):Promise<{resolution:number, duration:number}> {
+export function getVideMetadata(
+    file: File
+): Promise<{ height: number; width: number; duration: number }> {
     return new Promise((resolve, reject) => {
         const video = document.createElement("video");
         video.preload = "metadata";
         video.onloadedmetadata = function () {
             window.URL.revokeObjectURL(video.src);
             resolve({
-                resolution: video.videoHeight,
+                height: video.videoHeight,
                 duration: video.duration,
+                width: video.videoWidth,
             });
         };
         video.onerror = function () {

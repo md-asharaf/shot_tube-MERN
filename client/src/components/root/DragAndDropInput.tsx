@@ -1,8 +1,14 @@
 import { useState } from "react";
-import { FormControl, FormField, FormItem, FormLabel, FormMessage } from "../ui/form";
+import {
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from "../ui/form";
 import { Input } from "../ui/input";
 import { Button } from "../ui/button";
-import { CloudUpload } from "lucide-react";
+import { CloudUpload, UploadCloud } from "lucide-react";
 
 const DragDropInput = ({ label, accept, name, form }) => {
     const [dragging, setDragging] = useState(false);
@@ -76,24 +82,26 @@ const DragDropInput = ({ label, accept, name, form }) => {
                             {file ? (
                                 <div className="flex items-center justify-center space-x-4">
                                     <div className="flex-shrink-0">
-                                        {accept.includes("image") && filePreviewUrl && (
-                                            <img
-                                                src={filePreviewUrl}
-                                                alt="Preview"
-                                                className="max-h-32 max-w-60 mx-auto"
-                                            />
-                                        )}
-                                        {accept.includes("video") && filePreviewUrl && (
-                                            <video
-                                                controls
-                                                className="max-h-32 max-w-60 mx-auto"
-                                            >
-                                                <source
+                                        {accept.includes("image") &&
+                                            filePreviewUrl && (
+                                                <img
                                                     src={filePreviewUrl}
-                                                    type={file.type}
+                                                    alt="Preview"
+                                                    className="max-h-32 max-w-60 mx-auto"
                                                 />
-                                            </video>
-                                        )}
+                                            )}
+                                        {accept.includes("video") &&
+                                            filePreviewUrl && (
+                                                <video
+                                                    controls
+                                                    className="max-h-32 max-w-60 mx-auto"
+                                                >
+                                                    <source
+                                                        src={filePreviewUrl}
+                                                        type={file.type}
+                                                    />
+                                                </video>
+                                            )}
                                     </div>
                                     <div>
                                         <Button
@@ -107,13 +115,21 @@ const DragDropInput = ({ label, accept, name, form }) => {
                                     </div>
                                 </div>
                             ) : (
-                                    <div className="text-4xl flex justify-center text-center"><CloudUpload /></div>
+                                <div className="flex flex-col items-center justify-center text-gray-500">
+                                    <UploadCloud />
+                                    <div>
+                                        Drag and drop here or{" "}
+                                        <span className="font-semibold text-blue-600">
+                                            browse
+                                        </span>
+                                    </div>
+                                </div>
                             )}
                             <Input
                                 type="file"
                                 accept={accept}
                                 onChange={handleFileChange}
-                                className="absolute inset-0 opacity-0"
+                                className="absolute inset-0 opacity-0 h-full w-full cursor-pointer"
                             />
                         </div>
                     </FormControl>

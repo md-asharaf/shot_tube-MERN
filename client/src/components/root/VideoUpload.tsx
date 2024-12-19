@@ -105,8 +105,9 @@ const VideoUpload = () => {
         const { title, description, video, thumbnail } = values;
         try {
             //get duration and resolution of the video
-            const { duration, resolution } = await getVideMetadata(video);
-            const videoKey = `${Date.now()}_${sanitizeFileName(video.name)}_${resolution}`;
+            const { duration, height,width } = await getVideMetadata(video);
+            const videoSplits = video.name.split(".");
+            const videoKey = `${Date.now()}_${sanitizeFileName(videoSplits[0])}_${width}_${height}.${videoSplits[1]}`;
             const thumbnailKey = `uploads/user-uploads/${Date.now()}_${sanitizeFileName(
                 thumbnail.name
             )}`;

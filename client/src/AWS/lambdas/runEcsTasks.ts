@@ -4,24 +4,24 @@ const ecs = new AWS.ECS({
 });
 const resolutions = [
   {
-    quality: "360",
-    bandwidth: "500",
-    scale: "640:360",
+    height: 360,
+    bandwidth: 500,
+    width: 640,
   },
   {
-    quality: "480",
-    bandwidth: "1000",
-    scale: "854:480",
+    height: 480,
+    bandwidth: 1000,
+    width: 854,
   },
   {
-    quality: "720",
-    bandwidth: "2500",
-    scale: "1280:720",
+    height: 720,
+    bandwidth: 2500,
+    width: 1280,
   },
   {
-    quality: "1080",
-    bandwidth: "5000",
-    scale: "1920:1080",
+    height: 1080,
+    bandwidth: 5000,
+    width: 1920,
   },
 ];
 // Spins the ECS Fargate container for video format maker (transcoding)
@@ -29,9 +29,11 @@ module.exports.handler = async (event: any) => {
   const eventBody = JSON.parse(event.Records[0].body);
   const FILE_KEY:string = eventBody.Records[0].s3.object.key;
   const INPUT_BUCKET = eventBody.Records[0].s3.bucket.name;
-  const maxRes= FILE_KEY.split(".")[0].split("_").pop();
+  const splittedFileKeyArray= FILE_KEY.split(".")[0].split("_");
+  const maxHeight = splittedFileKeyArray[splittedFileKeyArray.length - 1];
+  const maxWidth = splittedFileKeyArray[splittedFileKeyArray.length - 2];
   // Function to get transcoding parameters
-  const getTranscodingParams = (quality: string, bandwidth: string, scale: string) => ({
+  const getTranscodingParams = (height: number, bandwidth: number, width: number) => ({
     cluster: process.env.CLUSTER_ARN,
     taskDefinition: process.env.TRANSCODING_TASK_ARN,
     count: 1,
@@ -56,16 +58,16 @@ module.exports.handler = async (event: any) => {
               value: INPUT_BUCKET,
             },
             {
-              name: "QUALITY",
-              value: quality,
+              name: "HEIGHT",
+              value: height,
             },
             {
               name: "BANDWIDTH",
               value: bandwidth,
             },
             {
-              name: "SCALE",
-              value: scale,
+              name: "WIDTH",
+              value: width,
             },
           ],
         },
@@ -99,8 +101,12 @@ module.exports.handler = async (event: any) => {
               value: INPUT_BUCKET,
             },
             {
-              name: "MAX_RES",
-              value: maxRes,
+              name: "HEIGHT",
+              value: maxHeight,
+            },
+            {
+              name: "WIDTH",
+              value: maxWidth,
             }
           ],
         },
@@ -110,14 +116,14 @@ module.exports.handler = async (event: any) => {
 
   try {
     // Start ECS tasks for each resolution asynchronously
-    const filteredResolutions = resolutions.filter((resolution) => parseInt(resolution.quality) <= parseInt(maxRes));
+    const filteredResolutions = resolutions.filter((resolution) => resolution.height <= parseInt(maxHeight));
     const transcodingPromises = filteredResolutions.map((resolution) => {
       const params = getTranscodingParams(
-        resolution.quality,
+        resolution.height,
         resolution.bandwidth,
-        resolution.scale
+        resolution.width
       );
-      console.log(`Starting transcoding task for ${resolution.quality} resolution...`);
+      console.log(`Starting transcoding task for ${resolution.width}X${resolution.height} resolution...`);
       return ecs.runTask(params).promise();  // Return the promise for ECS task
     });
 
