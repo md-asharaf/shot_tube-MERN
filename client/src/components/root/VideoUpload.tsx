@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/card";
 import { useState } from "react";
 import { useToast } from "../ui/use-toast";
-import { getVideoDuration, sanitizeFileName } from "@/lib/utils";
+import { getVideMetadata, sanitizeFileName } from "@/lib/utils";
 import { S3Client } from "@aws-sdk/client-s3";
 import { Progress, Upload } from "@aws-sdk/lib-storage";
 import DragDropInput from "./DragAndDropInput";
@@ -104,9 +104,9 @@ const VideoUpload = () => {
 
         const { title, description, video, thumbnail } = values;
         try {
-            const videoKey = `${Date.now()}_${sanitizeFileName(
-                video.name
-            )}`;
+            //get duration and resolution of the video
+            const { duration, resolution } = await getVideMetadata(video);
+            const videoKey = `${Date.now()}_${sanitizeFileName(video.name)}_${resolution}`;
             const thumbnailKey = `uploads/user-uploads/${Date.now()}_${sanitizeFileName(
                 thumbnail.name
             )}`;
@@ -115,8 +115,6 @@ const VideoUpload = () => {
                 uploadFile(video, `uploads/user-uploads/${videoKey}`),
                 uploadFile(thumbnail, thumbnailKey),
             ]);
-            // Get video duration
-            const duration = await getVideoDuration(video);
             // encode file names to avoid special characters
             // Create video post only if both uploads are successful
             await videoService.upload({

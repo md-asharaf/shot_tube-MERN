@@ -14,7 +14,7 @@ const VideoTitle2: React.FC<IPlaylist> = (playlist) => {
                 }}
             >{`${playlist.creator.fullname} • playlist`}</span>
             <span className="text-sm font-semibold text-gray-500 dark:text-zinc-400 hover:dark:text-white hover:text-black">
-                view full playlist
+                    View full playlist
             </span>
         </div>
     );

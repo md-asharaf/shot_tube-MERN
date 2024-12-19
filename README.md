@@ -50,14 +50,14 @@ If you prefer to run the project without Docker, follow these steps:
 
 ```bash
 cd client
-npm install
+yarn install
 ```
 
 #### Server
 
 ```bash
 cd server
-npm install
+yarn install
 ```
 
 ### Running the Application (Without Docker)
@@ -65,13 +65,13 @@ npm install
 #### Client
 
 ```bash
-npm run dev
+yarn run dev
 ```
 
 #### Server
 
 ```bash
-npm run dev
+yarn run dev
 ```
 
 ## Usage

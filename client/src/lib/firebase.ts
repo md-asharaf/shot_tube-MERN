@@ -6,7 +6,7 @@ import {
     signInWithPopup,
     signOut,
 } from "firebase/auth";
-import s3Services from "./s3.services";
+import {downloadImageAndUploadToS3} from "./s3";
 const firebaseConfig = {
     apiKey: process.env.FIREBASE_API_KEY,
     authDomain: process.env.FIREBASE_AUTH_DOMAIN,
@@ -32,7 +32,7 @@ export const loginWithGoogle = async () => {
         if (isNewUser) {
             console.log("New user");
             const fullname = user.displayName;
-            const avatar = await s3Services.downloadImageAndUploadToS3(
+            const avatar = await downloadImageAndUploadToS3(
                 user.photoURL,
                 `${user.uid}.jpg`
             );

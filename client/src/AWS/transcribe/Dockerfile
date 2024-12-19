@@ -1,6 +1,7 @@
-FROM archlinux:latest
+# Build stage: Use a larger base image to install dependencies
+FROM archlinux:latest AS builder
 
-# Update package lists and install necessary packages in a single RUN command
+# Update package lists and install necessary packages
 RUN pacman -Syu --noconfirm && \
     pacman -S --noconfirm \
         ffmpeg \
@@ -21,17 +22,20 @@ RUN pacman -Syu --noconfirm && \
     pacman -Scc --noconfirm && \
     rm -rf /var/cache/pacman/pkg/* /tmp/* /var/tmp/*
 
-# Download and cache the Whisper model by running a simple Python script to load it
-RUN python3 -c "import whisper; whisper.load_model('base')"
+# Stage 2: Use a smaller image to copy over necessary binaries and files
+FROM archlinux:latest
 
-# Set the working directory
+# Copy only the necessary binaries from the builder image
+COPY --from=builder /usr/bin/ffmpeg /usr/bin/aws /usr/bin/python3 /usr/bin/whisper /bin/sh /home/app/
+
+# Set working directory
 WORKDIR /home/app
 
-# Copy the main.sh script to the container
-COPY transcribe.sh transcribe.sh
+# Copy the transcribe.sh script into the container
+COPY transcribe.sh /home/app/
 
 # Make the script executable
 RUN chmod +x transcribe.sh
 
-# Set the default command to execute the script
+# Set the default command
 CMD ["sh", "transcribe.sh"]

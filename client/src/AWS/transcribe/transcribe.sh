@@ -5,14 +5,14 @@ echo "main.sh execution starting...."
 set -e
 
 # Ensure required environment variables are set
-if [ -z "$FILE_KEY" ] || [ -z "$INPUT_BUCKET" ] || [ -z "$OUTPUT_BUCKET" ]; then
+if [ -z "$FILE_KEY" ] || [ -z "$INPUT_BUCKET" ] || [ -z "$OUTPUT_BUCKET" ] || [ -z "$MAX_RES" ]; then
   echo "Error: FILE_KEY, INPUT_BUCKET, and OUTPUT_BUCKET must be set."
   exit 1
 fi
 
 # Define base name from the FILE_KEY
 BASE_NAME=$(basename "$FILE_KEY" .mp4)
-
+MAX_RES_INT=$((MAX_RES))
 # Define input and output paths
 INPUT_FILE="https://s3.ap-south-1.amazonaws.com/${INPUT_BUCKET}/${FILE_KEY}"
 OUTPUT_PATH="s3://${OUTPUT_BUCKET}/${BASE_NAME}"
@@ -28,14 +28,24 @@ fi
 MASTER_PLAYLIST="${TEMP_DIR}/master.m3u8"
 echo "#EXTM3U" > "$MASTER_PLAYLIST"
 echo "#EXT-X-VERSION:3" >> "$MASTER_PLAYLIST"
-echo "#EXT-X-STREAM-INF:BANDWIDTH=500000,RESOLUTION=640:360" >> "$MASTER_PLAYLIST"
-echo "360p.m3u8" >> "$MASTER_PLAYLIST"
-echo "#EXT-X-STREAM-INF:BANDWIDTH=1000000,RESOLUTION=854:480" >> "$MASTER_PLAYLIST"
-echo "480p.m3u8" >> "$MASTER_PLAYLIST"
-echo "#EXT-X-STREAM-INF:BANDWIDTH=2500000,RESOLUTION=1280:720" >> "$MASTER_PLAYLIST"
-echo "720p.m3u8" >> "$MASTER_PLAYLIST"
-echo "#EXT-X-STREAM-INF:BANDWIDTH=5000000,RESOLUTION=1920:1080" >> "$MASTER_PLAYLIST"
-echo "1080p.m3u8" >> "$MASTER_PLAYLIST"
+# Check MAX_RES value and append only relevant resolutions
+if [[ "$MAX_RES_INT" -ge 360 ]]; then
+    echo "#EXT-X-STREAM-INF:BANDWIDTH=500000,RESOLUTION=640:360" >> "$MASTER_PLAYLIST"
+    echo "360p.m3u8" >> "$MASTER_PLAYLIST"
+fi
+if [[ "$MAX_RES_INT" -ge 480 ]]; then
+    echo "#EXT-X-STREAM-INF:BANDWIDTH=1000000,RESOLUTION=854:480" >> "$MASTER_PLAYLIST"
+    echo "480p.m3u8" >> "$MASTER_PLAYLIST"
+fi
+if [[ "$MAX_RES_INT" -ge 720 ]]; then
+    echo "#EXT-X-STREAM-INF:BANDWIDTH=2500000,RESOLUTION=1280:720" >> "$MASTER_PLAYLIST"
+    echo "720p.m3u8" >> "$MASTER_PLAYLIST"
+fi
+if [[ "$MAX_RES_INT" -ge 1080 ]]; then
+    echo "#EXT-X-STREAM-INF:BANDWIDTH=5000000,RESOLUTION=1920:1080" >> "$MASTER_PLAYLIST"
+    echo "1080p.m3u8" >> "$MASTER_PLAYLIST"
+fi
+
 
 # Upload the master playlist to S3
 aws s3 cp "$MASTER_PLAYLIST" "${OUTPUT_PATH}/master.m3u8" || { echo "Error uploading master.m3u8"; exit 1; }

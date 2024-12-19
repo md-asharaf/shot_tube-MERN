@@ -25,7 +25,7 @@ import { DarkModeSwitch } from "react-toggle-dark-mode";
 import { toggleTheme } from "@/provider/theme.slice";
 import { FaSignOutAlt } from "react-icons/fa";
 import { User } from "lucide-react";
-import {logoutFromGoogle} from "@/services/firebase.services"
+import {logoutFromGoogle} from "@/lib/firebase"
 const NavBar = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();

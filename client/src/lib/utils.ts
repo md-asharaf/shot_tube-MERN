@@ -11,23 +11,24 @@ export function shortName(name: string | undefined) {
     }
     return splitName[0][0].toUpperCase();
 }
-export function getVideoDuration(file: File) {
+export function getVideMetadata(file: File):Promise<{resolution:number, duration:number}> {
     return new Promise((resolve, reject) => {
         const video = document.createElement("video");
         video.preload = "metadata";
-
         video.onloadedmetadata = function () {
             window.URL.revokeObjectURL(video.src);
-            resolve(video.duration);
+            resolve({
+                resolution: video.videoHeight,
+                duration: video.duration,
+            });
         };
-
         video.onerror = function () {
             reject("Error loading video metadata");
         };
-
         video.src = URL.createObjectURL(file);
     });
 }
+
 export function formatDuration(duration: string) {
     const durationNumber = parseInt(duration);
     const minutes = Math.floor(durationNumber / 60);
@@ -35,6 +36,6 @@ export function formatDuration(duration: string) {
     return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
 }
 
-export function sanitizeFileName (fileName:string) {
-    return fileName.replace(/[^a-zA-Z0-9.]/g, '_');
-};
+export function sanitizeFileName(fileName: string) {
+    return fileName.replace(/[^a-zA-Z0-9.]/g, "_");
+}

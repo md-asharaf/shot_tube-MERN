@@ -72,5 +72,7 @@
         "typescript": "^5.7.2",
         "vite": "^6.0.3"
     },
-    "module": "index.ts"
+    "module": "index.ts",
+    "main": "index.js",
+    "license": "MIT"
 }

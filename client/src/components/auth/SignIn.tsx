@@ -6,7 +6,7 @@ import { signInFormValidation } from "../ui/validation";
 import { useDispatch } from "react-redux";
 import { login } from "@/provider";
 import { useState } from "react";
-import { loginWithGoogle } from "@/services/firebase.services";
+import { loginWithGoogle } from "@/lib/firebase";
 import {
     Form,
     FormControl,
