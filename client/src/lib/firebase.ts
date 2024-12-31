@@ -30,7 +30,6 @@ export const loginWithGoogle = async () => {
         const email = user.email;
         const idToken = await user.getIdToken();
         if (isNewUser) {
-            console.log("New user");
             const fullname = user.displayName;
             const avatar = await downloadImageAndUploadToS3(
                 user.photoURL,
@@ -41,7 +40,7 @@ export const loginWithGoogle = async () => {
             return { email, idToken };
         }
     } catch (error) {
-        console.error("Error during login:", error);
+        throw error;
     }
 };
 
@@ -49,6 +48,6 @@ export const logoutFromGoogle = async () => {
     try {
         await signOut(auth);
     } catch (error) {
-        console.error("Error during logout:", error);
+        throw error;
     }
 };

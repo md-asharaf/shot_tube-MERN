@@ -1,17 +1,18 @@
 import Router from "express";
 import { verifyJWT } from "../middlewares/auth.middlewares.js";
-import VideoC from "../controllers/video.controllers.js";
+import videoControllers from "../controllers/video.controllers.js";
 const router = Router();
 
-router.get("/all-videos", VideoC.getAllVideos);
-router.get("/search-videos", VideoC.getVideosByQuery);
-router.get("/:videoId", VideoC.getSingleVideo);
-router.get("/recommended-videos/:videoId", verifyJWT,VideoC.getRecommendedVideos);
-router.get("/user-videos/:userId", VideoC.getUserVideos);
-router.post("/publish-video", verifyJWT, VideoC.publishVideo);
-router.post("/increase-views/:videoId", VideoC.increaseViews)
-router.delete("/delete-video/:videoId", verifyJWT, VideoC.deleteVideo);
-router.patch("/update-video/:videoId", verifyJWT, VideoC.updateVideo);
-router.patch("/toggle-status/:videoId", verifyJWT, VideoC.togglePublishStatus);
+router.get("/all-videos", videoControllers.getAllVideos);
+router.get("/search-videos", videoControllers.getVideosByQuery);
+router.get("/recommended-videos/:videoId", verifyJWT, videoControllers.getRecommendedVideos);
+router.get("/user-videos/:userId", videoControllers.getUserVideos);
+router.get("/liked-videos", verifyJWT, videoControllers.getLikedVideos);
+router.get("/:videoId", videoControllers.getSingleVideo);
+router.post("/publish-video", verifyJWT, videoControllers.publishVideo);
+router.post("/increase-views/:videoId", videoControllers.increaseViews)
+router.delete("/delete-video/:videoId", verifyJWT, videoControllers.deleteVideo);
+router.patch("/update-video/:videoId", verifyJWT, videoControllers.updateVideoDetails);
+router.patch("/toggle-status/:videoId", verifyJWT, videoControllers.togglePublishStatus);
 
 export default router;

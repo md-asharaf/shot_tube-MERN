@@ -3,12 +3,9 @@ import { IVideoData } from "@/interfaces";
 import { RootState } from "@/provider";
 import videoServices from "@/services/video.services";
 import { useQuery } from "@tanstack/react-query";
-import { formatDuration } from "@/lib/utils";
 import { Loader2 } from "lucide-react";
 import { useSelector } from "react-redux";
-import { Link } from "react-router-dom";
-import Thumbnail from "@/assets/images/defaultThumbnail.jpg";
-import { formatDistanceToNow } from "date-fns";
+import PlaylistComp from "@/components/root/PlaylistComp";
 
 const LikedVideos = () => {
     const userData = useSelector((state: RootState) => state.auth.userData);
@@ -19,12 +16,14 @@ const LikedVideos = () => {
         error,
         isLoading,
         isFetching,
+        refetch
     } = useQuery({
-        queryKey: ["liked-videos"],
-        queryFn: async ():Promise<IVideoData[]> => {
-            const res = await videoServices.likedVideos();
-            return res.data;
+        queryKey: ["liked-videos", userData?._id],
+        queryFn: async (): Promise<IVideoData[]> => {
+            const data = await videoServices.likedVideos();
+            return data.likedVideos;
         },
+        enabled: !!userData?._id,
     });
 
     if (isLoading || isFetching) {
@@ -58,92 +57,21 @@ const LikedVideos = () => {
         );
     }
 
-    const filteredVideos = videos?.filter(
-        (video) => video !== null && video !== undefined
-    );
-
-    const totalViews = filteredVideos?.reduce(
-        (prev, curr) => prev + (curr?.views || 0),
-        0
-    );
-
     return (
-        <div className="flex flex-col gap-4 lg:flex-row h-full  w-full dark:text-white">
-            <div className="flex flex-col space-y-4 sm:space-x-4 sm:flex-row lg:flex-col dark:bg-zinc-700 bg-gray-200 p-5  rounded-xl lg:h-full lg:w-1/3 pointer-events-none">
-                <img
-                    src={
-                        filteredVideos && filteredVideos[0]?.thumbnail
-                            ? filteredVideos[0].thumbnail
-                            : Thumbnail
-                    }
-                    alt="Playlist Thumbnail"
-                    className="object-cover aspect-video sm:w-1/2 lg:w-full rounded-lg hover:opacity-50"
-                    loading="lazy"
-                />
-                <div className="space-y-3">
-                    <h1 className="text-[2em] font-bold">Liked Videos</h1>
-                    <p>{userData?.fullname}</p>
-                    <p className="text-xs text-gray-400">
-                        {`${
-                            filteredVideos?.length
-                        } videos • ${totalViews} views • Last updated on ${
-                            filteredVideos?.length
-                                ? new Date(
-                                      filteredVideos[
-                                          filteredVideos.length - 1
-                                      ]?.updatedAt
-                                  ).toDateString()
-                                : ""
-                        }`}
-                    </p>
-                    <div className="flex justify-between gap-2 w-full">
-                        <Button className="bg-white text-black hover:bg-black hover:text-white transition-colors py-2 px-4 rounded-full w-1/2">
-                            Play all
-                        </Button>
-                        <Button className="bg-white text-black hover:bg-black hover:text-white transition-colors py-2 px-4 rounded-full w-1/2">
-                            Shuffle
-                        </Button>
-                    </div>
-                </div>
-            </div>
-
-            <div className="flex flex-col w-full lg:w-2/3 overflow-auto">
-                {filteredVideos?.map((video, index) => (
-                    <Link to={`/videos/${video._id}`} key={video._id}>
-                        <div className="flex items-start p-1 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-lg transition duration-200 ease-in-out">
-                            <div className="text-gray-500 text-xl mr-2 font-semibold">
-                                {index + 1}
-                            </div>
-
-                            <div className="relative w-36 h-24 sm:w-44 sm:h-28 flex-shrink-0">
-                                <img
-                                    src={video.thumbnail}
-                                    alt={`Thumbnail of ${video.title}`}
-                                    className="h-full w-full object-cover aspect-video rounded-lg"
-                                    loading="lazy"
-                                />
-                                <span className="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white px-2 text-xs rounded">
-                                    {formatDuration(video.duration)}
-                                </span>
-                            </div>
-
-                            <div className="flex-1 ml-4">
-                                <h3 className="text-lg text-black dark:text-white truncate w-full overflow-hidden">
-                                    {video.title}
-                                </h3>
-                                <p className="text-gray-400 text-sm">
-                                    {`${video.creator.fullname} • ${
-                                        video.views
-                                    } views • ${formatDistanceToNow(
-                                        new Date(video.createdAt)
-                                    ).replace("about", "")} ago`}
-                                </p>
-                            </div>
-                        </div>
-                    </Link>
-                ))}
-            </div>
-        </div>
+        <PlaylistComp
+            playlist={{
+                name: "Liked Videos",
+                creator: userData?.fullname,
+                updatedAt: new Date(),
+                totalViews: videos?.reduce(
+                    (prev, curr) => prev + (curr?.views || 0),
+                    0
+                ),
+                videos,
+                description: "Liked videos by you",
+            }}
+            refetch={refetch}
+        />
     );
 };
 

@@ -48,7 +48,7 @@ transcode_and_upload_to_s3() {
   echo "Processing video with resolution ${HEIGHT}x${WIDTH}..."
 
   # Generate HLS playlist and segments for the given height and width
-  ffmpeg -i "$INPUT_FILE" -vf "scale=${WIDTH}:${HEIGHT}" -b:v "${BANDWIDTH}k" -f hls -hls_time 10 -hls_playlist_type vod -hls_segment_filename "${TEMP_DIR}/${PLAYLIST_NAME%.*}_%03d.ts" "${TEMP_DIR}/${PLAYLIST_NAME}"
+  time ffmpeg -i "$INPUT_FILE" -vf "scale=${WIDTH}:${HEIGHT}" -b:v "${BANDWIDTH}k" -f hls -hls_time 10 -hls_playlist_type vod -hls_segment_filename "${TEMP_DIR}/${PLAYLIST_NAME%.*}_%03d.ts" "${TEMP_DIR}/${PLAYLIST_NAME}"
 
   # Upload the generated playlist and segments to S3
   for file in "${TEMP_DIR}/${PLAYLIST_NAME%.*}"*.ts "${TEMP_DIR}/${PLAYLIST_NAME}"; do

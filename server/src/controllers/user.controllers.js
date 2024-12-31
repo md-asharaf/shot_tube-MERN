@@ -7,7 +7,7 @@ import mongoose from 'mongoose';
 import bcrypt from "bcrypt"
 import { Resend } from "resend";
 const resend = new Resend(process.env.RESEND_API_KEY);
-class UserC {
+class UserController {
     forgetPassword = asyncHandler(async (req, res) => {
         const { email }
             = req.body;
@@ -22,7 +22,6 @@ class UserC {
         }
         const resetToken = await user.generatePasswordResetToken();
         const resetLink = `https://${process.env.CLIENT_URL}/reset-password/${resetToken}`;
-        // send Email
         const { error } = await resend.emails.send({
             to: email,
             from: `noreply@${process.env.RESEND_DOMAIN}`,
@@ -32,20 +31,19 @@ class UserC {
         if (error) {
             throw new ApiError(500, error.message)
         }
-        return res.status(200).json(new ApiResponse(200, { password_reset_link: resetLink }, "Reset link sent to email"))
+        return res.status(200).json(new ApiResponse(200, null, "we have sent the password reset link on your email."))
     })
-    //controller to change current password of a user
     changeCurrentPassword = asyncHandler(async (req, res) => {
         const { password, newPassword, confirmPassword } = req.body;
-
+        const userId = req.user?._id;
+        if (!password || !newPassword || !confirmPassword || !userId) {
+            throw new ApiError(400, "All fields are required")
+        }
         if (!(newPassword === confirmPassword)) {
             throw new ApiError(400, "New password and confirm password do not match")
         }
         if (password == newPassword) {
             throw new ApiError(400, "New password cannot be the same as current password")
-        }
-        if (!newPassword?.trim()) {
-            throw new ApiError(400, "New password is required,cannot be empty")
         }
         const user = await User.findById(req.user?._id);
         const isPasswordCorrect = await user?.isPasswordCorrect(password);
@@ -55,30 +53,35 @@ class UserC {
         user.password = newPassword;
         await user.save({ validateBeforeSave: false });
 
-        return res.status(200).json(new ApiResponse(200, {}, "Password changed successfully"))
+        return res.status(200).json(new ApiResponse(200, null, "Password changed successfully"))
     })
-    //controller to get current user
     getCurrentUser = asyncHandler(async (req, res) => {
-        return res.status(200).json(new ApiResponse(200, req.user, req.user ? "User found" : "User not found"))
+        return res.status(200).json(new ApiResponse(200, { user: req.user }, req.user ? "User found" : "User not found"))
     })
     resetPassword = asyncHandler(async (req, res) => {
         const { resetToken, password } = req.body;
+        if (!resetToken || !password) {
+            throw new ApiError(400, "Reset Token and password are required")
+        }
         const { _id } = jwt.verify(resetToken, process.env.PASSWORD_RESET_TOKEN_SECRET);
         if (!_id) {
             throw new ApiError(401, "Reset Token is invalid")
         }
         const hashedPassword = await bcrypt.hash(password, 10);
-        await User.findByIdAndUpdate(_id, {
+        const user = await User.findByIdAndUpdate(_id, {
             $set: {
                 password: hashedPassword
             }
         })
+        if (!user) {
+            throw new ApiError(400, "User not found")
+        }
         return res.status(200).json(new ApiResponse(200, null, 'password reset successfully'))
     })
-    //controller to update account details of a user
     updateAccountDetails = asyncHandler(async (req, res) => {
+        const userId = req.user?._id;
         const { email, fullname, avatar, coverImage } = req.body;
-        if (!email || !fullname || !avatar || !coverImage) {
+        if (!email || !fullname || !avatar || !coverImage || !userId) {
             throw new ApiError(400, "All fields are required")
         }
         const user = await User.findByIdAndUpdate(req.user?._id, {
@@ -91,15 +94,19 @@ class UserC {
         }, {
             new: true
         })?.select("-password -refreshToken");
-        return res.status(200).json(new ApiResponse(200, user, "Account details updated successfully"))
+        if (!user) {
+            throw new ApiError(400, "User not found")
+        }
+        return res.status(200).json(new ApiResponse(200, null, "Account details updated successfully"))
     })
-    //controller to get user profile details
     getUserDetails = asyncHandler(async (req, res) => {
         const { username } = req.params;
+
         if (!username) {
-            throw new ApiError(400, "can not find user")
+            throw new ApiError(400, "Cannot find user");
         }
-        const channel = await User.aggregate([
+
+        const channels = await User.aggregate([
             {
                 $match: {
                     username
@@ -114,44 +121,27 @@ class UserC {
                 }
             },
             {
-                $lookup: {
-                    from: "subscriptions",
-                    localField: "_id",
-                    foreignField: "subscriberId",
-                    as: "subscribedTo"
-                }
-            },
-            {
-                $addFields: {
-                    subscriberCount: { $size: "$subscribers" },
-                    subscribedToCount: { $size: "$subscribedTo" },
-                    isSubscribed: {
-                        $cond: {
-                            if: { $in: [req.user?._id, "$subscribers.subscriberId"] },
-                            then: true,
-                            else: false
-                        }
-                    }
-                }
-            },
-            {
                 $project: {
-                    fullname: 1,
-                    username: 1,
-                    avatar: 1,
-                    coverImage: 1,
-                    subscribedToCount: 1,
-                    subscriberCount: 1,
-                    isSubscribed: 1
+                    _id: 0,
+                    user: {
+                        _id: "$_id",
+                        fullname: "$fullname",
+                        username: "$username",
+                        avatar: "$avatar",
+                        coverImage: "$coverImage"
+                    },
+                    subscribersCount: { $size: "$subscribers" }
                 }
-            },
+            }
         ]);
 
-        if (!channel?.length) {
-            throw new ApiError(404, "Channel not found")
+        if (!channels?.length) {
+            throw new ApiError(404, "Channel not found");
         }
-        return res.status(200).json(new ApiResponse(200, channel[0], "Channel found"));
-    })
+
+        return res.status(200).json(new ApiResponse(200, { channel: channels[0] }, "Channel found"));
+    });
+
     getUsers = asyncHandler(async (req, res) => {
         const { search } = req.query;
         if (!search) {
@@ -184,35 +174,46 @@ class UserC {
         if (!users.length) {
             throw new ApiError(404, "No users found matching the search criteria");
         }
-        return res.status(200).json(new ApiResponse(200, users, "users fetched with username or email successfully"))
+        return res.status(200).json(new ApiResponse(200, { users }, "users fetched with username or email successfully"))
     })
     addVideoToWatchHistory = asyncHandler(async (req, res) => {
         const { videoId } = req.params;
         const userId = req.user?._id;
-        await User.findByIdAndUpdate(userId, {
+        if (!userId || !videoId) {
+            throw new ApiError(400, "User id and video id both are required")
+        }
+        const response = await User.findByIdAndUpdate(userId, {
             $push: {
                 watchHistory: new mongoose.Types.ObjectId(videoId)
             }
         });
-        return res.status(200).json(new ApiResponse(200, {}, "Video added to watch history"))
+        if (!response) {
+            throw new ApiError(400, "video not found")
+        }
+        return res.status(200).json(new ApiResponse(200, null, "Video added to watch history"))
     })
     removeVideoFromWatchHistory = asyncHandler(async (req, res) => {
         const { videoId } = req.params;
         const userId = req.user?._id;
-        await User.findByIdAndUpdate(userId, {
+        if (!userId || !videoId) {
+            throw new ApiError(400, "User id and video id both are required")
+        }
+        const response = await User.findByIdAndUpdate(userId, {
             $pull: {
                 watchHistory: new mongoose.Types.ObjectId(videoId)
             }
         }, { new: true });
-        return res.status(200).json(new ApiResponse(200, {}, "Video removed from watch history"))
+        if (!response) {
+            throw new ApiError(400, "video not found")
+        }
+        return res.status(200).json(new ApiResponse(200, null, `Video removed from watch history`))
     })
-    // controller to get watch history of a user
     getWatchHistory = asyncHandler(async (req, res) => {
         const userId = req.user?._id;
         if (!userId) {
-            throw new ApiError(400, "Username is required")
+            throw new ApiError(400, "User id is required")
         }
-        const user = await User.aggregate([
+        const users = await User.aggregate([
             {
                 $match: {
                     _id: new mongoose.Types.ObjectId(userId)
@@ -253,12 +254,104 @@ class UserC {
                 }
             }
         ])
-        return res.status(200).json(new ApiResponse(200, user[0]?.watchHistory, "Watch history found"))
+        return res.status(200).json(new ApiResponse(200, { watchHistory: users[0]?.watchHistory }, "Watch history found"))
     })
     clearWatchHistory = asyncHandler(async (req, res) => {
         const userId = req.user?._id;
+        if (!userId) {
+            throw new ApiError(400, "User id is required")
+        }
         await User.findByIdAndUpdate(userId, { $set: { watchHistory: [] } }, { new: true });
-        return res.status(200).json(new ApiResponse(200, {}, "Watch history cleared"))
+        return res.status(200).json(new ApiResponse(200, null, "Watch history cleared"))
+    })
+    saveVideoToWatchLater = asyncHandler(async (req, res) => {
+        const { videoId } = req.params;
+        const userId = req.user?._id;
+        if (!userId || !videoId) {
+            throw new ApiError(400, "User id and video id both are required")
+        }
+        const response = await User.findByIdAndUpdate(userId, {
+            $push: { watchLater: new mongoose.Types.ObjectId(videoId) }
+        }, { new: true })
+        if (!response) {
+            throw new ApiError(400, "video not found")
+        }
+        return res.status(200).json(new ApiResponse(200, null, "Video added to watch later"))
+    })
+    removeVideoFromWatchLater = asyncHandler(async (req, res) => {
+        const { videoId } = req.params;
+        const userId = req.user?._id;
+        if (!userId || !videoId) {
+            throw new ApiError(400, "User id and video id both are required")
+        }
+        const response = await User.findByIdAndUpdate(userId, {
+            $pull: { watchLater: new mongoose.Types.ObjectId(videoId) }
+        }, { new: true });
+        if (!response) {
+            throw new ApiError(400, "video not found")
+        }
+        return res.status(200).json(new ApiResponse(200, null, "Video removed from watch later"))
+    })
+    getWatchLater = asyncHandler(async (req, res) => {
+        const userId = req.user?._id;
+        if (!userId) {
+            throw new ApiError(400, "User id is required")
+        }
+        const users = await User.aggregate([
+            {
+                $match: {
+                    _id: new mongoose.Types.ObjectId(userId)
+                }
+            },
+            {
+                $lookup: {
+                    from: "videos",
+                    localField: "watchLater",
+                    foreignField: "_id",
+                    as: "watchLater",
+                    pipeline: [
+                        {
+                            $lookup: {
+                                from: "users",
+                                localField: "userId",
+                                foreignField: "_id",
+                                as: "creator",
+                                pipeline: [
+                                    {
+                                        $project: {
+                                            fullname: 1,
+                                            username: 1,
+                                            avatar: 1
+                                        }
+                                    }
+                                ]
+                            }
+                        },
+                        {
+                            $addFields: {
+                                creator: {
+                                    $first: "$creator"
+                                }
+                            }
+                        }
+                    ]
+                }
+            }
+        ])
+        return res.status(200).json(new ApiResponse(200, { watchLater: users[0]?.watchLater }, "Watch later found"))
+    })
+    isSavedToWatchLater = asyncHandler(async (req, res) => {
+        const { videoId } = req.params;
+        const userId = req.user?._id;
+        if (!userId || !videoId) {
+            throw new ApiError(400, "User id and video id both are required")
+        }
+        const user = await User.findById(userId);
+        if (!user) {
+            throw new ApiError(400, "User not found")
+        }
+        const isSaved = user.watchLater.includes(videoId);
+        return res.status(200).json(new ApiResponse(200, { isSaved }, `Video ${isSaved ? "is" : "is not"} saved to watch later`))
     })
 }
-export default new UserC();
+export default new UserController();

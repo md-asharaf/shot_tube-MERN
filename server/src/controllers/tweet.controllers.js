@@ -4,13 +4,12 @@ import { ApiError } from "../utils/ApiError.js";
 import { Tweet } from "../models/tweet.models.js";
 import mongoose from "mongoose";
 
-class TweetC {
-    //controller to create a tweet
+class TweetController {
     createTweet = asyncHandler(async (req, res) => {
         const { content } = req.body;
         const userId = req.user?._id;
-        if (!content) {
-            throw new ApiError(400, "Content is required")
+        if (!userId || !content) {
+            throw new ApiError(400, "Content and userId are required")
         }
         const tweet = await Tweet.create({
             content,
@@ -22,13 +21,12 @@ class TweetC {
         return res.status(201).json(new ApiResponse(201, tweet, "Tweet created successfully"))
 
     })
-    //controller to update a tweet
     updateTweet = asyncHandler(async (req, res) => {
         const { tweetId } = req.params;
         const { content } = req.body;
         const userId = req.user?._id;
-        if (!content || !tweetId) {
-            throw new ApiError(400, "Content and tweetId are required")
+        if (!content || !tweetId || !userId) {
+            throw new ApiError(400, "Content,userId and tweetId are required")
         }
         const tweet = await Tweet.findById(tweetId);
         if (!tweet) {
@@ -41,7 +39,6 @@ class TweetC {
         const updatedTweet = await tweet.save({ validateBeforeSave: false });
         return res.status(200).json(new ApiResponse(200, updatedTweet, "Tweet updated successfully"))
     })
-    //controller to delete a tweet  
     deleteTweet = asyncHandler(async (req, res) => {
         const { tweetId } = req.params;
         const userId = req.user?._id;
@@ -62,7 +59,6 @@ class TweetC {
         return res.status(200).json(new ApiResponse(200, {}, "Tweet deleted successfully"))
     })
 
-    //controller to get all tweets of a user
     getUserTweets = asyncHandler(async (req, res) => {
         const { userId } = req.params;
         if (!userId) {
@@ -82,8 +78,8 @@ class TweetC {
                 }
             }
         ])
-        return res.status(200).json(new ApiResponse(200, tweets, "Tweets fetched successfully"))
+        return res.status(200).json(new ApiResponse(200, { tweets }, "Tweets fetched successfully"))
     })
 }
 
-export default new TweetC();
+export default new TweetController();

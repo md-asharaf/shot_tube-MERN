@@ -1,4 +1,4 @@
-import { IPlaylist } from "@/interfaces";
+import { IPlaylist, IVideoData } from "@/interfaces";
 import { RootState } from "@/provider";
 import { useSelector } from "react-redux";
 import PlaylistCard from "@/components/root/PlaylistCard";
@@ -7,9 +7,14 @@ import { Link } from "react-router-dom";
 import playlistServices from "@/services/playlist.services";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
+import videoServices from "@/services/video.services";
 
 const PlayLists = () => {
-    const userId = useSelector((state: RootState) => state.auth.userData?._id);
+    const {
+        _id: userId,
+        username,
+        fullname,
+    } = useSelector((state: RootState) => state.auth?.userData);
     const {
         data: playlists,
         isError,
@@ -17,9 +22,17 @@ const PlayLists = () => {
         isLoading,
     } = useQuery({
         queryKey: ["playlists", userId],
-        queryFn: async ():Promise<IPlaylist[]> => {
-            const res = await playlistServices.getAllPlaylists(userId);
-            return res.data;
+        queryFn: async (): Promise<IPlaylist[]> => {
+            const data = await playlistServices.getAllPlaylists(userId);
+            return data.playlists;
+        },
+        enabled: !!userId,
+    });
+    const { data: likedVideos } = useQuery({
+        queryKey: ["liked-videos", userId],
+        queryFn: async (): Promise<IVideoData[]> => {
+            const data = await videoServices.likedVideos();
+            return data.likedVideos;
         },
         enabled: !!userId,
     });
@@ -44,10 +57,41 @@ const PlayLists = () => {
                         key={playlist._id}
                         className="space-y-2 rounded-xl p-2 hover:bg-gray-400 hover:dark:bg-zinc-800"
                     >
-                        <PlaylistCard {...playlist} />
-                        <VideoTitle2 {...playlist} />
+                        <PlaylistCard
+                            playlistThumbnail={
+                                playlist.videos.length > 0
+                                    ? playlist.videos[0].thumbnail
+                                    : null
+                            }
+                            videosLength={playlist.videos.length}
+                        />
+                        <VideoTitle2
+                            playlistName={playlist.name}
+                            username={playlist.creator.username}
+                            fullname={playlist.creator.fullname}
+                        />
                     </Link>
                 ))}
+                {likedVideos && (
+                    <Link
+                        to="/playlist/liked-videos"
+                        className="space-y-2 rounded-xl p-2 hover:bg-gray-400 hover:dark:bg-zinc-800"
+                    >
+                        <PlaylistCard
+                            playlistThumbnail={
+                                likedVideos.length > 0
+                                    ? likedVideos[0].thumbnail
+                                    : null
+                            }
+                            videosLength={likedVideos.length}
+                        />
+                        <VideoTitle2
+                            playlistName="Liked Videos"
+                            username={username}
+                            fullname={fullname}
+                        />
+                    </Link>
+                )}
             </div>
         </div>
     );

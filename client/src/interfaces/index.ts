@@ -7,11 +7,9 @@ export interface IUser {
     fullname: string;
     avatar?: string;
     coverImage?: string;
-    email: string;
-    watchHistory?: [];
-    isSubscribed?: boolean;
-    subscriberCount?: number;
-    subscribedToCount?: number;
+    email?: string;
+    watchHistory?: Array<IVideoData>;
+    watchLater?: Array<IVideoData>;
 }
 export interface IRegisterForm {
     fullname: string;
@@ -35,7 +33,7 @@ export interface IAction {
     type: string;
     payload: any;
 }
-export interface IVideoForm {
+export interface IVideoUploadForm {
     title: string;
     description: string;
     video: File;
@@ -44,34 +42,34 @@ export interface IVideoForm {
 export interface IVideoData {
     _id: string;
     title: string;
-    description: string;
-    video: string;
-    subtitle:string;
+    description?: string;
+    video?: string;
+    subtitle?: string;
     thumbnail: string;
     creator: IUser;
     views: number;
     duration: string;
-    createdAt: Date;
-    updatedAt: Date;
+    createdAt?: Date;
+    updatedAt?: Date;
 }
 export interface IComment {
     _id: string;
     content: string;
     sentiment: string;
     creator: IUser;
-    createdAt: Date;
+    createdAt?: Date;
 }
-export interface ApiResponse {
+export interface ApiResponse<T = any> {
     success: boolean;
     message: string;
     status: number;
-    data: any;
+    data: T;
 }
 export interface IPlaylist {
     _id: string;
     name: string;
     description: string;
-    videos: IVideoData[];
+    videos: Array<IVideoData>;
     creator: IUser;
     createdAt: Date;
     updatedAt: Date;

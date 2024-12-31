@@ -66,10 +66,23 @@ const Library = ({
                                 className="flex gap-2 flex-col min-w-[294px] max-w-[294px]"
                             >
                                 <VideoCard
-                                    video={video}
+                                    thumbnail={video.thumbnail}
+                                    duration={video.duration}
                                     className="group-hover:rounded-none"
                                 />
-                                <VideoTitle video={video} isImage />
+                                <VideoTitle
+                                    video={{
+                                        _id: video._id,
+                                        title: video.title,
+                                        views: video.views,
+                                        createdAt: video.createdAt,
+                                    }}
+                                    creator={{
+                                        fullname: video.creator.fullname,
+                                        username: video.creator.username,
+                                        avatar: video.creator.avatar,
+                                    }}
+                                />
                             </Link>
                         ))}
                     </div>
@@ -86,9 +99,22 @@ const Library = ({
                                 className="flex sm:flex-col gap-x-6 sm:gap-y-2 min-w-full sm:min-w-[294px] sm:max-w-[294px]"
                             >
                                 <div className="w-1/2 sm:w-full">
-                                    <PlaylistCard {...playlist} />
+                                    <PlaylistCard
+                                        playlistThumbnail={
+                                            playlist.videos?.length > 0
+                                                ? playlist.videos[0].thumbnail
+                                                : null
+                                        }
+                                        videosLength={
+                                            playlist.videos?.length || 0
+                                        }
+                                    />
                                 </div>
-                                <VideoTitle2 {...playlist} />
+                                <VideoTitle2
+                                    playlistName={playlist.name}
+                                    username={playlist.creator.username}
+                                    fullname={playlist.creator.fullname}
+                                />
                             </Link>
                         ))}
                     </div>

@@ -4,7 +4,7 @@ import { Link, useParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState, toggleMenu } from "@/provider";
 import { IVideoData } from "@/interfaces";
-import { add, formatDistanceToNow } from "date-fns";
+import { formatDistanceToNowStrict } from "date-fns";
 import DefaultProfileImage from "@/assets/images/profile.png";
 import videoService from "@/services/video.services";
 import subscriptionServices from "@/services/subscription.services";
@@ -14,8 +14,9 @@ import Comments from "@/components/root/Comments";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import videoServices from "@/services/video.services";
 import VideoPlayer from "@/components/root/VideoPlayer";
-import { Loader2, ThumbsUp } from "lucide-react";
+import { ListPlus, Loader2, ThumbsUp } from "lucide-react";
 import userServices from "@/services/user.services";
+import ThreeDots from "@/components/root/ThreeDots";
 
 const Video = () => {
     const dispatch = useDispatch();
@@ -37,8 +38,8 @@ const Video = () => {
     } = useQuery({
         queryKey: ["video", videoId],
         queryFn: async (): Promise<IVideoData> => {
-            const res = await videoService.singleVideo(videoId);
-            return res.data;
+            const data = await videoService.singleVideo(videoId);
+            return data.video;
         },
         enabled: !!videoId,
     });
@@ -46,8 +47,8 @@ const Video = () => {
     const { data: isLiked, refetch: refetchIsLiked } = useQuery({
         queryKey: ["isLiked", videoId],
         queryFn: async (): Promise<boolean> => {
-            const res = await likeService.isLiked(videoId, "video");
-            return res.data;
+            const data = await likeService.isLiked(videoId, "video");
+            return data.isLiked;
         },
         enabled: !!videoId && !!userId,
     });
@@ -55,10 +56,10 @@ const Video = () => {
     const { data: isSubscribed, refetch: refetchIsSubscribed } = useQuery({
         queryKey: ["subscribe", video?.creator._id, userId],
         queryFn: async (): Promise<boolean> => {
-            const res = await subscriptionServices.isChannelSubscribed(
+            const data = await subscriptionServices.isChannelSubscribed(
                 video.creator._id
             );
-            return res.data.isSubscribed;
+            return data.isSubscribed;
         },
         enabled: !!video && !!userId,
     });
@@ -67,10 +68,10 @@ const Video = () => {
         useQuery({
             queryKey: ["subscribersCount", video?.creator._id],
             queryFn: async (): Promise<number> => {
-                const res = await subscriptionServices.getSubscribersCount(
+                const data = await subscriptionServices.getSubscribersCount(
                     video.creator._id
                 );
-                return res.data;
+                return data.subscribersCount;
             },
             enabled: !!video,
         });
@@ -78,8 +79,8 @@ const Video = () => {
     const { data: recommendedVideos } = useQuery({
         queryKey: ["recommendedVideos", videoId],
         queryFn: async (): Promise<IVideoData[]> => {
-            const res = await videoService.recommendedVideos(videoId);
-            return res.data;
+            const data = await videoService.recommendedVideos(videoId);
+            return data.recommendations;
         },
         enabled: !!videoId,
     });
@@ -116,9 +117,9 @@ const Video = () => {
         if (video)
             setTimeout(() => {
                 incrementViews();
-                addToWatchHistory({ videoId });
+                if (userId) addToWatchHistory({ videoId });
             }, 10000);
-    }, [video]);
+    }, [video, videoId, userId]);
 
     useEffect(() => {
         setMaxLength(window.innerWidth * 0.1);
@@ -202,14 +203,19 @@ const Video = () => {
                             >
                                 <ThumbsUp />
                             </Button>
-                            <SaveToPlaylist userId={userId} videoId={videoId} />
+                            <SaveToPlaylist
+                                videoId={videoId}
+                                className="dark:bg-zinc-600 border-none bg-zinc-200 h-7 sm:h-9 px-3 rounded-md"
+                            >
+                                <ListPlus />
+                            </SaveToPlaylist>
                         </div>
                     </div>
                     <div className="p-4 shadow-md rounded-xl bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-semibold">
                         <div className="flex space-x-4">
                             <div>{`${video.views} views`}</div>
                             <div>
-                                {formatDistanceToNow(
+                                {formatDistanceToNowStrict(
                                     new Date(video.createdAt),
                                     {
                                         addSuffix: true,
@@ -244,11 +250,15 @@ const Video = () => {
             </div>
             <div className="w-full xl:w-1/3 2xl:w-[30%]">
                 {recommendedVideos?.map((video) => (
-                    <Link to={`/videos/${video._id}`} key={video._id}>
-                        <div className="flex gap-4 px-4 pb-4 lg:min-w-[300px] lg:max-w-[500px] ">
+                    <Link
+                        to={`/videos/${video._id}`}
+                        key={video._id}
+                        className="flex justify-between mr-4"
+                    >
+                        <div className="flex gap-4 px-4 pb-4 lg:min-w-[300px] lg:max-w-[500px]">
                             <img
                                 src={video.thumbnail}
-                                className="h-24 w-44 object-cover rounded-lg"
+                                className="h-24 min-w-44 object-cover rounded-lg"
                                 loading="lazy"
                             />
                             <div className="flex flex-col overflow-hidden">
@@ -261,13 +271,14 @@ const Video = () => {
                                 <div className="text-gray-500">
                                     {`${
                                         video.views
-                                    } views • ${formatDistanceToNow(
+                                    } views • ${formatDistanceToNowStrict(
                                         video.createdAt,
                                         { addSuffix: true }
                                     )}`}
                                 </div>
                             </div>
                         </div>
+                        <ThreeDots videoId={video._id} />
                     </Link>
                 ))}
             </div>

@@ -6,25 +6,26 @@ import SubDrawer from "./SubDrawer";
 import subscriptionServices from "@/services/subscription.services";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
-import { GoHome, GoHomeFill } from "react-icons/go";
-import { NavLink, useLocation,} from "react-router-dom";
+import { GoHome } from "react-icons/go";
+import { NavLink, useLocation } from "react-router-dom";
 import { CiMenuBurger } from "react-icons/ci";
 import { ImYoutube } from "react-icons/im";
-import { useEffect, useState } from "react";
+import { useWindowSize } from "@/hooks/use-window";
 
 interface IChannel {
     name: string;
     username: string;
 }
+
 const BigDrawer = () => {
     const location = useLocation();
     const dispatch = useDispatch();
-    const [isVideoPage, setIsVideoPage] = useState(false);
-    const [mediumScreenSize, setMediumScreenSize] = useState(false);
     const userId = useSelector((state: RootState) => state.auth.userData?._id);
     const username = useSelector(
         (state: RootState) => state.auth.userData?.username
     );
+    const windowWidth = useWindowSize();
+
     const {
         data: channels,
         isError,
@@ -32,12 +33,15 @@ const BigDrawer = () => {
         isLoading,
     } = useQuery({
         queryKey: ["channels"],
-        queryFn: async ():Promise<IChannel[]> => {
-            const res = await subscriptionServices.getSubscribedChannels(userId);
-            return res.data.subscribedChannels;
+        queryFn: async (): Promise<IChannel[]> => {
+            const data = await subscriptionServices.getSubscribedChannels(
+                userId
+            );
+            return data.subscribedChannels;
         },
         enabled: !!userId,
     });
+
     const options = [
         {
             name: "You >",
@@ -160,34 +164,37 @@ const BigDrawer = () => {
             route: `/liked-videos`,
         },
     ];
+
+    const handleSidebarToggle = () => {
+        dispatch(toggleMenu(false));
+    };
+
     if (isError) return <div>Error: {error.message}</div>;
+
     const data = channels?.map((channel) => ({
         ...channel,
         route: `/${channel.username}/channel`,
     }));
-    useEffect(() => {
-        setMediumScreenSize(window.innerWidth < 1315);
-    }, [window.innerWidth]);
-    useEffect(() => {
-        setIsVideoPage(location.pathname.startsWith("/videos/"));
-    }, [location.pathname]);
+
+    const isSmallScreen = windowWidth < 1315;
+    const isVideoPage = location.pathname.startsWith("/videos/");
+
     return (
         <div
             className={`${
-                (mediumScreenSize || isVideoPage) &&
-                "fixed inset-0 bg-black/50 z-40"
+                (isSmallScreen || isVideoPage) && "fixed inset-0  dark:bg-black/50 bg-black/50 z-40"
             } w-full`}
-            onClick={() => {
-                if (mediumScreenSize || isVideoPage) dispatch(toggleMenu());
-            }}
+            onClick={handleSidebarToggle}
         >
-            <div className="pl-7 w-64 overflow-y-auto h-full bg-white dark:bg-black">
-                {(mediumScreenSize || isVideoPage) && (
+            <div
+                className={`pl-6 w-60 overflow-y-auto h-full ${(isSmallScreen || isVideoPage) && "bg-[#FFFFFF] dark:bg-[#0F0F0F]"}`}
+            >
+                {(isSmallScreen || isVideoPage) && (
                     <div className="pb-4 pl-1 pt-[14px] flex items-center gap-x-2 md:gap-x-4">
                         <CiMenuBurger className="text-4xl dark:text-white hover:bg-zinc-400 dark:hover:bg-zinc-700 p-2 rounded-lg hidden sm:block" />
                         <button
                             className="flex items-center"
-                            onClick={() => window.location.href='/' }
+                            onClick={() => (window.location.href = "/")}
                         >
                             <ImYoutube className="text-3xl w-10 dark:text-white text-black" />
                             <h1 className="font-extrabold text-red-500">
@@ -196,58 +203,16 @@ const BigDrawer = () => {
                         </button>
                     </div>
                 )}
-                <div className="flex-col dark:text-white text-black`">
-                    <NavLink to={"/"}>
-                        {({ isActive }) => (
-                            <div
-                                className={`flex gap-x-4 items-center rounded-xl p-2 ${
-                                    isActive && "bg-zinc-200 dark:bg-zinc-800"
-                                } hover:bg-zinc-200 dark:hover:bg-zinc-800`}
-                            >
-                                {isActive ? (
-                                    <GoHomeFill className="text-xl" />
-                                ) : (
-                                    <GoHome className="text-xl" />
-                                )}
-                                <span>Home</span>
-                            </div>
-                        )}
-                    </NavLink>
-                    <NavLink to={"/shorts"}>
-                        {({ isActive }) => (
-                            <div
-                                className={`flex gap-x-4 items-center rounded-xl p-2 ${
-                                    isActive && "bg-zinc-200 dark:bg-zinc-800"
-                                } hover:bg-zinc-200 dark:hover:bg-zinc-800`}
-                            >
-                                <SiYoutubeshorts className="text-xl" />
-                                <span>Shorts</span>
-                            </div>
-                        )}
-                    </NavLink>
-                    <NavLink to={"/subscriptions"}>
-                        {({ isActive }) => (
-                            <div
-                                className={`flex gap-x-4 items-center rounded-xl p-2 ${
-                                    isActive && "bg-zinc-200 dark:bg-zinc-800"
-                                } hover:bg-zinc-200 dark:hover:bg-zinc-800`}
-                            >
-                                {isActive ? (
-                                    <MdSubscriptions className="text-xl" />
-                                ) : (
-                                    <MdOutlineSubscriptions className="text-xl" />
-                                )}
-                                <span>Subscriptions</span>
-                            </div>
-                        )}
-                    </NavLink>
+                <div className="flex-col dark:text-white text-black pl-1">
+                    <SidebarLink to="/" label="Home" icon={<GoHome />} />
+                    <SidebarLink to="/shorts" label="Shorts" icon={<SiYoutubeshorts />} />
+                    <SidebarLink to="/subscriptions" label="Subscriptions" icon={<MdOutlineSubscriptions />} />
                 </div>
+
                 {userId && (
                     <>
                         <hr className="my-3" />
-                        <div>
-                            <SubDrawer options={options} />
-                        </div>
+                        <SubDrawer options={options} />
                         {isLoading ? (
                             <Skeleton className="h-4 w-full" />
                         ) : (
@@ -257,9 +222,7 @@ const BigDrawer = () => {
                                     <p className="ml-2 mb-2 text-lg font-bold dark:text-white">
                                         Subscriptions
                                     </p>
-                                    <div>
-                                        <SubDrawer options={data} />
-                                    </div>
+                                    <SubDrawer options={data} />
                                 </>
                             )
                         )}
@@ -270,4 +233,23 @@ const BigDrawer = () => {
     );
 };
 
+const SidebarLink = ({ to, label, icon }: { to: string; label: string; icon: React.ReactNode }) => {
+    return (
+        <NavLink to={to}>
+            {({ isActive }) => (
+                <div
+                    className={`flex gap-x-4 items-center rounded-xl p-2 ${
+                        isActive && "bg-zinc-200 dark:bg-zinc-800"
+                    } hover:bg-zinc-200 dark:hover:bg-zinc-800`}
+                >
+                    <div className="text-xl">{icon}</div>
+                    <span>{label}</span>
+                </div>
+            )}
+        </NavLink>
+    );
+};
+
 export default BigDrawer;
+
+

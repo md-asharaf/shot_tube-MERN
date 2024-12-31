@@ -3,7 +3,7 @@ import commentServices from "@/services/comment.services";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useSelector } from "react-redux";
 import { Button } from "../ui/button";
-import { formatDistanceToNow } from "date-fns";
+import { formatDistanceToNowStrict } from "date-fns";
 import likeServices from "@/services/like.services";
 import { IComment } from "@/interfaces";
 import { useNavigate } from "react-router-dom";
@@ -14,10 +14,13 @@ import { FiMinus } from "react-icons/fi";
 import { GoDot } from "react-icons/go";
 import DefaultProfileImage from "@/assets/images/profile.png";
 import { ThumbsUp, Trash2 } from "lucide-react";
+
 const Comments = ({ videoId, playerRef }) => {
     const navigate = useNavigate();
     const user = useSelector((state: RootState) => state.auth);
     const [content, setContent] = useState<string>("");
+    const [isInputFocused, setIsInputFocused] = useState(false);
+    const [inputHeight, setInputHeight] = useState(0);
     const {
         data: comments,
         isError: commentsError,
@@ -27,8 +30,8 @@ const Comments = ({ videoId, playerRef }) => {
     } = useQuery({
         queryKey: ["comments", videoId],
         queryFn: async (): Promise<IComment[]> => {
-            const res = await commentServices.getComments(videoId);
-            return res.data.docs;
+            const data = await commentServices.getComments(videoId);
+            return data.comments.docs;
         },
         enabled: !!videoId,
     });
@@ -43,12 +46,12 @@ const Comments = ({ videoId, playerRef }) => {
         queryKey: ["commentsLike", videoId],
         queryFn: async (): Promise<boolean[]> => {
             const likes: boolean[] = await Promise.all(
-                comments.map(async (comment) => {
-                    const res = await likeServices.isLiked(
+                comments?.map(async (comment) => {
+                    const data = await likeServices.isLiked(
                         comment._id,
                         "comment"
                     );
-                    return res.data;
+                    return data.isLiked;
                 })
             );
             return likes;
@@ -69,6 +72,7 @@ const Comments = ({ videoId, playerRef }) => {
         onSuccess: () => {
             setContent("");
             refetchComments();
+            return true;
         },
         onError: (error) => {
             console.error("Error adding comment:", error);
@@ -81,6 +85,7 @@ const Comments = ({ videoId, playerRef }) => {
         },
         onSuccess: () => {
             refetchCommentsLike();
+            return true;
         },
         onError: (error) => {
             console.error("Error toggling comment like:", error);
@@ -88,16 +93,27 @@ const Comments = ({ videoId, playerRef }) => {
     });
 
     const { mutate: deleteComment } = useMutation({
-        mutationFn: async ({commentId}:{commentId: string}) => {
+        mutationFn: async ({ commentId }: { commentId: string }) => {
             await commentServices.deleteComment(commentId);
         },
         onSuccess: () => {
             refetchComments();
+            return true;
         },
         onError: (error: Error) => {
             console.error("Error deleting comment:", error);
         },
     });
+
+    const handleCancelClick = () => {
+        setContent("");
+        setIsInputFocused(false);
+    };
+
+    const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
+        setContent(e.target.value);
+        setInputHeight(e.target.scrollHeight);
+    };
 
     if (commentsLoading || likedLoading)
         return (
@@ -148,6 +164,7 @@ const Comments = ({ videoId, playerRef }) => {
             return <span key={index}>{part}</span>;
         });
     };
+
     const onTimestampClick = (seconds: number) => {
         if (playerRef.current) {
             playerRef.current.currentTime = seconds;
@@ -163,7 +180,9 @@ const Comments = ({ videoId, playerRef }) => {
 
     return (
         <div className="px-2">
-            <div className="font-bold text-2xl text-zinc-600 dark:text-zinc-300">{`${comments.length} Comments`}</div>
+            <div className="font-bold text-2xl text-zinc-600 dark:text-zinc-300 mb-2">
+                {`${comments.length} Comments`}
+            </div>
             <div className="flex flex-col">
                 {user.userData && (
                     <div className="flex gap-y-1 flex-col justify-start">
@@ -174,43 +193,52 @@ const Comments = ({ videoId, playerRef }) => {
                                 }
                                 className="rounded-full h-10 w-10"
                             />
-                            <input
+                            <textarea
                                 value={content}
-                                onChange={(e) => setContent(e.target.value)}
+                                onChange={handleInputChange}
                                 placeholder="Add a public comment..."
-                                className="outline-none shadow-none border-b-[1px] border-b-black dark:border-b-white dark:bg-black w-full"
+                                className={`outline-none shadow-none dark:bg-black w-full resize-none overflow-hidden border-b border-gray-500 focus:border-gray-300 transition-all`}
+                                onFocus={() => setIsInputFocused(true)}
+                                onBlur={() => {
+                                    if (!content) {
+                                        setIsInputFocused(false);
+                                    }
+                                }}
+                                style={{ height: inputHeight || "25px" }}
                             />
                         </div>
-                        <div className="flex space-x-2 justify-end">
-                            <Button
-                                disabled={!content}
-                                onClick={() => {
-                                    setContent("");
-                                }}
-                                variant="destructive"
-                                className="h-7 sm:h-9"
-                            >
-                                Cancel
-                            </Button>
-                            <Button
-                                disabled={!content}
-                                onClick={() => addComment({videoId,content})}
-                                variant="outline"
-                                className="hover:bg-blue-500 hover:text-white dark:text-black dark:bg-white dark:hover:bg-blue-500 h-7 sm:h-9 p-1 sm:p-2"
-                            >
-                                Comment
-                            </Button>
-                        </div>
+
+                        {(isInputFocused || content) && (
+                            <div className="flex space-x-2 justify-end">
+                                <Button
+                                    onClick={handleCancelClick}
+                                    variant="ghost"
+                                    className="h-7 sm:h-9 rounded-full"
+                                >
+                                    Cancel
+                                </Button>
+                                <Button
+                                    disabled={content === ""}
+                                    onClick={() =>
+                                        addComment({ videoId, content })
+                                    }
+                                    variant="outline"
+                                    className="bg-blue-500 hover:bg-blue-400 h-7 sm:h-9 p-1 sm:p-2 rounded-full"
+                                >
+                                    Comment
+                                </Button>
+                            </div>
+                        )}
                     </div>
                 )}
 
                 <div className="flex flex-col mt-2">
-                    {comments.map((comment, index) => {
+                    {comments?.map((comment, index) => {
                         const sentiment = comment.sentiment?.toLowerCase();
                         return (
                             <div
                                 key={index}
-                                className="flex space-x-4 items-start"
+                                className="flex space-x-2 items-start"
                             >
                                 <img
                                     src={
@@ -233,25 +261,27 @@ const Comments = ({ videoId, playerRef }) => {
                                                     `/${comment.creator.username}/channel`
                                                 )
                                             }
-                                            className="text-[16px] cursor-pointer"
+                                            className="text-sm font-medium cursor-pointer"
                                         >
                                             {`@${comment.creator.username} `}
                                         </div>
-                                        <div className="text-gray-500 dark:text-zinc-200 font-light text-[13px]">
-                                            {formatDistanceToNow(
+                                        <div className="text-gray-500 dark:text-zinc-400 text-[12px]">
+                                            {formatDistanceToNowStrict(
                                                 new Date(comment.createdAt),
-                                                { addSuffix: true }
-                                            ).replace("about ", "")}
+                                                {
+                                                    addSuffix: true,
+                                                }
+                                            )}
                                         </div>
                                         <div
                                             className={`flex ${
-                                                sentiment == "positive" &&
+                                                sentiment === "positive" &&
                                                 "bg-green-500"
                                             } ${
-                                                sentiment == "negative" &&
+                                                sentiment === "negative" &&
                                                 "bg-red-500"
                                             } ${
-                                                sentiment == "neutral" &&
+                                                sentiment === "neutral" &&
                                                 "bg-yellow-500"
                                             } rounded-full items-center justify-center pl-1 pr-2`}
                                         >
@@ -277,9 +307,9 @@ const Comments = ({ videoId, playerRef }) => {
                                         <div className="space-x-2 flex items-center">
                                             <Button
                                                 onClick={() =>
-                                                    toggleCommentLike(
-                                                        {commentId:comment._id}
-                                                    )
+                                                    toggleCommentLike({
+                                                        commentId: comment._id,
+                                                    })
                                                 }
                                                 variant="ghost"
                                                 className={`rounded-full text-lg p-2 dark:hover:bg-zinc-800 dark:hover:text-white ${
@@ -293,9 +323,10 @@ const Comments = ({ videoId, playerRef }) => {
                                                 comment.creator.username && (
                                                 <Button
                                                     onClick={() =>
-                                                        deleteComment(
-                                                            {commentId:comment._id}
-                                                        )
+                                                        deleteComment({
+                                                            commentId:
+                                                                comment._id,
+                                                        })
                                                     }
                                                     variant="ghost"
                                                     className="rounded-full text-lg p-2 dark:hover:bg-zinc-800 dark:hover:text-white"

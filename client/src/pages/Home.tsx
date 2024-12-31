@@ -12,9 +12,9 @@ const Home = () => {
     const loaderRef = useRef(null);
     const { data, isLoading, hasNextPage, fetchNextPage } = useInfiniteQuery({
         queryKey: ["videos"],
-        queryFn: async ({ pageParam }):Promise<IVideoData[]> => {
-            const res = await videoServices.allVideos(12, pageParam);
-            return res.data;
+        queryFn: async ({ pageParam }): Promise<IVideoData[]> => {
+            const data = await videoServices.allVideos(12, pageParam);
+            return data.videos;
         },
         initialPageParam: 0,
         getNextPageParam: (lastPage, allPages) => {
@@ -65,10 +65,23 @@ const Home = () => {
                                     className="group flex flex-col gap-2 rounded-xl transition-shadow duration-300 cursor-pointer p-2 hover:bg-zinc-200 hover:dark:bg-zinc-800"
                                 >
                                     <VideoCard
-                                        video={video}
+                                        thumbnail={video.thumbnail}
+                                        duration={video.duration}
                                         className="group-hover:rounded-none"
                                     />
-                                    <VideoTitle video={video} isImage />
+                                    <VideoTitle
+                                        video={{
+                                            _id: video._id,
+                                            views: video.views,
+                                            createdAt: video.createdAt,
+                                            title: video.title,
+                                        }}
+                                        creator={{
+                                            username: video.creator.username,
+                                            fullname: video.creator.fullname,
+                                            avatar: video.creator.avatar,
+                                        }}
+                                    />
                                 </Link>
                             ))
                         )}

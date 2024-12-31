@@ -1,7 +1,7 @@
-# Build stage: Use a larger base image to install dependencies
-FROM archlinux:latest AS builder
+# Stage 1: Build the environment with all dependencies
+FROM archlinux:latest AS build
 
-# Update package lists and install necessary packages
+# Install required packages and dependencies for the build
 RUN pacman -Syu --noconfirm && \
     pacman -S --noconfirm \
         ffmpeg \
@@ -10,7 +10,6 @@ RUN pacman -Syu --noconfirm && \
         base-devel \
         curl \
         gnupg && \
-    # Add Chaotic AUR key and repository
     pacman-key --init && \
     pacman-key --recv-key 3056513887B78AEB --keyserver keyserver.ubuntu.com && \
     pacman-key --lsign-key 3056513887B78AEB && \
@@ -18,16 +17,10 @@ RUN pacman -Syu --noconfirm && \
     echo -e "\n[chaotic-aur]\nSigLevel = Never\nServer = https://cdn-mirror.chaotic.cx/\$repo/\$arch" >> /etc/pacman.conf && \
     pacman -Sy && \
     pacman -S --noconfirm whisper && \
-    # Clean up package cache and remove unnecessary files
     pacman -Scc --noconfirm && \
     rm -rf /var/cache/pacman/pkg/* /tmp/* /var/tmp/*
 
-# Stage 2: Use a smaller image to copy over necessary binaries and files
-FROM archlinux:latest
-
-# Copy only the necessary binaries from the builder image
-COPY --from=builder /usr/bin/ffmpeg /usr/bin/aws /usr/bin/python3 /usr/bin/whisper /bin/sh /home/app/
-
+RUN python3 -c "import whisper; whisper.load_model('medium')"
 # Set working directory
 WORKDIR /home/app
 
@@ -35,7 +28,7 @@ WORKDIR /home/app
 COPY transcribe.sh /home/app/
 
 # Make the script executable
-RUN chmod +x transcribe.sh
+RUN chmod +x /home/app/transcribe.sh
 
 # Set the default command
-CMD ["sh", "transcribe.sh"]
+CMD ["sh", "/home/app/transcribe.sh"]

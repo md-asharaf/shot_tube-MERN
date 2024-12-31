@@ -6,7 +6,7 @@ import userServices from "@/services/user.services";
 import { RootState } from "@/provider";
 import { Button } from "@/components/ui/button";
 import { MdDelete } from "react-icons/md";
-import { Loader2, X } from "lucide-react";
+import { Loader2} from "lucide-react";
 import { formatDuration } from "@/lib/utils";
 import {
     AlertDialog,
@@ -18,6 +18,8 @@ import {
     AlertDialogTitle,
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
+import ThreeDots from "@/components/root/ThreeDots";
+import { toast } from "react-toastify";
 
 const WatchHistory = () => {
     const userId = useSelector((state: RootState) => state.auth.userData?._id);
@@ -30,21 +32,29 @@ const WatchHistory = () => {
     } = useQuery({
         queryKey: ["watch-history", userId],
         queryFn: async (): Promise<IVideoData[]> => {
-            const res = await userServices.getWatchHistory();
-            return res.data;
+            const data = await userServices.getWatchHistory();
+            return data.watchHistory;
         },
         enabled: !!userId,
-    });
-    const { mutate: remove } = useMutation({
-        mutationFn: async ({ videoId }: { videoId: string }) => {
-            await userServices.removeFromWatchHistory(videoId);
-            refetch();
-        },
     });
     const { mutate: clearAllHistory } = useMutation({
         mutationFn: async () => {
             await userServices.clearWatchHistory();
+        },
+        onSuccess: () => {
             refetch();
+            toast.success("Cleared all history");
+            return true;
+        },
+    });
+    const { mutate: remove } = useMutation({
+        mutationFn: async ({ videoId }: { videoId: string }) => {
+            await userServices.removeFromWatchHistory(videoId);
+        },
+        onSuccess: () => {
+            refetch();
+            toast.success("Removed from history");
+            return true;
         },
     });
     if (isLoading) {
@@ -60,7 +70,7 @@ const WatchHistory = () => {
     return (
         <div className="w-full dark:text-white">
             <div className="flex justify-between items-center px-2 sm:px-4 mb-2">
-                <div className="text-2xl sm:text-4xl">
+                <div className="text-2xl sm:text-3xl">
                     {videos?.length > 0 ? "Watch History" : "No History"}
                 </div>
 
@@ -105,13 +115,13 @@ const WatchHistory = () => {
                     >
                         <Link
                             to={`/videos/${video._id}`}
-                            className="w-3/4 flex flex-col gap-4 p-2 sm:flex-row hover:bg-zinc-200 hover:dark:bg-zinc-800 rounded-lg"
+                            className="w-full sm:w-3/4 flex flex-col gap-4 p-2 sm:flex-row hover:bg-zinc-200 hover:dark:bg-zinc-800 rounded-lg overflow-hidden"
                         >
                             <div className="relative w-64 min-w-64">
                                 <img
                                     src={video.thumbnail}
                                     alt="Video Thumbnail"
-                                    className="object-cover aspect-video rounded-lg"
+                                    className="h-full w-full object-cover aspect-video rounded-lg"
                                     loading="lazy"
                                 />
                                 <span className="absolute bottom-2 right-2 bg-black bg-opacity-75 text-white px-2 text-xs">
@@ -128,13 +138,14 @@ const WatchHistory = () => {
                                 </p>
                             </div>
                         </Link>
-
-                        <button className="w-20" >
-                        <X
-                            size={50}
-                            onClick={() => remove({ videoId: video._id })}
-                        />
-                        </button>
+                        <div className="mr-8 sm:mr-16 md:mr-32 mt-4">
+                            <ThreeDots videoId={video._id} 
+                            task={{
+                                title: "Remove from Watch history",
+                                handler: () => remove({ videoId: video._id }),
+                            }}
+                            />
+                        </div>
                     </div>
                 ))}
             </div>

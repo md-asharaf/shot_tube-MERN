@@ -1,24 +1,16 @@
-# Build stage: Use a larger image for building
-FROM alpine:latest AS builder
-
-# Install necessary dependencies (ffmpeg and aws-cli)
-RUN apk add --no-cache ffmpeg aws-cli
-
-# Copy the transcode.sh script into the build stage
-COPY transcode.sh /home/app/
-
-# Stage 2: Minimal final image
 FROM alpine:latest
 
-# Copy only the necessary binaries and libraries from the builder
-COPY --from=builder /usr/bin/ffmpeg /usr/bin/aws /bin/sh /home/app/
+# Install required packages and dependencies for the build
+RUN apk update && apk add ffmpeg aws-cli && rm -rf /var/cache/apk/* 
 
-# Copy the transcode.sh script
-COPY --from=builder /home/app/transcode.sh /home/app/
-
-# Set the working directory and make the script executable
+# Set working directory
 WORKDIR /home/app
-RUN chmod +x transcode.sh
 
-# Run the script by default
-CMD ["sh", "transcode.sh"]
+# Copy the transcode.sh script into the container
+COPY transcode.sh /home/app/
+
+# Make the script executable
+RUN chmod +x /home/app/transcode.sh
+
+# Set the default command
+CMD ["sh", "/home/app/transcode.sh"]

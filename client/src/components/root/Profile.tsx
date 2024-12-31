@@ -6,17 +6,17 @@ const Profile: React.FC<IUser> = (user) => {
     const navigate = useNavigate();
     const { username, fullname, avatar } = user;
     return (
-        <div className="flex flex-col gap-4 ">
+        <div className="flex flex-col gap-4">
             <div className="flex gap-4">
-                <div id="left">
-                    <Avatar>
-                        <AvatarImage src={avatar} />
-                        <AvatarFallback>{shortName(fullname)}</AvatarFallback>
-                    </Avatar>
-                </div>
+                <Avatar>
+                    <AvatarImage src={avatar} />
+                    <AvatarFallback>{shortName(fullname)}</AvatarFallback>
+                </Avatar>
                 <div id="right">
                     <div className="font-semibold">{fullname}</div>
-                    <div className="text-zinc-700">@{username}</div>
+                    <div className="dark:text-gray-300 text-gray-500">
+                        @{username}
+                    </div>
                 </div>
             </div>
             <div

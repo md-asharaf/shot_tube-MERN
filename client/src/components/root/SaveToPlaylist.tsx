@@ -1,7 +1,7 @@
 import { IPlaylist } from "@/interfaces";
 import playlistServices from "@/services/playlist.services";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
     Card,
@@ -11,14 +11,27 @@ import {
     CardTitle,
 } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
-import { ListPlus, Plus, X } from "lucide-react";
+import { Plus, X } from "lucide-react";
+import { toast } from "react-toastify";
+import { useSelector } from "react-redux";
+import { RootState } from "@/provider";
+import { queryClient } from "@/main";
 
 interface Props {
-    userId: string;
     videoId: string;
+    children: React.ReactNode;
+    className?: string;
 }
 
-const SaveToPlaylist: React.FC<Props> = ({ userId, videoId }) => {
+const SaveToPlaylist: React.FC<Props> = ({
+    videoId,
+    children,
+    className = "",
+}) => {
+    const userId = useSelector((state: RootState) => state.auth.userData?._id);
+    const [isSavedToPlaylists, setIsSavedToPlaylists] = useState<
+        Array<boolean>
+    >([]);
     const [playlistName, setPlaylistName] = useState<string>("");
     const [isMainPopoverOpen, setIsMainPopoverOpen] = useState<boolean>(false);
     const [isNewPlaylistPopoverOpen, setIsNewPlaylistPopoverOpen] =
@@ -30,21 +43,39 @@ const SaveToPlaylist: React.FC<Props> = ({ userId, videoId }) => {
     };
 
     const { mutate: add } = useMutation({
-        mutationFn: async ({playlistId}:{playlistId: string}) => {
-            const res = await playlistServices.addVideoToPlaylist(
-                videoId,
-                playlistId
-            );
-            return res.data;
+        mutationFn: async ({ playlistId }: { playlistId: string }) => {
+            await playlistServices.addVideoToPlaylist(videoId, playlistId);
+            queryClient.invalidateQueries({
+                queryKey: ["playlist", playlistId],
+                exact: true,
+            });
+        },
+        onSuccess: () => {
+            toast.success(`Added to ${playlistName}`);
+            queryClient.invalidateQueries({
+                queryKey: ["playlists", userId],
+                exact: true,
+            });
+            fetch();
+            return true;
         },
     });
     const { mutate: remove } = useMutation({
-        mutationFn: async ({playlistId}:{playlistId: string}) => {
-            const res = await playlistServices.removeVideoFromPlaylist(
-                videoId,
-                playlistId
-            );
-            return res.data;
+        mutationFn: async ({ playlistId }: { playlistId: string }) => {
+            await playlistServices.removeVideoFromPlaylist(videoId, playlistId);
+            queryClient.invalidateQueries({
+                queryKey: ["playlist", playlistId],
+                exact: true,
+            });
+        },
+        onSuccess: () => {
+            toast.success(`Removed from ${playlistName}`);
+            queryClient.invalidateQueries({
+                queryKey: ["playlists", userId],
+                exact: true,
+            });
+            fetch();
+            return true;
         },
     });
     const {
@@ -55,23 +86,49 @@ const SaveToPlaylist: React.FC<Props> = ({ userId, videoId }) => {
         refetch,
     } = useQuery({
         queryKey: ["playlists", userId],
-        queryFn: async ():Promise<IPlaylist[]> => {
-            const res = await playlistServices.getAllPlaylists(userId);
-            return res.data;
+        queryFn: async (): Promise<IPlaylist[]> => {
+            const data = await playlistServices.getAllPlaylists(userId);
+            return data.playlists;
         },
+        enabled: !!userId,
     });
-
+    const fetch = async () => {
+        try {
+            const result = await Promise.all(
+                playlists?.map(async (p) => {
+                    try {
+                        const data = await playlistServices.isSavedToPlaylist(
+                            videoId,
+                            p._id
+                        );
+                        return data.isSaved;
+                    } catch (error) {
+                        throw error;
+                    }
+                })
+            );
+            setIsSavedToPlaylists(result);
+        } catch (error) {
+            return [];
+        }
+    };
+    useEffect(() => {
+        fetch();
+    }, [playlists, videoId]);
     const { mutate: createPlaylist } = useMutation({
         mutationFn: async () => {
             await playlistServices.createPlaylist(playlistName);
-            closePopovers();
+        },
+        onSuccess: () => {
+            toast.success("Playlist created");
             refetch();
+            setPlaylistName("");
+            return true;
         },
     });
 
     if (isLoading) return <div>Loading...</div>;
     if (isError) return <div>Error: {error.message}</div>;
-
     return (
         <>
             {(isMainPopoverOpen || isNewPlaylistPopoverOpen) && (
@@ -82,7 +139,7 @@ const SaveToPlaylist: React.FC<Props> = ({ userId, videoId }) => {
             )}
 
             {isMainPopoverOpen && (
-                <div className="fixed inset-0 flex items-center justify-center p-4 z-50">
+                <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-4 z-50">
                     <Card className="w-60 relative">
                         <CardHeader>
                             <CardTitle>
@@ -100,7 +157,7 @@ const SaveToPlaylist: React.FC<Props> = ({ userId, videoId }) => {
                         </CardHeader>
                         <CardContent>
                             <div className="space-y-2">
-                                {playlists?.map((playlist) => (
+                                {playlists?.map((playlist, index) => (
                                     <div
                                         key={playlist._id}
                                         className="flex items-center justify-between"
@@ -108,11 +165,18 @@ const SaveToPlaylist: React.FC<Props> = ({ userId, videoId }) => {
                                         <input
                                             type="checkbox"
                                             className="h-5 w-5"
+                                            checked={isSavedToPlaylists[index]}
                                             onChange={(e) => {
                                                 if (e.target.checked) {
-                                                    add({playlistId:playlist._id});
+                                                    add({
+                                                        playlistId:
+                                                            playlist._id,
+                                                    });
                                                 } else {
-                                                    remove({playlistId:playlist._id});
+                                                    remove({
+                                                        playlistId:
+                                                            playlist._id,
+                                                    });
                                                 }
                                             }}
                                         />
@@ -139,7 +203,7 @@ const SaveToPlaylist: React.FC<Props> = ({ userId, videoId }) => {
             )}
 
             {isNewPlaylistPopoverOpen && (
-                <div className="fixed inset-0 flex items-center justify-center p-4 z-50">
+                <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-4 z-50">
                     <Card className="w-60">
                         <CardHeader>
                             <CardTitle className="text-xl">
@@ -160,10 +224,7 @@ const SaveToPlaylist: React.FC<Props> = ({ userId, videoId }) => {
                                 Cancel
                             </Button>
                             <Button
-                                onClick={() => {
-                                    createPlaylist();
-                                    refetch();
-                                }}
+                                onClick={() => createPlaylist()}
                                 disabled={!playlistName.trim()}
                             >
                                 Create
@@ -172,17 +233,12 @@ const SaveToPlaylist: React.FC<Props> = ({ userId, videoId }) => {
                     </Card>
                 </div>
             )}
-            <Button
-                disabled={!userId}
-                variant="outline"
-                className="dark:bg-zinc-600 border-none bg-zinc-200 h-7 sm:h-9"
-                onClick={() => {
-                    setIsMainPopoverOpen(true);
-                    setIsNewPlaylistPopoverOpen(false);
-                }}
+            <button
+                onClick={() => setIsMainPopoverOpen(true)}
+                className={`${className}`}
             >
-                <ListPlus />
-            </Button>
+                {children}
+            </button>
         </>
     );
 };

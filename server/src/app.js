@@ -12,7 +12,6 @@ import videoRoutes from "./routes/video.routes.js";
 import playlistRoutes from "./routes/playlist.routes.js";
 import bodyParser from "body-parser"
 const app = express();
-//middlewares
 const ORIGIN = process.env.CLIENT_URL
 app.use(cors({
     origin: [ORIGIN],
@@ -28,7 +27,6 @@ app.use(bodyParser.urlencoded({
 app.use(express.json());
 app.use(express.static("public"))
 app.use(cookieParser())
-//routes declaration
 
 app.use("/hello",(req,res)=>{
     res.send("Hello World")
@@ -46,7 +44,7 @@ app.use("/api/v1/subscriptions", subscriptionRoutes)
 app.use("/api/v1/videos", videoRoutes)
 
 app.use("/api/v1/playlists", playlistRoutes)
-//error handler
+
 app.use(errorHandler)
 
 export { app }

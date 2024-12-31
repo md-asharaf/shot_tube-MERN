@@ -5,9 +5,8 @@ import { Subscription } from "../models/subscription.models.js";
 import mongoose from "mongoose";
 import { User } from "../models/user.models.js";
 
-class SubscriptionC {
+class SubscriptionController {
 
-    // controller to toggle subscription to a channel
     toggleSubscription = asyncHandler(async (req, res) => {
         const { channelId } = req.params;
         const subscriberId = req.user?._id;
@@ -22,10 +21,9 @@ class SubscriptionC {
         else {
             subscription = await Subscription.create({ channelId, subscriberId });
         }
-        return res.status(201).json(new ApiResponse(201, subscription, `${!subscription ? "Unsubscribed" : "Subscribed"} successfully`));
+        return res.status(201).json(new ApiResponse(201, null, `${!subscription ? "Unsubscribed" : "Subscribed"} successfully`));
     })
 
-    // controller to return subscriber list of a channel
     getUserChannelSubscribers = asyncHandler(async (req, res) => {
         const { channelId } = req.params;
         if (!channelId) {
@@ -69,7 +67,6 @@ class SubscriptionC {
         }, "Subscribed channels fetched successfully"));
     })
 
-    // controller to return channel list to which user has subscribed
     getSubscribedChannels = asyncHandler(async (req, res) => {
         const { subscriberId } = req.params;
         if (!subscriberId) {
@@ -128,8 +125,8 @@ class SubscriptionC {
             throw new ApiError(400, "Channel Id is required");
         }
         const subscribersCount = await Subscription.countDocuments({ channelId: new mongoose.Types.ObjectId(channelId) });
-        return res.status(200).json(new ApiResponse(200, subscribersCount, "Subscribers count fetched successfully"));
+        return res.status(200).json(new ApiResponse(200, { subscribersCount }, "Subscribers count fetched successfully"));
     })
 }
 
-export default new SubscriptionC();
+export default new SubscriptionController();

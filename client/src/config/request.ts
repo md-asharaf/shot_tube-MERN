@@ -1,45 +1,32 @@
 import axios from "axios";
 import { defaultConfig, jsonConfig, formdataConfig } from ".";
 
-const axio = axios.create({
+const axiosInstance = axios.create({
     baseURL: process.env.BACKEND_BASE_URL,
 });
+axiosInstance.interceptors.response.use(
+    (response) => {
+        return response.data.data;
+    },
+    (error) => {
+        if (error.response?.status === 401) {
+            // showLoginPopover();
+        }
+        return Promise.reject(error.response?.data.message);
+    }
+);
 class Axios {
-    get = async (url: string) => {
-        try {
-            const res = await axio.get(url, defaultConfig);
-            return res?.data;
-        } catch (error) {
-            return error.response?.data;
-        }
+    get = async (url: string): Promise<any> =>
+        await axiosInstance.get(url, defaultConfig);
+    post = async (url: string, data: object | FormData = {}): Promise<any> => {
+        const config = data instanceof FormData ? formdataConfig : jsonConfig;
+        return await axiosInstance.post(url, data, config);
     };
-    post = async (url: string, data: object | FormData = {}) => {
-        try {
-            const config =
-                data instanceof FormData ? formdataConfig : jsonConfig;
-            const res = await axio.post(url, data, config);
-            return res?.data;
-        } catch (error) {
-            return error.response?.data;
-        }
-    };
-    delete = async (url: string) => {
-        try {
-            const res = await axio.delete(url, defaultConfig);
-            return res?.data;
-        } catch (error) {
-            return error.response?.data;
-        }
-    };
-    patch = async (url: string, data: object | FormData = {}) => {
-        try {
-            const config =
-                data instanceof FormData ? formdataConfig : jsonConfig;
-            const res = await axio.patch(url, data, config);
-            return res?.data;
-        } catch (error) {
-            return error.response?.data;
-        }
+    delete = async (url: string): Promise<any> =>
+        await axiosInstance.delete(url, defaultConfig);
+    patch = async (url: string, data: object | FormData = {}): Promise<any> => {
+        const config = data instanceof FormData ? formdataConfig : jsonConfig;
+        return await axiosInstance.patch(url, data, config);
     };
 }
 export default new Axios();

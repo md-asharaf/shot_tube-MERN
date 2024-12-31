@@ -13,26 +13,26 @@ const PlaylistNhistory = () => {
     const { data: subscriberCount } = useQuery({
         queryKey: ["subscriberCount", userData?._id],
         queryFn: async ():Promise<number> => {
-            const res = await subscriptionServices.getSubscribersCount(
+            const data = await subscriptionServices.getSubscribersCount(
                 userData?._id
             );
-            return res.data;
+            return data.subscribersCount;
         },
         enabled: !!userData,
     });
     const { data: videos} = useQuery({
         queryKey: ["videos", userData?._id],
         queryFn: async ():Promise<IVideoData[]> => {
-            const res = await userServices.getWatchHistory();
-            return res.data;
+            const data = await userServices.getWatchHistory();
+            return data.watchHistory;
         },
         enabled: !!userData,
     });
     const { data: playlists, isLoading } = useQuery({
         queryKey: ["playlists", userData?._id],
         queryFn: async ():Promise<IPlaylist[]> => {
-            const res = await playlistServices.getAllPlaylists(userData?._id);
-            return res.data;
+            const data = await playlistServices.getAllPlaylists(userData?._id);
+            return data.playlists;
         },
         enabled: !!userData?._id,
     });

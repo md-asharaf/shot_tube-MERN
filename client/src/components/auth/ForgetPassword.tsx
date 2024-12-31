@@ -2,62 +2,60 @@ import { useState } from "react";
 import { Card, CardContent, CardFooter, CardHeader } from "../ui/card";
 import userServices from "@/services/user.services";
 import authServices from "@/services/auth.services";
+import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
+import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 
 const ForgotPassword = () => {
     const [searchText, setSearchText] = useState("");
     const [users, setUsers] = useState([]);
-    const [selectedUser, setSelectedUser] = useState(null);
+    const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
+    const [searchLoading, setSearchLoading] = useState(false);
     const [loading, setLoading] = useState(false);
     const [message, setMessage] = useState("");
 
-    const handleSearchSubmit = async (e) => {
+    const handleSearchSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
-        setLoading(true);
+        setSearchLoading(true);
         setMessage("");
         setUsers([]);
-        setSelectedUser(null);
+        setSelectedUserId(null);
         try {
-            const res = await userServices.getUsersBySearchText(searchText);
-            if (res.success) setUsers(res.data);
+            const data = await userServices.getUsersBySearchText(searchText);
+            setUsers(data.users);
         } catch (error) {
-            setMessage(error.message);
-            console.error("Error while searching for users", error.message);
+            setMessage(error);
+            console.error(error);
         } finally {
-            setLoading(false);
+            setSearchLoading(false);
         }
     };
 
-    const handleSearchChange = (e) => {
+    const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setSearchText(e.target.value);
-    };
-
-    const handleUserSelect = (user) => {
-        setSelectedUser(user);
     };
 
     const handleResetRequest = async () => {
         setMessage("");
         setLoading(true);
         try {
-            const res = await authServices.sendResetLinkOnEmail(
+            const selectedUser = users.find(
+                (user) => user._id === selectedUserId
+            );
+            if (!selectedUser) throw new Error("No user selected");
+            await authServices.sendResetLinkOnEmail(
                 selectedUser.email
             );
-            if (res.success) {
-                setMessage(res.message);
-            }
+            setMessage("Password reset link sent to your email");
         } catch (error) {
-            setMessage(error.message);
-            console.error(
-                "Error while requesting for reset password link",
-                error.message
-            );
+            setMessage(error);
+            console.error(error);
         } finally {
             setLoading(false);
         }
     };
 
     return (
-        <Card className="max-w-md p-6 bg-white text-black">
+        <Card className="max-w-md p-6 bg-white text-black mx-2">
             <CardHeader>
                 <h2 className="text-xl font-semibold text-center">
                     Forgot Password
@@ -70,7 +68,7 @@ const ForgotPassword = () => {
                             htmlFor="searchText"
                             className="block text-sm font-medium text-gray-700"
                         >
-                            Enter username or email to search:
+                            Enter your username or email:
                         </label>
                         <input
                             type="text"
@@ -84,42 +82,48 @@ const ForgotPassword = () => {
                     </div>
                     <button
                         type="submit"
-                        disabled={loading}
+                        disabled={searchLoading}
                         className="w-full py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
                     >
-                        {loading ? "Searching..." : "Search"}
+                        {searchLoading ? "Searching..." : "Search"}
                     </button>
                 </form>
 
-                <ul className="mt-2 space-y-2">
-                    {users.map((user) => (
-                        <li
-                            key={user._id}
-                            className="flex items-center justify-between space-x-3 p-2 border rounded-lg hover:bg-gray-100 dark:hover:bg-gray-700"
-                        >
-                            <div className="flex space-x-4 items-center">
-                                <img
-                                    src={user.avatar}
-                                    alt={user.username || "User Avatar"}
-                                    className="w-8 h-8 rounded-full object-cover"
+                {users.length > 0 && (
+                    <RadioGroup
+                        value={selectedUserId}
+                        onValueChange={(value) => setSelectedUserId(value)}
+                        className="mt-4"
+                    >
+                        {users.map((user) => (
+                            <div
+                                key={user._id}
+                                className="flex items-center justify-between border space-x-3 p-1 pr-4 rounded-lg hover:bg-gray-400"
+                            >
+                                <div className="flex items-center space-x-4">
+                                    <Avatar>
+                                        <AvatarImage
+                                            src={user.avatar}
+                                            alt={user.username || "User Avatar"}
+                                        />
+                                        <AvatarFallback className="bg-orange-300">
+                                            {user.fullname[0]}
+                                        </AvatarFallback>
+                                    </Avatar>
+                                    <span className="cursor-pointer text-blue-600 hover:text-blue-800">
+                                        {user.fullname}
+                                    </span>
+                                </div>
+                                <RadioGroupItem
+                                    value={user._id}
+                                    id={`user-${user._id}`}
                                 />
-
-                                <span className="cursor-pointer text-blue-600 hover:text-blue-800">
-                                    {user.fullname}
-                                </span>
                             </div>
-                            <input
-                                type="radio"
-                                name="selectedUser"
-                                value={user._id}
-                                onChange={() => handleUserSelect(user)}
-                                checked={selectedUser?._id === user._id}
-                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 focus:ring-blue-500 rounded-full"
-                            />
-                        </li>
-                    ))}
-                </ul>
-                {selectedUser && (
+                        ))}
+                    </RadioGroup>
+                )}
+
+                {selectedUserId && (
                     <button
                         onClick={handleResetRequest}
                         disabled={loading}

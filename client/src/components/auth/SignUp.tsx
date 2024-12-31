@@ -3,9 +3,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { Link, useNavigate } from "react-router-dom";
 import { signUpFormValidation } from "../ui/validation";
-import { useState } from "react";
 import { useDispatch } from "react-redux";
-import { login } from "@/provider";
 import { IoLogoYoutube } from "react-icons/io";
 import authService from "@/services/auth.services";
 import { IRegisterForm } from "@/interfaces";
@@ -14,17 +12,13 @@ import {
     FormControl,
     FormField,
     FormItem,
-    FormLabel,
     FormMessage,
 } from "@/components/ui/form";
-import { useToast } from "../ui/use-toast";
 import PasswordInput from "../root/PasswordInput";
-
+import { toast } from "react-toastify";
 const SignUp = () => {
-    const { toast } = useToast();
     const navigate = useNavigate();
     const dispatch = useDispatch();
-    const [error, setError] = useState<string>("");
     const form = useForm<IRegisterForm>({
         resolver: zodResolver(signUpFormValidation),
         defaultValues: {
@@ -37,31 +31,16 @@ const SignUp = () => {
 
     const onSubmit = async (values: IRegisterForm) => {
         try {
-            const res = await authService.register(values);
-            if (!res) return;
-            if (res.success) {
-                toast({
-                    title: "Registration successfull",
-                    description: "now you can login",
-                });
-                const { email } = res.data;
-                const loginRes = await authService.login({
-                    email,
-                    password: values.password,
-                });
-                if (!loginRes || !loginRes.success) return;
-                dispatch(login(loginRes.data.user));
-                navigate("/");
-            } else {
-                setError(res.message);
-            }
+            await authService.register(values);
+            toast.success("account created successfully");
+            navigate("/login");
         } catch (error) {
-            console.error(error.message);
+            console.error(error);
         }
     };
 
     return (
-        <div className="h-screen flex items-center justify-center">
+        <div className="h-screen flex items-center justify-center mx-2">
             <div className="bg-white p-6 md:p-8 rounded-lg shadow-lg w-full z-10">
                 <div className="text-center mb-6">
                     <div className="flex justify-center space-x-1 items-center">
@@ -74,10 +53,6 @@ const SignUp = () => {
                         Sign Up
                     </h2>
                 </div>
-
-                {error && (
-                    <div className="text-red-500 font-semibold">{error}</div>
-                )}
                 <Form {...form}>
                     <form
                         onSubmit={form.handleSubmit(onSubmit)}
@@ -157,7 +132,7 @@ const SignUp = () => {
                 <div className="text-center text-sm mt-6">
                     <p>Already have an account?</p>
                     <Link to="/login" className="text-blue-500 hover:underline">
-                        Sign In
+                        Log In
                     </Link>
                 </div>
             </div>

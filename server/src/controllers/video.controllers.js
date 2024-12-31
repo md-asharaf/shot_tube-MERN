@@ -4,42 +4,32 @@ import { ApiError } from "../utils/ApiError.js";
 import { Video } from "../models/video.models.js";
 import mongoose from "mongoose";
 import { User } from "../models/user.models.js";
-class VideoC {
-    // controller to publish a video
+import { Like } from "../models/like.models.js";
+class VideoController {
     publishVideo = asyncHandler(async (req, res) => {
-        try {
-            //get title and description from request body
-            const { title, description,video,thumbnail,duration,subtitle} = req.body;
-            //get user id from request user object
-            const userId = req.user?._id;
-            //check if title and description are provided
-            if (!title || !description || !video || !thumbnail || !duration) {
-                throw new ApiError(400, "please provide title, description, video, thumbnail and duration")
-            }
-            const newVideo = await Video.create({
-                video,
-                thumbnail,
-                duration,
-                title,
-                description,
-                subtitle,
-                userId
-            })
-            if (!newVideo) {
-                throw new ApiError(500, "Failed to publish video")
-            }
-            return res.status(200).json(new ApiResponse(200, newVideo, "Video published successfully"))
-        } catch (error) {
-            console.error(error.message)
+        const { title, description, video, thumbnail, duration, subtitle } = req.body;
+        if (!title || !description || !video || !thumbnail || !duration) throw new ApiError(400, "Please provide All required fields")
+        const userId = req.user?._id;
+        if (!userId) throw new ApiError(400, "Please provide userId")
+        const newVideo = await Video.create({
+            video,
+            thumbnail,
+            duration,
+            title,
+            description,
+            subtitle,
+            userId
+        })
+        if (!newVideo) {
+            throw new ApiError(500, "Failed to publish video")
         }
+        return res.status(200).json(new ApiResponse(200, null, "Video published successfully"))
     })
 
-    // controller to delete a video
     deleteVideo = asyncHandler(async (req, res) => {
-        //get video id from request params
         const { videoId } = req.params;
         const userId = req.user?._id;
-        //find video by id
+        if (!userId || !videoId) throw new ApiError(400, "Please provide userId and videoId")
         const video = await Video.findById(videoId);
         if (!video) {
             throw new ApiError(400, "invalid videoId")
@@ -47,100 +37,159 @@ class VideoC {
         if (video.userId.toString() !== userId.toString()) {
             throw new ApiError(400, "You are not authorized to delete this video")
         }
-        //delete video from database
         await Video.findByIdAndDelete(video._id);
-        return res.status(200).json(new ApiResponse(200, {}, "Video deleted successfully"))
+        return res.status(200).json(new ApiResponse(200, null, "Video deleted successfully"))
     })
-    // controller to update a video
-    updateVideo = asyncHandler(async (req, res) => {
-        try {
-            //get video id from request params 
-            const { videoId } = req.params;
-            const userId = req.user?._id;
-            //get title, description from request body
-            const { title, description } = req.body;
-            //check if title or description or thumbnail is provided
-            if (!title && !description) {
-                throw new ApiError(400, "Please provide title or description")
-            }
-            //find video by id
-            const video = await Video.findById(videoId);
-            if (!video) {
-                throw new ApiError(500, "Invalid videoId")
-            }
-            if (video.userId.toString() !== userId.toString()) {
-                throw new ApiError(400, "You are not authorized to update this video")
-            }
-            //update video
-            if (title) video.title = title;
-            if (description) video.description = description;
-            //save video
-            await video.save({ validateBeforeSave: false });
-            return res.status(200).json(new ApiResponse(200, video, "Video updated successfully"))
-        } catch (error) {
-            console.error("ERROR: ", error.message)
-        }
-    })
-    // controller to toggle publish status of a video
-    togglePublishStatus = asyncHandler(async (req, res) => {
-        //get video id from request params
+    updateVideoDetails = asyncHandler(async (req, res) => {
         const { videoId } = req.params;
-        //find video by id 
+        const userId = req.user?._id;
+        if (!userId || !videoId) throw new ApiError(400, "Please provide userId and videoId")
+        const { title, description } = req.body;
+        if (!title && !description) {
+            throw new ApiError(400, "Please provide title or description")
+        }
+        const video = await Video.findById(videoId);
+        if (!video) {
+            throw new ApiError(500, "Invalid videoId")
+        }
+        if (video.userId.toString() !== userId.toString()) {
+            throw new ApiError(400, "You are not authorized to update this video")
+        }
+        if (title) video.title = title;
+        if (description) video.description = description;
+        await video.save({ validateBeforeSave: false });
+        return res.status(200).json(new ApiResponse(200, null, "Video updated successfully"))
+    })
+    togglePublishStatus = asyncHandler(async (req, res) => {
+        const { videoId } = req.params;
+        if (!videoId) throw new ApiError(400, "Please provide videoId")
         const video = await Video.findById(videoId);
         if (!video) {
             throw new ApiError(404, "Video not found")
         }
-        //toggle publish status
         video.isPublished = !video.isPublished;
-        //save the video
         await video.save({ validateBeforeSave: false });
-        return res.status(200).json(new ApiResponse(200, {}, `Video ${video.isPublished ? "published" : "unpublished"} successfully`))
+        return res.status(200).json(new ApiResponse(200, null, `Video ${video.isPublished ? "published" : "unpublished"} successfully`))
     })
 
     getAllVideos = asyncHandler(async (req, res) => {
         const { page, limit } = req.query;
-        try {
-            const videos = await Video.aggregate([
-                {
-                    $lookup: {
-                        from: "users",
-                        localField: "userId",
-                        foreignField: "_id",
-                        as: "creator",
-                    }
-                },
-                {
-                    $addFields: {
-                        creator: {
-                            $first: "$creator"
-                        }
-                    }
-                },
-                {
-                    $sort: {
-                        createdAt: -1
-                    }
-                },
-                {
-                    $skip: page * Number(limit)
-                },
-                {
-                    $limit: Number(limit)
-                },
-                {
-                    $project: {
-                        userId: 0,
-                        isPublished: 0,
-                        __v: 0,
+        if (!page || !limit) throw new ApiError(400, "Please provide page and limit")
+        const videos = await Video.aggregate([
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "userId",
+                    foreignField: "_id",
+                    as: "creator",
+                }
+            },
+            {
+                $addFields: {
+                    creator: {
+                        $first: "$creator"
                     }
                 }
-            ])
-            return res.status(200).json(new ApiResponse(200, videos, "All videos fetched successfully"))
-        } catch (error) {
-            console.error("ERROR: ", error.message)
-        }
+            },
+            {
+                $sort: {
+                    createdAt: -1
+                }
+            },
+            {
+                $skip: page * Number(limit)
+            },
+            {
+                $limit: Number(limit)
+            },
+            {
+                $project: {
+                    _id: 1,
+                    title: 1,
+                    thumbnail: 1,
+                    duration: 1,
+                    views: 1,
+                    createdAt: 1,
+                    creator: {
+                        _id: 1,
+                        username: 1,
+                        fullname: 1,
+                        avatar: 1
+                    }
+                }
+            }
+        ])
+        return res.status(200).json(new ApiResponse(200, { videos }, "All videos fetched successfully"))
     })
-
+    getLikedVideos = asyncHandler(async (req, res) => {
+        const userId = req.user?._id;
+        if (!userId) throw new ApiError(400, "Please provide userId");
+    
+        const likedVideos = await Like.aggregate([
+            {
+                $match: {
+                    userId: new mongoose.Types.ObjectId(userId),
+                    videoId: { $ne: null },
+                },
+            },
+            {
+                $lookup: {
+                    from: "videos",
+                    localField: "videoId",
+                    foreignField: "_id",
+                    as: "video",
+                },
+            },
+            {
+                $addFields: {
+                    video: { $first: "$video" }, 
+                },
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "video.userId",
+                    foreignField: "_id",
+                    as: "creator",
+                },
+            },
+            {
+                $addFields: {
+                    creator: {
+                        $first: "$creator", 
+                    },
+                },
+            },
+            {
+                $project: {
+                    _id: "$video._id", 
+                    title: "$video.title",
+                    thumbnail: "$video.thumbnail",
+                    duration: "$video.duration",
+                    views: "$video.views",
+                    createdAt: "$video.createdAt",
+                    updatedAt: "$video.updatedAt",
+                    creator: {
+                        _id: 1,
+                        username: 1,
+                        fullname: 1,
+                        avatar: 1,
+                    },
+                },
+            },
+        ]);
+    
+        return res
+            .status(200)
+            .json(
+                new ApiResponse(
+                    200,
+                    { likedVideos },
+                    "All liked videos fetched successfully"
+                )
+            );
+    });
+    
     getSingleVideo = asyncHandler(async (req, res) => {
         const { videoId } = req.params;
         const video = await Video.aggregate(
@@ -172,133 +221,172 @@ class VideoC {
                 }
             ]
         )
-        return res.status(200).json(new ApiResponse(200, video[0], "Video fetched successfully"))
+        return res.status(200).json(new ApiResponse(200, { video: video[0] }, "Video fetched successfully"))
     })
     getUserVideos = asyncHandler(async (req, res) => {
         const { userId } = req.params;
-        try {
-            const videos = await Video.aggregate([
-                {
-                    $match: {
-                        userId: new mongoose.Types.ObjectId(userId)
-                    }
-                },
-                {
-                    $lookup: {
-                        from: "users",
-                        localField: "userId",
-                        foreignField: "_id",
-                        as: "creator",
-                    }
-                },
-                {
-                    $addFields: {
-                        creator: {
-                            $first: "$creator"
-                        }
-                    }
-                }, {
-                    $project: {
-                        userId: 0,
-                        isPublished: 0,
-                        __v: 0,
-                    }
-                }, {
-                    $sort: {
-                        createdAt: -1
+        if (!userId) throw new ApiError(400, "Please provide userId")
+        const videos = await Video.aggregate([
+            {
+                $match: {
+                    userId: new mongoose.Types.ObjectId(userId)
+                }
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "userId",
+                    foreignField: "_id",
+                    as: "creator",
+                }
+            },
+            {
+                $addFields: {
+                    creator: {
+                        $first: "$creator"
                     }
                 }
-            ])
-            return res.status(200).json(new ApiResponse(200, videos, "this channel's all videos fetched successfully"))
-        } catch (error) {
-            console.error("ERROR: ", error.message)
-        }
+            }, {
+                $project: {
+                    userId: 0,
+                    isPublished: 0,
+                    __v: 0,
+                }
+            }, {
+                $sort: {
+                    createdAt: -1
+                }
+            }
+        ])
+        return res.status(200).json(new ApiResponse(200, { videos }, "this channel's all videos fetched successfully"))
     })
 
     getVideosByQuery = asyncHandler(async (req, res) => {
-
-        const { query } = req.query;
-        //query will be parameter
-        try {
-            const videos = await Video.aggregate([
-                {
-                    $match: {
-                        $or: [
+        const { query, page = 1, limit = 10 } = req.query;
+    
+        if (!query) throw new ApiError(400, "Please provide a search query");
+    
+        const skip = (page - 1) * limit;
+    
+        const pipeline = [
+            // Match stage: Search in title and description
+            {
+                $match: {
+                    $or: [
+                        { title: { $regex: query, $options: "i" } },
+                        { description: { $regex: query, $options: "i" } },
+                    ],
+                },
+            },
+            // Lookup stage: Fetch creator details
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "userId",
+                    foreignField: "_id",
+                    as: "creator",
+                },
+            },
+            // Flatten creator array
+            {
+                $addFields: {
+                    creator: { $first: "$creator" },
+                },
+            },
+            // Scoring logic: Combine views, recency, and relevance
+            {
+                $addFields: {
+                    customScore: {
+                        $add: [
+                            { $multiply: [{ $divide: ["$views", 1000] }, 0.4] }, // Views weight
                             {
-                                title: {
-                                    $regex: query,
-                                    $options: "i"
-                                }
+                                $multiply: [
+                                    { $subtract: [new Date(), "$createdAt"] },
+                                    -0.00000001,
+                                ],
+                            }, // Recency weight
+                            {
+                                $cond: {
+                                    if: {
+                                        $or: [
+                                            { $regexMatch: { input: "$title", regex: query, options: "i" } },
+                                            { $regexMatch: { input: "$description", regex: query, options: "i" } },
+                                        ],
+                                    },
+                                    then: 1.5, // Relevance boost
+                                    else: 0,
+                                },
                             },
-                            {
-                                description: {
-                                    $regex: query,
-                                    $options: "i"
-                                }
-                            }
-                        ]
-                    }
+                        ],
+                    },
                 },
-                {
-                    $lookup: {
-                        from: "users",
-                        localField: "userId",
-                        foreignField: "_id",
-                        as: "creator",
-                    }
+            },
+            // Exclude sensitive fields
+            {
+                $project: {
+                    userId: 0,
+                    isPublished: 0,
+                    __v: 0,
                 },
-                {
-                    $addFields: {
-                        creator: {
-                            $first: "$creator"
-                        }
-                    }
-                },
-                {
-                    $project: {
-                        userId: 0,
-                        isPublished: 0,
-                        __v: 0,
-                    }
-                }, {
-                    $sort: {
-                        createdAt: -1
-                    }
-                }
-            ])
-            return res.status(200).json(new ApiResponse(200, videos, "All videos by search query fetched successfully"))
-        } catch (error) {
-            console.error("ERROR: ", error.message)
-        }
-    })
-
+            },
+            // Sort by custom score
+            {
+                $sort: { customScore: -1 },
+            },
+            // Pagination
+            { $skip: skip },
+            { $limit: parseInt(limit) },
+        ];
+    
+        const videos = await Video.aggregate(pipeline);
+    
+        // Count total for pagination metadata
+        const total = await Video.countDocuments({
+            $or: [
+                { title: { $regex: query, $options: "i" } },
+                { description: { $regex: query, $options: "i" } },
+            ],
+        });
+    
+        const metadata = {
+            total,
+            page: parseInt(page),
+            limit: parseInt(limit),
+            totalPages: Math.ceil(total / limit),
+        };
+    
+        return res.status(200).json(
+            new ApiResponse(200, { videos, metadata }, "Videos fetched successfully")
+        );
+    });
+    
     getRecommendedVideos = asyncHandler(async (req, res) => {
-        try {
-            const { _id: userId } = req.user;
-            const { videoId } = req.params;
+        const { user } = req;
+        const { videoId } = req.params;
+        if (!videoId) {
+            throw new ApiError(400, "Please provide videoId")
+        }
+        const currentVideo = await Video.findById(videoId);
+        if (!currentVideo) {
+            return res.status(404).json({ message: 'Video not found' });
+        }
 
-            // Find the current video
-            const currentVideo = await Video.findById(videoId);
-            if (!currentVideo) {
-                return res.status(404).json({ message: 'Video not found' });
-            }
+        let watchedVideoIds = [];
+        let recommendations = [];
 
-            // Fetch user's watch history
-            const user = await User.findById(userId).populate('watchHistory');
-            const watchedVideoIds = user.watchHistory.map(video => video._id);
+        if (user) {
+            const userData = await User.findById(user._id).populate('watchHistory');
+            watchedVideoIds = userData.watchHistory.map(video => video._id);
 
-            // Hybrid Recommendation Pipeline
-            const recommendations = await Video.aggregate([
+            recommendations = await Video.aggregate([
                 {
                     $match: {
-                        // Exclude current video and already watched videos
                         _id: {
                             $nin: [videoId, ...watchedVideoIds]
                         },
                         isPublished: true
                     }
                 },
-                // Content-Based: Similar to current video
                 {
                     $addFields: {
                         contentScore: {
@@ -311,46 +399,40 @@ class VideoC {
                         }
                     }
                 },
-                // Collaborative: Consider videos from same creators of watched videos
                 {
                     $addFields: {
                         collaborativeScore: {
                             $cond: [
-                                { $in: ["$userId", user.watchHistory.map(v => v.userId)] },
-                                5, // Boost score for videos from creators of watched videos
+                                { $in: ["$userId", userData.watchHistory.map(v => v.userId)] },
+                                5,
                                 0
                             ]
                         }
                     }
                 },
-                // Popularity Boost
                 {
                     $addFields: {
                         popularityScore: {
                             $divide: [
                                 "$views",
-                                { $max: [1, "$views"] } // Prevent division by zero
+                                { $max: [1, "$views"] }
                             ]
                         }
                     }
                 },
-                // Combine Scoring
                 {
                     $addFields: {
                         totalScore: {
                             $add: [
-                                { $multiply: ["$contentScore", 2] },   // Content similarity weight
-                                { $multiply: ["$collaborativeScore", 3] }, // Collaborative filtering weight
-                                { $multiply: ["$popularityScore", 1.5] }  // Popularity weight
+                                { $multiply: ["$contentScore", 2] },
+                                { $multiply: ["$collaborativeScore", 3] },
+                                { $multiply: ["$popularityScore", 1.5] }
                             ]
                         }
                     }
                 },
-                // Sort by total score
                 { $sort: { totalScore: -1 } },
-                // Add some randomness
-                { $sample: { size: 5 } }, // Random selection among top recommendations
-                // Lookup creator details
+                { $sample: { size: 5 } },
                 {
                     $lookup: {
                         from: 'users',
@@ -360,53 +442,51 @@ class VideoC {
                     }
                 },
                 { $unwind: '$creator' },
-                // Final limit
                 { $limit: 10 }
             ]);
-
-            // If not enough recommendations, add truly random videos
-            if (recommendations.length < 10) {
-                const randomVideos = await Video.aggregate([
-                    {
-                        $match: {
-                            _id: {
-                                $nin: [
-                                    videoId,
-                                    ...watchedVideoIds,
-                                    ...recommendations.map(r => r._id)
-                                ]
-                            },
-                            isPublished: true
-                        }
-                    },
-                    { $sample: { size: 10 - recommendations.length } },
-                    {
-                        $lookup: {
-                            from: 'users',
-                            localField: 'userId',
-                            foreignField: '_id',
-                            as: 'creator'
-                        }
-                    },
-                    { $unwind: '$creator' },
-                ]);
-
-                recommendations.push(...randomVideos);
-            }
-
-            return res.status(200).json(new ApiResponse(200, recommendations, 'Recommended videos fetched successfully'));
-        } catch (error) {
-            console.error('Recommendation error:', error);
         }
-    })
+
+        if (!user || recommendations.length < 10) {
+            const additionalVideos = await Video.aggregate([
+                {
+                    $match: {
+                        _id: {
+                            $nin: [
+                                videoId,
+                                ...watchedVideoIds,
+                                ...recommendations.map(r => r._id)
+                            ]
+                        },
+                        isPublished: true
+                    }
+                },
+                { $sample: { size: 10 - recommendations.length } },
+                {
+                    $lookup: {
+                        from: 'users',
+                        localField: 'userId',
+                        foreignField: '_id',
+                        as: 'creator'
+                    }
+                },
+                { $unwind: '$creator' },
+            ]);
+            recommendations.push(...additionalVideos);
+        }
+
+        recommendations = recommendations.filter(video => String(video._id) !== String(videoId));
+
+        return res.status(200).json(new ApiResponse(200, { recommendations }, 'Recommended videos fetched successfully'));
+    });
 
     increaseViews = asyncHandler(async (req, res) => {
         const { videoId } = req.params;
+        if (!videoId) throw new ApiError(400, "Please provide videoId")
         const video = await Video.findById(videoId);
         video.views++;
         await video.save({ validateBeforeSave: false })
-        return res.status(200).json(new ApiResponse(200, video, "successfully video's views increased"))
+        return res.status(200).json(new ApiResponse(200, null, "successfully video's views increased"))
     })
 }
 
-export default new VideoC();
+export default new VideoController();

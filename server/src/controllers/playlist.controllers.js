@@ -4,16 +4,13 @@ import { ApiError } from "../utils/ApiError.js";
 import { PlayList } from "../models/playlist.models.js";
 import mongoose from "mongoose";
 
-class PlayListC {
-    //controller to create a playlist
+class PlaylistController {
     createPlaylist = asyncHandler(async (req, res) => {
-        //get name and description from request body
         const { name, description } = req.body;
-        //get user id from request user object
         const userId = req.user?._id;
-        //check if name and description are provided
-        if (!name) throw new ApiError(400, "Name and description are required");
-        //create playlist
+        if (!name || !userId) {
+            throw new ApiError(400, "Name and userId are required")
+        }
         const playlist = await PlayList.create({
             name,
             description,
@@ -22,13 +19,25 @@ class PlayListC {
         if (!playlist) {
             throw new ApiError(500, "Failed to create playlist");
         }
-        return res.status(201).json(new ApiResponse(201, playlist, "Playlist created successfully"));
+        return res.status(201).json(new ApiResponse(201, null, "Playlist created successfully"));
     })
-    //controller to get all playlists of a user
+    isSavedToPlaylist = asyncHandler(async (req, res) => {
+        const { playlistId, videoId } = req.params;
+        if (!playlistId || !videoId) {
+            throw new ApiError(400, "PlaylistId and videoId are required");
+        }
+        const playlist = await PlayList.findById(playlistId);
+        if (!playlist) {
+            throw new ApiError(404, "Playlist not found");
+        }
+        const video = playlist.videos.find(v => v == videoId);
+        return res.status(200).json(new ApiResponse(200, { isSaved: !!video }, "Video is saved to playlist"));
+    })
     getUserPlaylists = asyncHandler(async (req, res) => {
-        //get user id from request params
         const { userId } = req.params;
-        //find all playlists of a user
+        if (!userId) {
+            throw new ApiError(400, "UserId is required")
+        }
         const playlists = await PlayList.aggregate([
             {
                 $match: {
@@ -85,20 +94,14 @@ class PlayListC {
                 }
             }
         ])
-        return res.status(200).json(new ApiResponse(200, playlists, "Playlists fetched successfully"))
+        return res.status(200).json(new ApiResponse(200, { playlists }, "Playlists fetched successfully"))
     })
-    //controller to get a playlist by id
     getPlaylistById = asyncHandler(async (req, res) => {
-        //get playlist id from request params
         const { playlistId } = req.params
-        // const playlist = await PlayList.findById(playlistId).populate({
-        //     path: "videos",
-        //     populate: {
-        //         path: "userId",
-        //         select: "fullname"
-        //     }
-        // })
-        const playlist = await PlayList.aggregate([
+        if (!playlistId) {
+            throw new ApiError(400, "PlaylistId is required")
+        }
+        const playlists = await PlayList.aggregate([
             {
                 $match: {
                     _id: new mongoose.Types.ObjectId(playlistId),
@@ -151,17 +154,16 @@ class PlayListC {
                 }
             }
         ]);
-        return res.status(200).json(new ApiResponse(200, playlist[0], "Playlist fetched successfully"));
+        if (!playlists) {
+            throw new ApiError(404, "Playlist not found")
+        }
+        return res.status(200).json(new ApiResponse(200, { playlist: playlists[0] }, "Playlist fetched successfully"));
     })
-    //controller to add a video to a playlist
     addVideoToPlaylist = asyncHandler(async (req, res) => {
-        //get playlist id and video id from request params
         const { playlistId, videoId } = req.params
-        //check if playlistId and videoId are provided
         if (!playlistId || !videoId) {
             throw new ApiError(400, "PlaylistId and videoId are required");
         }
-        //add video to playlist
         const playlist = await PlayList.findByIdAndUpdate(playlistId, {
             $push: {
                 videos: new mongoose.Types.ObjectId(videoId)
@@ -169,27 +171,24 @@ class PlayListC {
         }, {
             new: true
         });
-        return res.status(200).json(new ApiResponse(200, playlist, "Video added to playlist successfully"));
+        if(!playlist){
+            throw new ApiError(500, "Failed to add video to playlist");
+        }
+        return res.status(200).json(new ApiResponse(200, null, "Video added to playlist successfully"));
     })
-    //controller to remove a video from a playlist
     removeVideoFromPlaylist = asyncHandler(async (req, res) => {
-        //get playlist id and video id from request params
         const { playlistId, videoId } = req.params;
-        //check if playlistId and videoId are provided
         if (!playlistId || !videoId) {
             throw new ApiError(400, "PlaylistId and videoId are required");
         }
-        //find playlist by id
         const playlist = await PlayList.findById(playlistId);
         if (!playlist) {
             throw new ApiError(404, "Playlist not found");
         }
-        //check if video exists in playlist
         const video = playlist.videos.find(v => v == videoId);
         if (!video) {
             throw new ApiError(404, "Video not found in playlist");
         }
-        //remove video from playlist
         const updatedPlaylist = await PlayList.findByIdAndUpdate(playlist._id, {
             $pull: {
                 videos: new mongoose.Types.ObjectId(videoId)
@@ -199,33 +198,28 @@ class PlayListC {
         });
         return res.status(200).json(new ApiResponse(200, updatedPlaylist, "Video removed from playlist successfully"));
     })
-    //controller to delete a playlist
     deletePlaylist = asyncHandler(async (req, res) => {
-        //get playlist id from request params
         const { playlistId } = req.params;
-        //find playlist by id
+        if (!playlistId) {
+            throw new ApiError(400, "PlaylistId is required")
+        }
         const playlist = await PlayList.findById(playlistId);
         if (!playlist) {
             throw new ApiError(404, "Playlist not found");
         }
-        //delete playlist
         const isDeleted = await PlayList.findByIdAndDelete(playlist._id);
         if (!isDeleted) {
             throw new ApiError(500, "Failed to delete playlist");
         }
-        return res.status(200).json(new ApiResponse(200, {}, "Playlist deleted successfully"));
+        return res.status(200).json(new ApiResponse(200, null, "Playlist deleted successfully"));
     })
-    // controller to update the name or description or both of a playlist
     updatePlaylist = asyncHandler(async (req, res) => {
-        //get playlist id from request params and name and description from request body
         const { playlistId } = req.params
         const { name, description } = req.body
-        //check if name or description is provided
-        if (!name && !description) {
-            throw new ApiError(400, "Name or description is required");
+        if ((!name && !description) || !playlistId) {
+            throw new ApiError(400, "Name or description and playlistId is required");
         }
-        //find playlist by id and update
-        let playlist = await PlayList.findById(playlistId);
+        const playlist = await PlayList.findById(playlistId);
         if (!playlist) {
             throw new ApiError(404, "Playlist not found");
         }
@@ -235,10 +229,13 @@ class PlayListC {
         if (description) {
             playlist.description = description;
         }
-        playlist.save({ validateBeforeSave: false });
-        return res.status(200).json(new ApiResponse(200, playlist, "Playlist updated successfully"));
+        const updatedPlaylist = await playlist.save({ validateBeforeSave: false });
+        if(!updatedPlaylist){
+            throw new ApiError(500, "Failed to update playlist");
+        }
+        return res.status(200).json(new ApiResponse(200, null, "Playlist updated successfully"));
     })
 }
 
 
-export default new PlayListC();
+export default new PlaylistController();

@@ -39,7 +39,8 @@ export const getObjectUrl = async (bucket: string, key: string) => {
 
 export const uploadFile = async (file: File) => {
     const contentType = file.type || "application/octet-stream";
-    const key = `uploads/user-uploads/${Date.now()}.${file.type}`;
+    const fileExtension = file.name.split(".").pop();
+    const key = `uploads/user-uploads/${Date.now()}.${fileExtension}`;
     try {
         const url = await putObjectUrl(
             "shot-tube-videos",
