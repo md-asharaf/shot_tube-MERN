@@ -11,6 +11,7 @@ import { NavLink, useLocation } from "react-router-dom";
 import { CiMenuBurger } from "react-icons/ci";
 import { ImYoutube } from "react-icons/im";
 import { useWindowSize } from "@/hooks/use-window";
+import { toast } from "sonner";
 
 interface IChannel {
     name: string;
@@ -41,7 +42,9 @@ const BigDrawer = () => {
         },
         enabled: !!userId,
     });
-
+    if (isError) {
+        toast.error(error.message);
+    }
     const options = [
         {
             name: "You >",
@@ -169,8 +172,6 @@ const BigDrawer = () => {
         dispatch(toggleMenu(false));
     };
 
-    if (isError) return <div>Error: {error.message}</div>;
-
     const data = channels?.map((channel) => ({
         ...channel,
         route: `/${channel.username}/channel`,
@@ -182,12 +183,16 @@ const BigDrawer = () => {
     return (
         <div
             className={`${
-                (isSmallScreen || isVideoPage) && "fixed inset-0  dark:bg-black/50 bg-black/50 z-40"
+                (isSmallScreen || isVideoPage) &&
+                "fixed inset-0  dark:bg-black/50 bg-black/50 z-40"
             } w-full`}
             onClick={handleSidebarToggle}
         >
             <div
-                className={`pl-6 w-60 overflow-y-auto h-full ${(isSmallScreen || isVideoPage) && "bg-[#FFFFFF] dark:bg-[#0F0F0F]"}`}
+                className={`pl-6 w-60 overflow-y-auto h-full ${
+                    (isSmallScreen || isVideoPage) &&
+                    "bg-[#FFFFFF] dark:bg-[#0F0F0F]"
+                }`}
             >
                 {(isSmallScreen || isVideoPage) && (
                     <div className="pb-4 pl-1 pt-[14px] flex items-center gap-x-2 md:gap-x-4">
@@ -205,8 +210,16 @@ const BigDrawer = () => {
                 )}
                 <div className="flex-col dark:text-white text-black pl-1">
                     <SidebarLink to="/" label="Home" icon={<GoHome />} />
-                    <SidebarLink to="/shorts" label="Shorts" icon={<SiYoutubeshorts />} />
-                    <SidebarLink to="/subscriptions" label="Subscriptions" icon={<MdOutlineSubscriptions />} />
+                    <SidebarLink
+                        to="/shorts"
+                        label="Shorts"
+                        icon={<SiYoutubeshorts />}
+                    />
+                    <SidebarLink
+                        to="/subscriptions"
+                        label="Subscriptions"
+                        icon={<MdOutlineSubscriptions />}
+                    />
                 </div>
 
                 {userId && (
@@ -216,7 +229,7 @@ const BigDrawer = () => {
                         {isLoading ? (
                             <Skeleton className="h-4 w-full" />
                         ) : (
-                            channels.length > 0 && (
+                            channels?.length > 0 && (
                                 <>
                                     <hr className="my-3" />
                                     <p className="ml-2 mb-2 text-lg font-bold dark:text-white">
@@ -233,7 +246,15 @@ const BigDrawer = () => {
     );
 };
 
-const SidebarLink = ({ to, label, icon }: { to: string; label: string; icon: React.ReactNode }) => {
+const SidebarLink = ({
+    to,
+    label,
+    icon,
+}: {
+    to: string;
+    label: string;
+    icon: React.ReactNode;
+}) => {
     return (
         <NavLink to={to}>
             {({ isActive }) => (
@@ -251,5 +272,3 @@ const SidebarLink = ({ to, label, icon }: { to: string; label: string; icon: Rea
 };
 
 export default BigDrawer;
-
-

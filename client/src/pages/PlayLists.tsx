@@ -8,6 +8,7 @@ import playlistServices from "@/services/playlist.services";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import videoServices from "@/services/video.services";
+import userServices from "@/services/user.services";
 
 const PlayLists = () => {
     const {
@@ -33,6 +34,14 @@ const PlayLists = () => {
         queryFn: async (): Promise<IVideoData[]> => {
             const data = await videoServices.likedVideos();
             return data.likedVideos;
+        },
+        enabled: !!userId,
+    });
+    const { data: watchLaterVideos } = useQuery({
+        queryKey: ["watch-later", userId],
+        queryFn: async (): Promise<IVideoData[]> => {
+            const data = await userServices.getWatchLater();
+            return data.watchLater;
         },
         enabled: !!userId,
     });
@@ -74,7 +83,7 @@ const PlayLists = () => {
                 ))}
                 {likedVideos && (
                     <Link
-                        to="/playlist/liked-videos"
+                        to="/liked-videos"
                         className="space-y-2 rounded-xl p-2 hover:bg-gray-400 hover:dark:bg-zinc-800"
                     >
                         <PlaylistCard
@@ -87,6 +96,26 @@ const PlayLists = () => {
                         />
                         <VideoTitle2
                             playlistName="Liked Videos"
+                            username={username}
+                            fullname={fullname}
+                        />
+                    </Link>
+                )}
+                {watchLaterVideos && (
+                    <Link
+                        to="/watch-later"
+                        className="space-y-2 rounded-xl p-2 hover:bg-gray-400 hover:dark:bg-zinc-800"
+                    >
+                        <PlaylistCard
+                            playlistThumbnail={
+                                watchLaterVideos.length > 0
+                                    ? watchLaterVideos[0].thumbnail
+                                    : null
+                            }
+                            videosLength={watchLaterVideos.length}
+                        />
+                        <VideoTitle2
+                            playlistName="Watch Later"
                             username={username}
                             fullname={fullname}
                         />

@@ -84,7 +84,6 @@ const DragDropInput = ({ label, accept, name, form }) => {
                                         filePreviewUrl && (
                                             <img
                                                 src={filePreviewUrl}
-                                                alt="Preview"
                                                 className="max-h-32 max-w-60 mx-auto"
                                             />
                                         )}

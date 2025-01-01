@@ -4,18 +4,20 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import {
-    Card,
-    CardContent,
-    CardFooter,
-    CardHeader,
-    CardTitle,
-} from "@/components/ui/card";
+    Dialog,
+    DialogContent,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+} from "@/components/ui/dialog";
 import { Input } from "@/components/ui/input";
-import { Plus, X } from "lucide-react";
-import { toast } from "react-toastify";
+import { Plus } from "lucide-react";
+import { toast } from "sonner";
 import { useSelector } from "react-redux";
 import { RootState } from "@/provider";
 import { queryClient } from "@/main";
+import { DialogTrigger } from "@radix-ui/react-dialog";
+import userServices from "@/services/user.services";
 
 interface Props {
     videoId: string;
@@ -33,55 +35,16 @@ const SaveToPlaylist: React.FC<Props> = ({
         Array<boolean>
     >([]);
     const [playlistName, setPlaylistName] = useState<string>("");
-    const [isMainPopoverOpen, setIsMainPopoverOpen] = useState<boolean>(false);
-    const [isNewPlaylistPopoverOpen, setIsNewPlaylistPopoverOpen] =
+    const [isMainDialogOpen, setIsMainDialogOpen] = useState<boolean>(false);
+    const [isNewPlaylistDialogOpen, setIsNewPlaylistDialogOpen] =
         useState<boolean>(false);
 
-    const closePopovers = () => {
-        setIsMainPopoverOpen(false);
-        setIsNewPlaylistPopoverOpen(false);
+    const closeDialogs = () => {
+        setIsMainDialogOpen(false);
+        setIsNewPlaylistDialogOpen(false);
     };
-
-    const { mutate: add } = useMutation({
-        mutationFn: async ({ playlistId }: { playlistId: string }) => {
-            await playlistServices.addVideoToPlaylist(videoId, playlistId);
-            queryClient.invalidateQueries({
-                queryKey: ["playlist", playlistId],
-                exact: true,
-            });
-        },
-        onSuccess: () => {
-            toast.success(`Added to ${playlistName}`);
-            queryClient.invalidateQueries({
-                queryKey: ["playlists", userId],
-                exact: true,
-            });
-            fetch();
-            return true;
-        },
-    });
-    const { mutate: remove } = useMutation({
-        mutationFn: async ({ playlistId }: { playlistId: string }) => {
-            await playlistServices.removeVideoFromPlaylist(videoId, playlistId);
-            queryClient.invalidateQueries({
-                queryKey: ["playlist", playlistId],
-                exact: true,
-            });
-        },
-        onSuccess: () => {
-            toast.success(`Removed from ${playlistName}`);
-            queryClient.invalidateQueries({
-                queryKey: ["playlists", userId],
-                exact: true,
-            });
-            fetch();
-            return true;
-        },
-    });
     const {
         data: playlists,
-        isError,
-        error,
         isLoading,
         refetch,
     } = useQuery({
@@ -92,153 +55,210 @@ const SaveToPlaylist: React.FC<Props> = ({
         },
         enabled: !!userId,
     });
+
+    const { data: isSavedToWatchLater, refetch: refetch2 } = useQuery({
+        queryKey: ["is-video-saved", videoId],
+        queryFn: async () => {
+            const data = await userServices.isSavedToWatchLater(videoId);
+            return data.isSaved;
+        },
+        enabled: !!videoId && !!userId,
+    });
+    
     const fetch = async () => {
-        try {
-            const result = await Promise.all(
-                playlists?.map(async (p) => {
-                    try {
-                        const data = await playlistServices.isSavedToPlaylist(
-                            videoId,
-                            p._id
-                        );
-                        return data.isSaved;
-                    } catch (error) {
-                        throw error;
-                    }
-                })
-            );
-            setIsSavedToPlaylists(result);
-        } catch (error) {
-            return [];
-        }
+        const result = await Promise.all(
+            playlists?.map(async (p) => {
+                const data = await playlistServices.isSavedToPlaylist(
+                    videoId,
+                    p._id
+                );
+                return data.isSaved;
+            })
+        );
+        setIsSavedToPlaylists(result);
     };
-    useEffect(() => {
-        fetch();
-    }, [playlists, videoId]);
+    const { mutate: saveToWatchLater } = useMutation({
+        mutationFn: async () => {
+            await userServices.saveToWatchLater(videoId);
+        },
+        onSuccess: () => {
+            toast.success("Saved to watch later");
+            refetch2();
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({
+                queryKey: ["watch-later", userId],
+                exact: true,
+            });
+        },
+    });
+    const { mutate: removeFromWatchLater } = useMutation({
+        mutationFn: async () => {
+            await userServices.removeFromWatchLater(videoId);
+        },
+        onSuccess: () => {
+            toast.success("Removed from watch later");
+            refetch2();
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({
+                queryKey: ["watch-later", userId],
+                exact: true,
+            });
+        },
+    });
+
+    const { mutate: add } = useMutation({
+        mutationFn: async ({ playlistId }: { playlistId: string }) => {
+            await playlistServices.addVideoToPlaylist(videoId, playlistId);
+        },
+        onSuccess: () => {
+            toast.success(`Added to playlist`);
+            fetch();
+        },
+        onSettled: (data, error, variables) => {
+            queryClient.invalidateQueries({
+                queryKey: ["playlist", variables.playlistId],
+                exact: true,
+            });
+            queryClient.invalidateQueries({
+                queryKey: ["playlists", userId],
+                exact: true,
+            });
+        },
+    });
+
+    const { mutate: remove } = useMutation({
+        mutationFn: async ({ playlistId }: { playlistId: string }) => {
+            await playlistServices.removeVideoFromPlaylist(videoId, playlistId);
+        },
+        onSuccess: () => {
+            toast.success(`Removed from playlist`);
+            fetch();
+        },
+        onSettled: (data, error, variables) => {
+            queryClient.invalidateQueries({
+                queryKey: ["playlist", variables.playlistId],
+                exact: true,
+            });
+            queryClient.invalidateQueries({
+                queryKey: ["playlists", userId],
+                exact: true,
+            });
+        },
+    });
+
     const { mutate: createPlaylist } = useMutation({
         mutationFn: async () => {
             await playlistServices.createPlaylist(playlistName);
         },
         onSuccess: () => {
-            toast.success("Playlist created");
+            toast.success(`${playlistName} created`);
             refetch();
             setPlaylistName("");
-            return true;
         },
     });
 
+    useEffect(() => {
+        fetch();
+    }, [playlists, videoId]);
+
     if (isLoading) return <div>Loading...</div>;
-    if (isError) return <div>Error: {error.message}</div>;
+
     return (
         <>
-            {(isMainPopoverOpen || isNewPlaylistPopoverOpen) && (
-                <div
-                    className="fixed inset-0 bg-black/60 z-40"
-                    onClick={closePopovers}
-                />
-            )}
-
-            {isMainPopoverOpen && (
-                <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-4 z-50">
-                    <Card className="w-60 relative">
-                        <CardHeader>
-                            <CardTitle>
-                                <div className="flex justify-between items-center">
-                                    <div className="text-xl">
-                                        Save video to...
-                                    </div>
-                                    <X
-                                        size={30}
-                                        onClick={closePopovers}
-                                        className="cursor-pointer"
-                                    />
-                                </div>
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <div className="space-y-2">
-                                {playlists?.map((playlist, index) => (
-                                    <div
-                                        key={playlist._id}
-                                        className="flex items-center justify-between"
-                                    >
-                                        <input
-                                            type="checkbox"
-                                            className="h-5 w-5"
-                                            checked={isSavedToPlaylists[index]}
-                                            onChange={(e) => {
-                                                if (e.target.checked) {
-                                                    add({
-                                                        playlistId:
-                                                            playlist._id,
-                                                    });
-                                                } else {
-                                                    remove({
-                                                        playlistId:
-                                                            playlist._id,
-                                                    });
-                                                }
-                                            }}
-                                        />
-                                        <span>{playlist.name}</span>
-                                    </div>
-                                ))}
+            <Dialog open={isMainDialogOpen} onOpenChange={setIsMainDialogOpen}>
+                <DialogTrigger
+                    onClick={() => setIsMainDialogOpen(true)}
+                    className={`${className}`}
+                >
+                    {children}
+                </DialogTrigger>
+                <DialogContent className="w-60 bg-white dark:bg-[#212121]">
+                    <DialogHeader>
+                        <DialogTitle>Save video to...</DialogTitle>
+                    </DialogHeader>
+                    <div className="space-y-4">
+                        {userId && (
+                            <div className="flex items-center justify-between">
+                                <input
+                                    type="checkbox"
+                                    className="h-5 w-5"
+                                    checked={isSavedToWatchLater}
+                                    onChange={(e) => {
+                                        if (e.target.checked) {
+                                            saveToWatchLater();
+                                        } else {
+                                            removeFromWatchLater();
+                                        }
+                                    }}
+                                />
+                                <span>Watch Later</span>
                             </div>
-                        </CardContent>
-                        <CardFooter className="flex justify-center">
-                            <Button
-                                variant="outline"
-                                className="px-10 rounded-full flex items-center space-x-2"
-                                onClick={() => {
-                                    setIsMainPopoverOpen(false);
-                                    setIsNewPlaylistPopoverOpen(true);
-                                }}
+                        )}
+                        {playlists?.map((playlist, index) => (
+                            <div
+                                key={playlist._id}
+                                className="flex items-center justify-between"
                             >
-                                <Plus className="text-2xl" />
-                                <span>New Playlist</span>
-                            </Button>
-                        </CardFooter>
-                    </Card>
-                </div>
-            )}
+                                <input
+                                    type="checkbox"
+                                    className="h-5 w-5"
+                                    checked={isSavedToPlaylists[index]}
+                                    onChange={(e) => {
+                                        if (e.target.checked) {
+                                            add({ playlistId: playlist._id });
+                                        } else {
+                                            remove({
+                                                playlistId: playlist._id,
+                                            });
+                                        }
+                                    }}
+                                />
+                                <span>{playlist.name}</span>
+                            </div>
+                        ))}
+                    </div>
+                    <DialogFooter>
+                        <Button
+                            className="w-full justify-center"
+                            onClick={() => {
+                                setIsMainDialogOpen(false);
+                                setIsNewPlaylistDialogOpen(true);
+                            }}
+                        >
+                            <Plus className="mr-2" /> New Playlist
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
 
-            {isNewPlaylistPopoverOpen && (
-                <div className="fixed top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 p-4 z-50">
-                    <Card className="w-60">
-                        <CardHeader>
-                            <CardTitle className="text-xl">
-                                New Playlist
-                            </CardTitle>
-                        </CardHeader>
-                        <CardContent>
-                            <Input
-                                value={playlistName}
-                                placeholder="Enter playlist name"
-                                onChange={(e) =>
-                                    setPlaylistName(e.target.value)
-                                }
-                            />
-                        </CardContent>
-                        <CardFooter className="space-x-4">
-                            <Button variant="outline" onClick={closePopovers}>
-                                Cancel
-                            </Button>
-                            <Button
-                                onClick={() => createPlaylist()}
-                                disabled={!playlistName.trim()}
-                            >
-                                Create
-                            </Button>
-                        </CardFooter>
-                    </Card>
-                </div>
-            )}
-            <button
-                onClick={() => setIsMainPopoverOpen(true)}
-                className={`${className}`}
+            <Dialog
+                open={isNewPlaylistDialogOpen}
+                onOpenChange={setIsNewPlaylistDialogOpen}
             >
-                {children}
-            </button>
+                <DialogContent className="w-80 bg-white dark:bg-[#212121]">
+                    <DialogHeader>
+                        <DialogTitle>New Playlist</DialogTitle>
+                    </DialogHeader>
+                    <Input
+                        value={playlistName}
+                        placeholder="Enter playlist name"
+                        onChange={(e) => setPlaylistName(e.target.value)}
+                    />
+                    <DialogFooter className="sm:justify-between">
+                        <Button variant="outline" onClick={closeDialogs}>
+                            Cancel
+                        </Button>
+                        <Button
+                            onClick={() => createPlaylist()}
+                            disabled={!playlistName.trim()}
+                        >
+                            Create
+                        </Button>
+                    </DialogFooter>
+                </DialogContent>
+            </Dialog>
         </>
     );
 };

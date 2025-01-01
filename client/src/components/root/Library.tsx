@@ -11,9 +11,11 @@ import VideoTitle2 from "./VideoTitle2";
 const Library = ({
     videos = null,
     playlists = null,
+    label,
 }: {
     videos?: IVideoData[];
     playlists?: IPlaylist[];
+    label: string;
 }) => {
     const carouselRef = useRef<HTMLDivElement>(null);
 
@@ -34,16 +36,12 @@ const Library = ({
     return (
         <div className="dark:text-white space-y-4 px-4">
             <div className="flex justify-between">
-                <div className="text-2xl">
-                    {videos ? "History" : "Playlists"}
-                </div>
-                {videos && (
-                    <Link to="/watch-history">
-                        <button className="rounded-full bg-white dark:bg-black text-black shadow-none border-zinc-400 border-[1px] dark:text-white dark:border-[1px] dark:border-zinc-600 py-2 px-3">
-                            View all
-                        </button>
-                    </Link>
-                )}
+                <div className="text-2xl">{label}</div>
+                <Link to={`/${label.toLocaleLowerCase().split(' ').join('-')}`}>
+                    <button className="rounded-full bg-white dark:bg-black text-black shadow-none border-zinc-400 border-[1px] dark:text-white dark:border-[1px] dark:border-zinc-600 py-2 px-3">
+                        View all
+                    </button>
+                </Link>
             </div>
             <div className="relative">
                 <button

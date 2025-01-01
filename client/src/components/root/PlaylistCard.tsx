@@ -10,7 +10,6 @@ const PlaylistCard: React.FC<Props> = ({playlistThumbnail,videosLength}) => {
                 src={
                     playlistThumbnail
                 }
-                alt="Video thumbnail"
                 className="w-full h-full aspect-video object-cover rounded-xl"
                 loading="lazy"
             />

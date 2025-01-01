@@ -8,6 +8,7 @@ import Library from "../components/root/Library";
 import subscriptionServices from "@/services/subscription.services";
 import { Loader2 } from "lucide-react";
 import userServices from "@/services/user.services";
+import videoServices from "@/services/video.services";
 const PlaylistNhistory = () => {
     const userData = useSelector((state: RootState) => state.auth.userData);
     const { data: subscriberCount } = useQuery({
@@ -20,15 +21,15 @@ const PlaylistNhistory = () => {
         },
         enabled: !!userData,
     });
-    const { data: videos} = useQuery({
-        queryKey: ["videos", userData?._id],
+    const { data: watchHistory,isLoading:Loading1} = useQuery({
+        queryKey: ["watch-history", userData?._id],
         queryFn: async ():Promise<IVideoData[]> => {
             const data = await userServices.getWatchHistory();
             return data.watchHistory;
         },
         enabled: !!userData,
     });
-    const { data: playlists, isLoading } = useQuery({
+    const { data: playlists, isLoading:Loading2 } = useQuery({
         queryKey: ["playlists", userData?._id],
         queryFn: async ():Promise<IPlaylist[]> => {
             const data = await playlistServices.getAllPlaylists(userData?._id);
@@ -36,7 +37,23 @@ const PlaylistNhistory = () => {
         },
         enabled: !!userData?._id,
     });
-    if (isLoading) {
+    const { data: watchLater,isLoading:Loading3} = useQuery({
+        queryKey: ["watch-later", userData?._id],
+        queryFn: async ():Promise<IVideoData[]> => {
+            const data = await userServices.getWatchLater();
+            return data.watchLater;
+        },
+        enabled: !!userData,
+    });
+    const { data: likedVideos, isLoading:Loading4 } = useQuery({
+        queryKey: ["liked-videos", userData?._id],
+        queryFn: async ():Promise<IVideoData[]> => {
+            const data = await videoServices.likedVideos();
+            return data.likedVideos;
+        },
+        enabled: !!userData?._id,
+    });
+    if (Loading1 || Loading2 || Loading3 || Loading4) {
         return (
             <div className="flex w-[90%] justify-center">
                 <Loader2 className="h-10 w-10 animate-spin" />
@@ -49,7 +66,6 @@ const PlaylistNhistory = () => {
                 <img
                     src={userData?.avatar || DefaultAvatarImage}
                     className="rounded-full h-32 w-32"
-                    alt="User avatar"
                     loading="lazy"
                 />
                 <div className="space-y-2">
@@ -59,13 +75,15 @@ const PlaylistNhistory = () => {
                     <div className="text-gray-500 dark:text-zinc-300">{`@${
                         userData?.username
                     } • ${subscriberCount} subscribers • ${
-                        videos?.length || 0
+                        watchHistory?.length || 0
                     } videos`}</div>
                 </div>
             </div>
             <div className="space-y-16">
-                {videos?.length > 0 && <Library videos={videos} />}
-                {playlists?.length > 0 && <Library playlists={playlists} />}
+                {watchHistory?.length > 0 && <Library videos={watchHistory} label="Watch History" />}
+                {playlists?.length > 0 && <Library playlists={playlists} label="Playlists"/>}
+                {watchLater?.length > 0 && <Library videos={watchLater} label="Watch Later"/>}
+                {likedVideos?.length > 0 && <Library videos={likedVideos} label="Liked Videos"/>}
             </div>
         </div>
     );

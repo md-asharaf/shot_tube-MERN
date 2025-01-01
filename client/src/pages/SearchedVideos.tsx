@@ -38,7 +38,6 @@ const SearchedVideos = () => {
                         <div className="relative flex-shrink-0 w-1/2 lg:w-2/5 xl:w-1/3 aspect-video">
                             <img
                                 src={video.thumbnail}
-                                alt="Video Thumbnail"
                                 className="w-full h-full rounded-lg object-cover"
                                 loading="lazy"
                             />
@@ -65,7 +64,6 @@ const SearchedVideos = () => {
                                         video.creator.avatar ||
                                         DefaultAvatarImage
                                     }
-                                    alt="Creator Avatar"
                                     className="w-10 h-10 rounded-full object-cover"
                                     loading="lazy"
                                 />

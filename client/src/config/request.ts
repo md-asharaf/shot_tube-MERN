@@ -1,5 +1,6 @@
 import axios from "axios";
 import { defaultConfig, jsonConfig, formdataConfig } from ".";
+import { ApiResponse } from "@/interfaces";
 
 const axiosInstance = axios.create({
     baseURL: process.env.BACKEND_BASE_URL,
@@ -12,7 +13,7 @@ axiosInstance.interceptors.response.use(
         if (error.response?.status === 401) {
             // showLoginPopover();
         }
-        return Promise.reject(error.response?.data.message);
+        return Promise.reject(error.response?.data as ApiResponse);
     }
 );
 class Axios {

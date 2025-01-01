@@ -3,7 +3,6 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { Link, useNavigate } from "react-router-dom";
 import { signUpFormValidation } from "../ui/validation";
-import { useDispatch } from "react-redux";
 import { IoLogoYoutube } from "react-icons/io";
 import authService from "@/services/auth.services";
 import { IRegisterForm } from "@/interfaces";
@@ -15,10 +14,9 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import PasswordInput from "../root/PasswordInput";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 const SignUp = () => {
     const navigate = useNavigate();
-    const dispatch = useDispatch();
     const form = useForm<IRegisterForm>({
         resolver: zodResolver(signUpFormValidation),
         defaultValues: {
@@ -40,7 +38,7 @@ const SignUp = () => {
     };
 
     return (
-        <div className="h-screen flex items-center justify-center mx-2">
+        <div className="h-screen flex items-center justify-center mx-2 text-black">
             <div className="bg-white p-6 md:p-8 rounded-lg shadow-lg w-full z-10">
                 <div className="text-center mb-6">
                     <div className="flex justify-center space-x-1 items-center">

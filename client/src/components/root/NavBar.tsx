@@ -25,7 +25,7 @@ import { toggleTheme } from "@/provider/theme.slice";
 import { FaSignOutAlt } from "react-icons/fa";
 import { Plus, User } from "lucide-react";
 import { logoutFromGoogle } from "@/lib/firebase";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 const NavBar = () => {
     const navigate = useNavigate();
     const dispatch = useDispatch();
@@ -43,11 +43,12 @@ const NavBar = () => {
             dispatch(logout());
             navigate("/");
         } catch (error) {
+            toast.error(error.message);
             console.error(error);
         }
     };
     return (
-        <div className="flex items-center justify-between p-0 sm:p-8 h-12 gap-2 w-full dark:text-white dark:bg-black bg-white">
+        <div className="flex items-center justify-between p-2 sm:p-8 h-12 gap-2 w-full dark:text-white dark:bg-black bg-white">
             <div className="flex items-center gap-x-2 md:gap-x-4">
                 <CiMenuBurger
                     className="text-4xl dark:text-white hover:bg-zinc-400 dark:hover:bg-zinc-700 p-2 rounded-lg hidden sm:block"

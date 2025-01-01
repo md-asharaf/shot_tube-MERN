@@ -19,7 +19,7 @@ import {
     AlertDialogTrigger,
 } from "@/components/ui/alert-dialog";
 import ThreeDots from "@/components/root/ThreeDots";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 
 const WatchHistory = () => {
     const userId = useSelector((state: RootState) => state.auth.userData?._id);
@@ -120,7 +120,6 @@ const WatchHistory = () => {
                             <div className="relative w-64 min-w-64">
                                 <img
                                     src={video.thumbnail}
-                                    alt="Video Thumbnail"
                                     className="h-full w-full object-cover aspect-video rounded-lg"
                                     loading="lazy"
                                 />

@@ -2,8 +2,6 @@ import { formatDistanceToNowStrict } from "date-fns";
 import { useNavigate } from "react-router-dom";
 import DefaultProfileImage from "@/assets/images/profile.png";
 import ThreeDots from "./ThreeDots";
-import { useSelector } from "react-redux";
-import { RootState } from "@/provider";
 interface Props {
     video: {
         _id: string;
@@ -18,7 +16,6 @@ interface Props {
     };
 }
 const VideoTitle: React.FC<Props> = ({ video, creator }) => {
-    const userId = useSelector((state: RootState) => state.auth.userData?._id);
     const navigate = useNavigate();
     return (
         <div className="flex space-x-3 dark:text-white items-start">
@@ -26,7 +23,6 @@ const VideoTitle: React.FC<Props> = ({ video, creator }) => {
                 <img
                     className="w-10 h-10 rounded-full aspect-video object-cover"
                     src={creator.avatar || DefaultProfileImage}
-                    alt={creator.fullname}
                     loading="lazy"
                 />
             )}

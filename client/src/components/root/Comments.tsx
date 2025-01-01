@@ -7,13 +7,12 @@ import { formatDistanceToNowStrict } from "date-fns";
 import likeServices from "@/services/like.services";
 import { IComment } from "@/interfaces";
 import { useNavigate } from "react-router-dom";
-import { Skeleton } from "../ui/skeleton";
 import { useState } from "react";
 import { FaPlus } from "react-icons/fa";
 import { FiMinus } from "react-icons/fi";
 import { GoDot } from "react-icons/go";
 import DefaultProfileImage from "@/assets/images/profile.png";
-import { ThumbsUp, Trash2 } from "lucide-react";
+import { Loader2, ThumbsUp, Trash2 } from "lucide-react";
 
 const Comments = ({ videoId, playerRef }) => {
     const navigate = useNavigate();
@@ -23,9 +22,7 @@ const Comments = ({ videoId, playerRef }) => {
     const [inputHeight, setInputHeight] = useState(0);
     const {
         data: comments,
-        isError: commentsError,
         isLoading: commentsLoading,
-        error: commentsErrorObj,
         refetch: refetchComments,
     } = useQuery({
         queryKey: ["comments", videoId],
@@ -38,9 +35,7 @@ const Comments = ({ videoId, playerRef }) => {
 
     const {
         data: liked,
-        isError: likedError,
         isLoading: likedLoading,
-        error: likedErrorObj,
         refetch: refetchCommentsLike,
     } = useQuery({
         queryKey: ["commentsLike", videoId],
@@ -74,9 +69,6 @@ const Comments = ({ videoId, playerRef }) => {
             refetchComments();
             return true;
         },
-        onError: (error) => {
-            console.error("Error adding comment:", error);
-        },
     });
 
     const { mutate: toggleCommentLike } = useMutation({
@@ -87,9 +79,6 @@ const Comments = ({ videoId, playerRef }) => {
             refetchCommentsLike();
             return true;
         },
-        onError: (error) => {
-            console.error("Error toggling comment like:", error);
-        },
     });
 
     const { mutate: deleteComment } = useMutation({
@@ -99,9 +88,6 @@ const Comments = ({ videoId, playerRef }) => {
         onSuccess: () => {
             refetchComments();
             return true;
-        },
-        onError: (error: Error) => {
-            console.error("Error deleting comment:", error);
         },
     });
 
@@ -114,24 +100,6 @@ const Comments = ({ videoId, playerRef }) => {
         setContent(e.target.value);
         setInputHeight(e.target.scrollHeight);
     };
-
-    if (commentsLoading || likedLoading)
-        return (
-            <div className="flex flex-col space-y-4 w-full">
-                {[1, 2, 3, 4, 5, 6].map((key) => (
-                    <Skeleton
-                        key={key}
-                        className="h-8 w-full flex space-x-4 items-start"
-                    />
-                ))}
-            </div>
-        );
-    if (commentsError || likedError)
-        return (
-            <div>
-                ERROR: {commentsErrorObj?.message || likedErrorObj?.message}
-            </div>
-        );
 
     const processComment = (
         comment: string,
@@ -169,7 +137,7 @@ const Comments = ({ videoId, playerRef }) => {
         if (playerRef.current) {
             playerRef.current.currentTime = seconds;
             window.scrollTo({
-                top: 0,
+                top: 100,
                 behavior: "smooth",
             });
             if (playerRef.current.paused) {
@@ -178,6 +146,12 @@ const Comments = ({ videoId, playerRef }) => {
         }
     };
 
+    if (commentsLoading || likedLoading)
+        return (
+            <div className="w-full flex justify-center">
+                <Loader2 className="h-10 w-10 animate-spin" />
+            </div>
+        );
     return (
         <div className="px-2">
             <div className="font-bold text-2xl text-zinc-600 dark:text-zinc-300 mb-2">
@@ -319,7 +293,7 @@ const Comments = ({ videoId, playerRef }) => {
                                             >
                                                 <ThumbsUp size={18} />
                                             </Button>
-                                            {user.userData.username ===
+                                            {user.userData?.username ===
                                                 comment.creator.username && (
                                                 <Button
                                                     onClick={() =>

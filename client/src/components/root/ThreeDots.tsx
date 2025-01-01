@@ -3,8 +3,8 @@ import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import SaveToPlaylist from "./SaveToPlaylist";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import userServices from "@/services/user.services";
-import { toast } from "react-toastify";
-import {queryClient} from "../../main"
+import { toast } from "sonner";
+import { queryClient } from "../../main";
 import { useSelector } from "react-redux";
 import { RootState } from "@/provider";
 interface IThreeDots {
@@ -16,18 +16,27 @@ interface IThreeDots {
 }
 export default function ThreeDots({ videoId, task = null }: IThreeDots) {
     const userId = useSelector((state: RootState) => state.auth.userData?._id);
+    const { data: isSavedToWatchLater, refetch } = useQuery({
+        queryKey: ["is-video-saved", videoId],
+        queryFn: async () => {
+            const data = await userServices.isSavedToWatchLater(videoId);
+            return data.isSaved;
+        },
+        enabled: !!videoId && !!userId,
+    });
     const { mutate: saveToWatchLater } = useMutation({
         mutationFn: async () => {
             await userServices.saveToWatchLater(videoId);
         },
         onSuccess: () => {
             toast.success("Saved to watch later");
+            refetch();
+        },
+        onSettled: () => {
             queryClient.invalidateQueries({
                 queryKey: ["watch-later", userId],
                 exact: true,
-            })
-            refetch();
-            return true;
+            });
         },
     });
     const { mutate: removeFromWatchLater } = useMutation({
@@ -36,21 +45,14 @@ export default function ThreeDots({ videoId, task = null }: IThreeDots) {
         },
         onSuccess: () => {
             toast.success("Removed from watch later");
+            refetch();
+        },
+        onSettled: () => {
             queryClient.invalidateQueries({
                 queryKey: ["watch-later", userId],
                 exact: true,
-            })
-            refetch();
-            return true;
+            });
         },
-    });
-    const { data: isSavedToWatchLater, refetch } = useQuery({
-        queryKey: ["is-video-saved", videoId],
-        queryFn: async () => {
-            const data = await userServices.isSavedToWatchLater(videoId);
-            return data.isSaved;
-        },
-        enabled: !!videoId,
     });
     return (
         <div
@@ -63,7 +65,10 @@ export default function ThreeDots({ videoId, task = null }: IThreeDots) {
                 <PopoverTrigger asChild>
                     <EllipsisVertical />
                 </PopoverTrigger>
-                <PopoverContent className="py-2 px-0 w-full rounded-xl shadow-lg bg-white dark:bg-[#212121] dark:text-white text-black border-none text-sm">
+                <PopoverContent
+                    collisionPadding={10}
+                    className="py-2 px-0 w-full rounded-xl shadow-lg bg-white dark:bg-[#212121] dark:text-white text-black border-none text-sm"
+                >
                     <ul className="space-y-2">
                         {task && (
                             <li
@@ -95,23 +100,25 @@ export default function ThreeDots({ videoId, task = null }: IThreeDots) {
                                     : "Save to Watch Later"}
                             </span>
                         </li>
-                        <li className="flex items-center space-x-2 cursor-pointer py-2 px-4 dark:hover:bg-[#535353] hover:bg-[#E5E5E5] rounded-md">
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                className="h-5 w-5"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                stroke="currentColor"
-                            >
-                                <path
-                                    stroke-linejoin="round"
-                                    stroke-width="2"
-                                    d="M5 3v16l7-3 7 3V3H5z"
-                                />
-                            </svg>
+                        <li className="cursor-pointer dark:hover:bg-[#535353] hover:bg-[#E5E5E5] rounded-md">
                             <SaveToPlaylist
                                 videoId={videoId}
+                                className="flex items-center space-x-2 py-2 px-4"
                             >
+                                <svg
+                                    xmlns="http://www.w3.org/2000/svg"
+                                    className="h-5 w-5"
+                                    fill="none"
+                                    viewBox="0 0 24 24"
+                                    stroke="currentColor"
+                                >
+                                    <path
+                                        strokeLinecap="round"
+                                        strokeLinejoin="round"
+                                        strokeWidth="2"
+                                        d="M5 3v16l7-3 7 3V3H5z"
+                                    />
+                                </svg>
                                 <span>Save to playlist</span>
                             </SaveToPlaylist>
                         </li>

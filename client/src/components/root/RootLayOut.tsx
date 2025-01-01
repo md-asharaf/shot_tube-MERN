@@ -7,7 +7,7 @@ import SmallDrawer from "./SmallDrawer";
 import VideoProvider from "@/provider/video.slice";
 import { useEffect, useState } from "react";
 import BottomBar from "./BottomBar";
-import { Bounce, ToastContainer } from "react-toastify";
+// import { Bounce, ToastContainer } from "react-toastify";
 import userServices from "@/services/user.services";
 const RootLayOut = () => {
     const dispatch = useDispatch();
@@ -53,7 +53,7 @@ const RootLayOut = () => {
                 <div className="sm:hidden fixed bottom-0 z-10 left-0 w-full">
                     <BottomBar />
                 </div>
-                <ToastContainer
+                {/* <ToastContainer
                     position="bottom-right"
                     autoClose={3000}
                     hideProgressBar={false}
@@ -65,7 +65,7 @@ const RootLayOut = () => {
                     pauseOnHover={false}
                     theme={theme}
                     transition={Bounce}
-                />
+                /> */}
             </div>
         </VideoProvider>
     );

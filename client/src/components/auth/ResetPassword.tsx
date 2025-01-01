@@ -5,23 +5,22 @@ import { useNavigate, useParams } from "react-router-dom";
 import userServices from "@/services/user.services";
 import { Label } from "../ui/label";
 import PasswordInput from "../root/PasswordInput";
+import { toast } from "sonner";
 
 const ResetPassword = () => {
     const navigate = useNavigate();
     const { resetToken } = useParams();
-    const [message, setMessage] = useState("");
     const [password, setPassword] = useState("");
     const [confirmPassword, setConfirmPassword] = useState("");
     const [loading, setLoading] = useState(false);
     const handleSubmit = async (e) => {
         e.preventDefault();
         setLoading(true);
-        setMessage("");
         try {
             await userServices.resetPassword(resetToken, password);
             navigate("/login");
         } catch (error) {
-            setMessage(error);
+            toast.error(error.message);
         } finally {
             setLoading(false);
         }
@@ -41,10 +40,6 @@ const ResetPassword = () => {
             </CardHeader>
             <CardContent>
                 <form onSubmit={handleSubmit} className="space-y-4">
-                    {message && (
-                        <p className="text-center text-red-500">{message}</p>
-                    )}
-
                     <div>
                         <Label
                             htmlFor="password"
@@ -90,8 +85,7 @@ const ResetPassword = () => {
             </CardContent>
             <CardFooter>
                 <p className="text-center text-sm text-gray-500">
-                    Don't remember the reset link? Please check your email
-                    again.
+                    check your email for password reset link.
                 </p>
             </CardFooter>
         </Card>

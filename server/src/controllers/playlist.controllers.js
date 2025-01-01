@@ -30,8 +30,8 @@ class PlaylistController {
         if (!playlist) {
             throw new ApiError(404, "Playlist not found");
         }
-        const video = playlist.videos.find(v => v == videoId);
-        return res.status(200).json(new ApiResponse(200, { isSaved: !!video }, "Video is saved to playlist"));
+        const isSaved = playlist.videos.includes(videoId);
+        return res.status(200).json(new ApiResponse(200, { isSaved }, "Video is saved to playlist"));
     })
     getUserPlaylists = asyncHandler(async (req, res) => {
         const { userId } = req.params;

@@ -15,12 +15,11 @@ import {
 import { IoLogoYoutube } from "react-icons/io";
 import authService from "@/services/auth.services";
 import { ILoginForm } from "@/interfaces";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import PasswordInput from "../root/PasswordInput";
 
 const SignIn = () => {
     const navigate = useNavigate();
-    const dispatch = useDispatch();
     const form = useForm<ILoginForm>({
         resolver: zodResolver(signInFormValidation),
         defaultValues: {
@@ -34,7 +33,7 @@ const SignIn = () => {
             toast.success("Logged in successfully");
             navigate("/");
         } catch (error) {
-            toast.error(error);
+            toast.error(error.message);
             console.error(error);
         }
     };
@@ -46,11 +45,11 @@ const SignIn = () => {
             navigate("/");
         } catch (error) {
             toast.error(error.message);
-            console.error(error.message);
+            console.error(error);
         }
     };
     return (
-        <div className="h-screen flex items-center justify-center mx-2">
+        <div className="h-screen flex items-center justify-center mx-2 text-black">
             <div className="bg-white p-6 md:p-8 rounded-lg shadow-lg z-10">
                 <div className="text-center mb-6">
                     <div className="flex justify-center space-x-1 items-center">
@@ -124,7 +123,6 @@ const SignIn = () => {
                     >
                         <img
                             src="https://cdn-teams-slug.flaticon.com/google.jpg"
-                            alt="Google Icon"
                             className="w-8 h-8 mr-3"
                         />
                         <span className="text-lg">Continue with Google</span>

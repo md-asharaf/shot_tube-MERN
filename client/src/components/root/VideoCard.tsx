@@ -9,7 +9,6 @@ const VideoCard: React.FC<Props> = ({ thumbnail,duration, className = "" }) => {
         <div className="relative">
             <img
                 src={thumbnail}
-                alt="Video thumbnail"
                 className={`w-full h-full aspect-video object-cover rounded-xl ${className}`}
                 loading="lazy"
             />

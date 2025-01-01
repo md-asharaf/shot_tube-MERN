@@ -22,7 +22,6 @@ import SearchedVideos from "./pages/SearchedVideos";
 import ForgetPassword from "./components/auth/ForgetPassword";
 import ResetPassword from "./components/auth/ResetPassword";
 import { useEffect } from "react";
-
 function App() {
     const theme = useSelector((state: RootState) => state.theme.mode);
     useEffect(() => {

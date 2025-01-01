@@ -71,7 +71,6 @@ const Channel = () => {
                 <img
                     className="w-full h-24 sm:h-32 rounded-xl"
                     src={userDetails?.user?.coverImage || DefaultCoverImage}
-                    alt="User cover"
                     loading="lazy"
                 />
             )}
@@ -79,7 +78,6 @@ const Channel = () => {
                 <img
                     src={userDetails?.user?.avatar || DefaultAvatarImage}
                     className="rounded-full h-24 w-24 sm:h-40 sm:w-40"
-                    alt="User avatar"
                 />
                 <div className="space-y-2">
                     <div className="font-bold text-2xl sm:text-3xl">

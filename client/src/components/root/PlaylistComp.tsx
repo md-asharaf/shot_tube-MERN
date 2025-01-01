@@ -8,7 +8,7 @@ import ThreeDots from "./ThreeDots";
 import { useMutation } from "@tanstack/react-query";
 import playlistServices from "@/services/playlist.services";
 import likeServices from "@/services/like.services";
-import { toast } from "react-toastify";
+import { toast } from "sonner";
 import ColorThief from "colorthief";
 interface Props {
     playlist: {
@@ -58,16 +58,17 @@ const PlaylistComp: React.FC<Props> = ({ playlist, refetch = () => {} }) => {
         mutationFn: async ({
             playlistId,
             videoId,
+            playlistName,
         }: {
             playlistId: string;
             videoId: string;
+            playlistName: string;
         }) => {
             await playlistServices.removeVideoFromPlaylist(videoId, playlistId);
         },
-        onSuccess: () => {
-            toast.success(`Removed from ${playlist.name}`);
+        onSuccess: (data,variables) => {
+            toast.success(`Removed from ${variables.playlistName}`)
             refetch();
-            return true;
         },
     });
     const { mutate: toggleLike } = useMutation({
@@ -77,7 +78,6 @@ const PlaylistComp: React.FC<Props> = ({ playlist, refetch = () => {} }) => {
         onSuccess: () => {
             toast.success("Removed from Liked Videos");
             refetch();
-            return true;
         },
     });
     return (
@@ -90,19 +90,18 @@ const PlaylistComp: React.FC<Props> = ({ playlist, refetch = () => {} }) => {
             >
                 <img
                     src={playlist.videos[0].thumbnail}
-                    alt="Playlist Thumbnail"
                     className="object-cover aspect-video sm:w-1/2 lg:w-full rounded-lg hover:opacity-50"
                     loading="lazy"
                 />
 
-                <div className="space-y-3">
+                <div className="space-y-3 text-white">
                     <h1 className="text-2xl font-bold truncate">
                         {playlist.name}
                     </h1>
-                    <p className="text-gray-500 text-sm truncate">
+                    <p className="text-sm truncate">
                         {playlist.creator}
                     </p>
-                    <p className="text-xs text-gray-400">
+                    <p className="text-xs ">
                         {`${playlist.videos?.length} videos • ${
                             playlist.totalViews
                         } views • Last updated on ${new Date(
@@ -119,7 +118,7 @@ const PlaylistComp: React.FC<Props> = ({ playlist, refetch = () => {} }) => {
                         </Button>
                     </div>
 
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm">
                         {playlist.description}
                     </p>
                 </div>
@@ -136,7 +135,6 @@ const PlaylistComp: React.FC<Props> = ({ playlist, refetch = () => {} }) => {
                             <div className="relative w-36 h-24 sm:w-44 sm:h-28 flex-shrink-0">
                                 <img
                                     src={video.thumbnail}
-                                    alt={`Thumbnail of ${video.title}`}
                                     className="h-full w-full object-cover aspect-video rounded-lg"
                                     loading="lazy"
                                 />
@@ -170,6 +168,7 @@ const PlaylistComp: React.FC<Props> = ({ playlist, refetch = () => {} }) => {
                                                             playlistId:
                                                                 playlist._id,
                                                             videoId: video._id,
+                                                            playlistName:playlist.name
                                                         })
                                                       : toggleLike({
                                                             videoId: video._id,

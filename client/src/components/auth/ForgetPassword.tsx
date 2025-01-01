@@ -1,9 +1,10 @@
 import { useState } from "react";
-import { Card, CardContent, CardFooter, CardHeader } from "../ui/card";
+import { Card, CardContent, CardHeader } from "../ui/card";
 import userServices from "@/services/user.services";
 import authServices from "@/services/auth.services";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import { toast } from "sonner";
 
 const ForgotPassword = () => {
     const [searchText, setSearchText] = useState("");
@@ -11,19 +12,17 @@ const ForgotPassword = () => {
     const [selectedUserId, setSelectedUserId] = useState<string | null>(null);
     const [searchLoading, setSearchLoading] = useState(false);
     const [loading, setLoading] = useState(false);
-    const [message, setMessage] = useState("");
 
     const handleSearchSubmit = async (e: React.FormEvent) => {
         e.preventDefault();
         setSearchLoading(true);
-        setMessage("");
         setUsers([]);
         setSelectedUserId(null);
         try {
             const data = await userServices.getUsersBySearchText(searchText);
             setUsers(data.users);
         } catch (error) {
-            setMessage(error);
+            toast.error(error.message);
             console.error(error);
         } finally {
             setSearchLoading(false);
@@ -35,7 +34,6 @@ const ForgotPassword = () => {
     };
 
     const handleResetRequest = async () => {
-        setMessage("");
         setLoading(true);
         try {
             const selectedUser = users.find(
@@ -45,9 +43,9 @@ const ForgotPassword = () => {
             await authServices.sendResetLinkOnEmail(
                 selectedUser.email
             );
-            setMessage("Password reset link sent to your email");
+            toast.info("Password reset link sent to your email");
         } catch (error) {
-            setMessage(error);
+            toast.error(error.message);
             console.error(error);
         } finally {
             setLoading(false);
@@ -66,7 +64,7 @@ const ForgotPassword = () => {
                     <div>
                         <label
                             htmlFor="searchText"
-                            className="block text-sm font-medium text-gray-700"
+                            className="block text-sm font-medium"
                         >
                             Enter your username or email:
                         </label>
@@ -104,7 +102,6 @@ const ForgotPassword = () => {
                                     <Avatar>
                                         <AvatarImage
                                             src={user.avatar}
-                                            alt={user.username || "User Avatar"}
                                         />
                                         <AvatarFallback className="bg-orange-300">
                                             {user.fullname[0]}
@@ -135,13 +132,6 @@ const ForgotPassword = () => {
                     </button>
                 )}
             </CardContent>
-            <CardFooter>
-                {message && (
-                    <p className="text-center text-sm text-gray-500">
-                        {message}
-                    </p>
-                )}
-            </CardFooter>
         </Card>
     );
 };
