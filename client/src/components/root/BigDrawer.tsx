@@ -1,17 +1,18 @@
 import { MdOutlineSubscriptions, MdSubscriptions } from "react-icons/md";
 import { SiYoutubeshorts } from "react-icons/si";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState, toggleMenu } from "@/provider";
+import { RootState } from "@/store/store";
 import SubDrawer from "./SubDrawer";
-import subscriptionServices from "@/services/subscription.services";
+import subscriptionServices from "@/services/Subscription";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { GoHome } from "react-icons/go";
 import { NavLink, useLocation } from "react-router-dom";
-import { CiMenuBurger } from "react-icons/ci";
 import { ImYoutube } from "react-icons/im";
 import { useWindowSize } from "@/hooks/use-window";
 import { toast } from "sonner";
+import { toggleMenu } from "@/store/reducers/ui";
+import { Menu } from "lucide-react";
 
 interface IChannel {
     name: string;
@@ -25,7 +26,7 @@ const BigDrawer = () => {
     const username = useSelector(
         (state: RootState) => state.auth.userData?.username
     );
-    const windowWidth = useWindowSize();
+    const { windowWidth } = useWindowSize();
 
     const {
         data: channels,
@@ -48,7 +49,7 @@ const BigDrawer = () => {
     const options = [
         {
             name: "You >",
-            route: `/${username}/playlist-n-history`,
+            route: `/playlist-n-history?u=${username}`,
         },
         {
             name: "Your channel",
@@ -67,7 +68,7 @@ const BigDrawer = () => {
                     </svg>
                 </div>
             ),
-            route: `/${username}/channel`,
+            route: `/channel?u=${username}`,
         },
         {
             name: "History",
@@ -174,7 +175,7 @@ const BigDrawer = () => {
 
     const data = channels?.map((channel) => ({
         ...channel,
-        route: `/${channel.username}/channel`,
+        route: `/channel?u=${channel.username}`,
     }));
 
     const isSmallScreen = windowWidth < 1315;
@@ -195,8 +196,13 @@ const BigDrawer = () => {
                 }`}
             >
                 {(isSmallScreen || isVideoPage) && (
-                    <div className="pb-4 pl-1 pt-[14px] flex items-center gap-x-2 md:gap-x-4">
-                        <CiMenuBurger className="text-4xl dark:text-white hover:bg-zinc-400 dark:hover:bg-zinc-700 p-2 rounded-lg hidden sm:block" />
+                    <div className="pb-4 pl-2 pt-[17px] flex items-center gap-x-2 md:gap-x-4">
+                        <Menu
+                            className="text-4xl hover:bg-muted rounded-lg hidden sm:block"
+                            onClick={() => {
+                                dispatch(toggleMenu());
+                            }}
+                        />
                         <button
                             className="flex items-center"
                             onClick={() => (window.location.href = "/")}
@@ -208,7 +214,7 @@ const BigDrawer = () => {
                         </button>
                     </div>
                 )}
-                <div className="flex-col dark:text-white text-black pl-1">
+                <div className="flex-col dark:text-white text-black pr-6 pt-2">
                     <SidebarLink to="/" label="Home" icon={<GoHome />} />
                     <SidebarLink
                         to="/shorts"

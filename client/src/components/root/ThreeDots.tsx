@@ -2,11 +2,11 @@ import { Check, Clock4, EllipsisVertical, Share2, Trash2 } from "lucide-react";
 import { Popover, PopoverContent, PopoverTrigger } from "../ui/popover";
 import SaveToPlaylist from "./SaveToPlaylist";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import userServices from "@/services/user.services";
+import userServices from "@/services/User";
 import { toast } from "sonner";
 import { queryClient } from "../../main";
 import { useSelector } from "react-redux";
-import { RootState } from "@/provider";
+import { RootState } from "@/store/store";
 interface IThreeDots {
     task?: {
         title: string;
@@ -67,12 +67,12 @@ export default function ThreeDots({ videoId, task = null }: IThreeDots) {
                 </PopoverTrigger>
                 <PopoverContent
                     collisionPadding={10}
-                    className="py-2 px-0 w-full rounded-xl shadow-lg bg-white dark:bg-[#212121] dark:text-white text-black border-none text-sm"
+                    className="py-2 px-0 w-full rounded-xl shadow-lg bg-white dark:bg-[#212121] border-none text-sm"
                 >
                     <ul className="space-y-2">
                         {task && (
                             <li
-                                className="flex items-center space-x-2 cursor-pointer dark:hover:bg-[#535353] hover:bg-gray-700 py-2 px-4 rounded-md"
+                                className="flex items-center space-x-2 cursor-pointer dark:hover:bg-[#535353] hover:bg-[#E5E5E5] py-2 px-4 rounded-md"
                                 onClick={task.handler}
                             >
                                 <Trash2 className="h-5 w-5" />

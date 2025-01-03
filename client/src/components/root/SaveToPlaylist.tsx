@@ -1,5 +1,5 @@
 import { IPlaylist } from "@/interfaces";
-import playlistServices from "@/services/playlist.services";
+import playlistServices from "@/services/Playlist";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
@@ -14,10 +14,10 @@ import { Input } from "@/components/ui/input";
 import { Plus } from "lucide-react";
 import { toast } from "sonner";
 import { useSelector } from "react-redux";
-import { RootState } from "@/provider";
 import { queryClient } from "@/main";
 import { DialogTrigger } from "@radix-ui/react-dialog";
-import userServices from "@/services/user.services";
+import userServices from "@/services/User";
+import { RootState } from "@/store/store";
 
 interface Props {
     videoId: string;
@@ -174,7 +174,7 @@ const SaveToPlaylist: React.FC<Props> = ({
                 >
                     {children}
                 </DialogTrigger>
-                <DialogContent className="w-60 bg-white dark:bg-[#212121]">
+                <DialogContent className="w-60 bg-white dark:bg-[#212121] rounded-lg">
                     <DialogHeader>
                         <DialogTitle>Save video to...</DialogTitle>
                     </DialogHeader>
@@ -237,7 +237,7 @@ const SaveToPlaylist: React.FC<Props> = ({
                 open={isNewPlaylistDialogOpen}
                 onOpenChange={setIsNewPlaylistDialogOpen}
             >
-                <DialogContent className="w-80 bg-white dark:bg-[#212121]">
+                <DialogContent className="w-80 bg-white dark:bg-[#212121] rounded-lg">
                     <DialogHeader>
                         <DialogTitle>New Playlist</DialogTitle>
                     </DialogHeader>

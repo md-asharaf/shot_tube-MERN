@@ -1,31 +1,33 @@
 import { Button } from "@/components/ui/button";
 import { useEffect, useRef, useState } from "react";
-import { Link, useParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
-import { RootState, toggleMenu } from "@/provider";
 import { IVideoData } from "@/interfaces";
 import { formatDistanceToNowStrict } from "date-fns";
 import DefaultProfileImage from "@/assets/images/profile.png";
-import videoService from "@/services/video.services";
-import subscriptionServices from "@/services/subscription.services";
-import likeService from "@/services/like.services";
+import videoService from "@/services/Video";
+import subscriptionServices from "@/services/Subscription";
+import likeService from "@/services/Like";
 import SaveToPlaylist from "../components/root/SaveToPlaylist";
 import Comments from "@/components/root/Comments";
 import { useQuery, useMutation } from "@tanstack/react-query";
-import videoServices from "@/services/video.services";
+import videoServices from "@/services/Video";
 import VideoPlayer from "@/components/root/VideoPlayer";
 import { ListPlus, Loader2, ThumbsUp } from "lucide-react";
-import userServices from "@/services/user.services";
+import userServices from "@/services/User";
 import ThreeDots from "@/components/root/ThreeDots";
-
+import { formatViews } from "@/lib/utils";
+import { useWindowSize } from "@/hooks/use-window";
+import { RootState } from "@/store/store";
+import { toggleMenu } from "@/store/reducers/ui";
 const Video = () => {
     const dispatch = useDispatch();
     const playerRef = useRef(null);
-    const { videoId } = useParams();
+    const [searchParams] = useSearchParams();
+    const videoId = searchParams.get("v");
     const [isExpanded, setIsExpanded] = useState(false);
-    const [maxLength, setMaxLength] = useState(100);
     const userId = useSelector((state: RootState) => state.auth.userData?._id);
-
+    const { isMobile } = useWindowSize();
     const toggleExpanded = () => {
         setIsExpanded(!isExpanded);
     };
@@ -121,10 +123,6 @@ const Video = () => {
             }, 10000);
     }, [video, videoId, userId]);
 
-    useEffect(() => {
-        setMaxLength(window.innerWidth * 0.1);
-    }, [window.innerWidth]);
-
     if (isLoading) {
         return (
             <div className="flex w-[90%] justify-center">
@@ -134,8 +132,9 @@ const Video = () => {
     }
 
     if (isError) return <div>Error: {error.message}</div>;
+
     return (
-        <div className="flex flex-col space-y-4 xl:flex-row w-full dark:text-white">
+        <div className="flex flex-col space-y-4 xl:flex-row w-full">
             <div className="space-y-4 w-full xl:w-2/3 2xl:w-[70%]">
                 <div className="flex flex-col space-y-2 px-2">
                     <VideoPlayer
@@ -155,7 +154,7 @@ const Video = () => {
                     <div className="flex justify-between flex-col sm:flex-row gap-y-2 sm:gap-0">
                         <div className="flex gap-x-4 items-center justify-between sm:justify-normal">
                             <Link
-                                to={`/${video.creator.username}/channel`}
+                                to={`/channel?u=${video.creator.username}`}
                                 className="flex gap-x-4 items-center"
                             >
                                 <img
@@ -170,8 +169,7 @@ const Video = () => {
                                     <div className="font-bold">
                                         {video.creator.fullname}
                                     </div>
-
-                                    <div className="text-gray-500  text-sm">
+                                    <div className="text-gray-500 text-sm">
                                         {`${subscribersCount} subscribers`}
                                     </div>
                                 </div>
@@ -190,59 +188,120 @@ const Video = () => {
                                 {isSubscribed ? "Subscribed" : "Subscribe"}
                             </Button>
                         </div>
-
-                        <div className="flex sm:items-center justify-end gap-4 sm:gap-2">
-                            <Button
-                                disabled={!userId}
-                                className={`${
-                                    isLiked &&
-                                    "text-blue-500 hover:text-blue-500"
-                                } dark:bg-zinc-600 border-none bg-zinc-200 h-7 sm:h-9`}
-                                variant="outline"
-                                onClick={() => toggleVideoLike()}
-                            >
-                                <ThumbsUp />
-                            </Button>
-                            <SaveToPlaylist
-                                videoId={videoId}
-                                className="dark:bg-zinc-600 border-none bg-zinc-200 h-7 sm:h-9 px-3 rounded-md"
-                            >
-                                <ListPlus />
-                            </SaveToPlaylist>
-                        </div>
-                    </div>
-                    <div className="p-4 shadow-md rounded-xl bg-zinc-200 dark:bg-zinc-700 text-zinc-700 dark:text-zinc-300 font-semibold">
-                        <div className="flex space-x-4">
-                            <div>{`${video.views} views`}</div>
-                            <div>
-                                {formatDistanceToNowStrict(
-                                    new Date(video.createdAt),
-                                    {
-                                        addSuffix: true,
-                                    }
+                        {!isMobile && (
+                            <div className="flex sm:items-center justify-end gap-4 sm:gap-2">
+                                <Button
+                                    disabled={!userId}
+                                    className={`${
+                                        isLiked &&
+                                        "text-blue-500 hover:text-blue-500"
+                                    } dark:bg-zinc-600 border-none bg-zinc-200 h-7 sm:h-9`}
+                                    variant="outline"
+                                    onClick={() => toggleVideoLike()}
+                                >
+                                    <ThumbsUp />
+                                </Button>
+                                <SaveToPlaylist
+                                    videoId={videoId}
+                                    className="dark:bg-zinc-600 border-none bg-zinc-200 h-7 sm:h-9 px-3 rounded-md"
+                                >
+                                    <ListPlus />
+                                </SaveToPlaylist>
+                            </div>
+                        )}
+                        {isMobile && (
+                            <div className="w-full p-2 shadow-md rounded-xl bg-zinc-200 dark:bg-[#272727]">
+                                <div className="flex items-center justify-between">
+                                    <div className="flex items-center space-x-2 font-bold">
+                                        <div>{formatViews(video.views)}</div>
+                                        <div>
+                                            {formatDistanceToNowStrict(
+                                                new Date(video.createdAt),
+                                                { addSuffix: true }
+                                            )}
+                                        </div>
+                                        {!isExpanded && (
+                                            <Button
+                                                variant="ghost"
+                                                className="h-auto p-0 hover:bg-transparent font-semibold"
+                                                onClick={toggleExpanded}
+                                            >
+                                                ...more
+                                            </Button>
+                                        )}
+                                    </div>
+                                    <div className="flex items-center space-x-2">
+                                        <Button
+                                            disabled={!userId}
+                                            className={`${
+                                                isLiked &&
+                                                "text-blue-500 hover:text-blue-500"
+                                            } dark:bg-zinc-600 border-none bg-zinc-200 h-7 sm:h-9`}
+                                            variant="outline"
+                                            onClick={() => toggleVideoLike()}
+                                        >
+                                            <ThumbsUp
+                                                height={100}
+                                                width={100}
+                                            />
+                                        </Button>
+                                        <Button
+                                            disabled={!userId}
+                                            className="dark:bg-zinc-600 border-none bg-zinc-200 h-7 sm:h-9 px-3 rounded-md"
+                                            variant="outline"
+                                        >
+                                            <SaveToPlaylist videoId={videoId}>
+                                                <ListPlus />
+                                            </SaveToPlaylist>
+                                        </Button>
+                                    </div>
+                                </div>
+                                {isExpanded && (
+                                    <div>
+                                        <p className="whitespace-pre-wrap">
+                                            {video.description}
+                                        </p>
+                                        <Button
+                                            variant="ghost"
+                                            onClick={toggleExpanded}
+                                            className="h-auto p-0 hover:bg-transparent font-semibold"
+                                        >
+                                            Show less
+                                        </Button>
+                                    </div>
                                 )}
                             </div>
-                        </div>
-                        <div>
-                            <div className="description">
-                                {isExpanded ||
-                                video.description.length <= maxLength
-                                    ? video.description
-                                    : `${video.description.substring(
-                                          0,
-                                          maxLength
-                                      )}...`}
+                        )}
+                    </div>
+                    {!isMobile && (
+                        <div className="px-4 py-2 shadow-md rounded-xl bg-[#F2F2F2] dark:bg-[#272727]">
+                            <div className="flex space-x-2 font-bold">
+                                <div>{formatViews(video.views)}</div>
+                                <div>
+                                    {formatDistanceToNowStrict(
+                                        new Date(video.createdAt),
+                                        { addSuffix: true }
+                                    )}
+                                </div>
                             </div>
-                            {video.description.length > maxLength && (
-                                <button
+                            <div>
+                                <p
+                                    className={`whitespace-pre-wrap ${
+                                        !isExpanded ? "line-clamp-2" : ""
+                                    }`}
+                                >
+                                    {video.description}
+                                </p>
+                                <Button
+                                    variant="ghost"
                                     onClick={toggleExpanded}
-                                    className="show-more-btn"
+                                    className="h-auto p-0 font-semibold hover:bg-transparent"
                                 >
                                     {isExpanded ? "Show less" : "Show more"}
-                                </button>
-                            )}
+                                </Button>
+                            </div>
                         </div>
-                    </div>
+                    )}
                 </div>
                 <div className="hidden xl:block">
                     <Comments videoId={videoId} playerRef={playerRef} />
@@ -251,27 +310,27 @@ const Video = () => {
             <div className="w-full xl:w-1/3 2xl:w-[30%]">
                 {recommendedVideos?.map((video) => (
                     <Link
-                        to={`/videos/${video._id}`}
+                        to={`/video?v=${video._id}`}
                         key={video._id}
                         className="flex justify-between mr-4"
                     >
                         <div className="flex gap-4 px-4 pb-4 lg:min-w-[300px] lg:max-w-[500px]">
                             <img
                                 src={video.thumbnail}
-                                className="h-24 min-w-44 object-cover rounded-lg"
+                                className="h-24 min-w-44 object-cover rounded-lg aspect-video"
                                 loading="lazy"
                             />
                             <div className="flex flex-col overflow-hidden">
                                 <p className="font-bold line-clamp-2 overflow-hidden text-ellipsis">
                                     {video.title}
                                 </p>
-                                <div className="text-gray-500">
+                                <div className="text-muted-foreground text-sm">
                                     {video.creator?.fullname}
                                 </div>
-                                <div className="text-gray-500">
+                                <div className="text-muted-foreground text-sm">
                                     {`${
-                                        video.views
-                                    } views • ${formatDistanceToNowStrict(
+                                        formatViews(video.views)
+                                    } • ${formatDistanceToNowStrict(
                                         video.createdAt,
                                         { addSuffix: true }
                                     )}`}

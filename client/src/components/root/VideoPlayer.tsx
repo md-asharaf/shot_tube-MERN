@@ -17,6 +17,7 @@ const PlyrPlayer = ({ source, subtitles = [], className = "",playerRef}) => {
         const initializePlayer = () => {
             const video = videoRef.current;
             const defaultOptions: Plyr.Options = {
+                hideControls:true,
                 controls: [
                     "play",
                     "restart",
@@ -26,8 +27,9 @@ const PlyrPlayer = ({ source, subtitles = [], className = "",playerRef}) => {
                     "captions",
                     "settings",
                     "fullscreen",
+                    "pip"
                 ],
-                settings: ["quality","captions","speed"],
+                settings: ["quality","speed"],
             };
 
             if (!Hls.isSupported()) {
@@ -61,13 +63,13 @@ const PlyrPlayer = ({ source, subtitles = [], className = "",playerRef}) => {
                             ".plyr__menu__container [data-plyr='quality'][value='0'] span"
                         );
                         if (hls.autoLevelEnabled) {
-                            qualityLabelElement.innerHTML = `AUTO (${
+                            qualityLabelElement.innerHTML = `Auto (${
                                 bitrateToResolution[
                                     hls.levels[data.level].bitrate
                                 ]
                             }p)`;
                         } else {
-                            qualityLabelElement.innerHTML = "AUTO";
+                            qualityLabelElement.innerHTML = "Auto";
                         }
                     });
 
@@ -110,7 +112,6 @@ const PlyrPlayer = ({ source, subtitles = [], className = "",playerRef}) => {
     return (
         <Card className={`${className}`}>
                 <video
-                    autoPlay
                     ref={videoRef}
                     className="plyr-react plyr w-full aspect-video"
                     crossOrigin="anonymous"

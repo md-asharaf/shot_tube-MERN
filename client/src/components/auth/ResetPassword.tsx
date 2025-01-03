@@ -2,7 +2,7 @@ import { Card, CardContent, CardFooter, CardHeader } from "../ui/card";
 import { Button } from "../ui/button";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
-import userServices from "@/services/user.services";
+import userServices from "@/services/User";
 import { Label } from "../ui/label";
 import PasswordInput from "../root/PasswordInput";
 import { toast } from "sonner";

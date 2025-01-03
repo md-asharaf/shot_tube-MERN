@@ -1,10 +1,9 @@
-import { RootState } from "@/provider";
-import commentServices from "@/services/comment.services";
+import commentServices from "@/services/Comment";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useSelector } from "react-redux";
 import { Button } from "../ui/button";
 import { formatDistanceToNowStrict } from "date-fns";
-import likeServices from "@/services/like.services";
+import likeServices from "@/services/Like";
 import { IComment } from "@/interfaces";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
@@ -13,10 +12,11 @@ import { FiMinus } from "react-icons/fi";
 import { GoDot } from "react-icons/go";
 import DefaultProfileImage from "@/assets/images/profile.png";
 import { Loader2, ThumbsUp, Trash2 } from "lucide-react";
+import { RootState } from "@/store/store";
 
 const Comments = ({ videoId, playerRef }) => {
     const navigate = useNavigate();
-    const user = useSelector((state: RootState) => state.auth);
+    const userData = useSelector((state: RootState) => state.auth.userData);
     const [content, setContent] = useState<string>("");
     const [isInputFocused, setIsInputFocused] = useState(false);
     const [inputHeight, setInputHeight] = useState(0);
@@ -137,7 +137,7 @@ const Comments = ({ videoId, playerRef }) => {
         if (playerRef.current) {
             playerRef.current.currentTime = seconds;
             window.scrollTo({
-                top: 100,
+                top: 0,
                 behavior: "smooth",
             });
             if (playerRef.current.paused) {
@@ -158,12 +158,12 @@ const Comments = ({ videoId, playerRef }) => {
                 {`${comments.length} Comments`}
             </div>
             <div className="flex flex-col">
-                {user.userData && (
+                {userData && (
                     <div className="flex gap-y-1 flex-col justify-start">
                         <div className="flex items-center gap-2">
                             <img
                                 src={
-                                    user.userData?.avatar || DefaultProfileImage
+                                    userData?.avatar || DefaultProfileImage
                                 }
                                 className="rounded-full h-10 w-10"
                             />
@@ -277,7 +277,7 @@ const Comments = ({ videoId, playerRef }) => {
                                             onTimestampClick
                                         )}
                                     </div>
-                                    {user.status && (
+                                    {userData && (
                                         <div className="space-x-2 flex items-center">
                                             <Button
                                                 onClick={() =>
@@ -293,7 +293,7 @@ const Comments = ({ videoId, playerRef }) => {
                                             >
                                                 <ThumbsUp size={18} />
                                             </Button>
-                                            {user.userData?.username ===
+                                            {userData?.username ===
                                                 comment.creator.username && (
                                                 <Button
                                                     onClick={() =>

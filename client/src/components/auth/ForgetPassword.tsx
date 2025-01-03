@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Card, CardContent, CardHeader } from "../ui/card";
-import userServices from "@/services/user.services";
-import authServices from "@/services/auth.services";
+import userServices from "@/services/User";
+import authServices from "@/services/Auth";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
 import { toast } from "sonner";

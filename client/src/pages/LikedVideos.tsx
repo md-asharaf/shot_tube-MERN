@@ -1,11 +1,11 @@
 import { Button } from "@/components/ui/button";
 import { IVideoData } from "@/interfaces";
-import { RootState } from "@/provider";
-import videoServices from "@/services/video.services";
+import videoServices from "@/services/Video";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useSelector } from "react-redux";
 import PlaylistComp from "@/components/root/PlaylistComp";
+import { RootState } from "@/store/store";
 
 const LikedVideos = () => {
     const userData = useSelector((state: RootState) => state.auth.userData);

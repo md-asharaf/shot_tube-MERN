@@ -1,15 +1,14 @@
 import { Button } from "@/components/ui/button";
 import { IVideoData } from "@/interfaces";
-import { RootState } from "@/provider";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useSelector } from "react-redux";
 import PlaylistComp from "@/components/root/PlaylistComp";
-import userServices from "@/services/user.services";
+import userServices from "@/services/User";
+import { RootState } from "@/store/store";
 
 const WatchLater = () => {
     const userData = useSelector((state: RootState) => state.auth.userData);
-
     const {
         data: videos,
         isError,

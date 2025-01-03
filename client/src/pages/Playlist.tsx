@@ -1,12 +1,13 @@
-import { useParams } from "react-router-dom";
+import { useSearchParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import playlistServices from "@/services/playlist.services";
+import playlistServices from "@/services/Playlist";
 import { IPlaylist } from "@/interfaces";
 import { Loader2 } from "lucide-react";
 import PlaylistComp from "@/components/root/PlaylistComp";
 
 const Playlist = () => {
-    const { playlistId } = useParams();
+    const [searchParams] = useSearchParams();
+    const playlistId = searchParams.get("p");
     const {
         data: playlist,
         isError,

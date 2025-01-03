@@ -4,7 +4,7 @@ import { Input } from "@/components/ui/input";
 import { Link, useNavigate } from "react-router-dom";
 import { signUpFormValidation } from "../ui/validation";
 import { IoLogoYoutube } from "react-icons/io";
-import authService from "@/services/auth.services";
+import authService from "@/services/Auth";
 import { IRegisterForm } from "@/interfaces";
 import {
     Form,

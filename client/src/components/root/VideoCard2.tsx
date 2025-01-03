@@ -1,5 +1,5 @@
 import { IVideoData } from "@/interfaces";
-import {formatDuration} from "@/lib/utils.ts"
+import {formatDuration, formatViews} from "@/lib/utils"
 const VideoCard2: React.FC<IVideoData> = (video) => {
     return (
         <div className="flex mb-5 border-b border-gray-700 pb-3">
@@ -16,7 +16,7 @@ const VideoCard2: React.FC<IVideoData> = (video) => {
             <div>
                 <h3 className="text-lg mb-2">{video.title}</h3>
                 <p className="text-gray-400">
-                    {`${video.views} • ${video.createdAt}`}
+                    {`${formatViews(video.views)} • ${video.createdAt}`}
                 </p>
             </div>
         </div>

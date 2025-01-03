@@ -21,10 +21,6 @@ export interface ILoginForm {
     email: string;
     password: string;
 }
-export interface IAuthData {
-    status: boolean;
-    userData: IUser | null;
-}
 export interface IUiData {
     isMenuOpen: boolean;
     isVideoModalOpen: boolean;

@@ -13,7 +13,6 @@ import WatchLater from "./pages/WatchLater";
 import PlayLists from "./pages/PlayLists";
 import Playlist from "./pages/Playlist";
 import { useSelector } from "react-redux";
-import { RootState } from "./provider";
 import PlaylistNhistory from "./pages/PlaylistNhistory";
 import Shorts from "./pages/Shorts";
 import Subscriptions from "./pages/Subscriptions";
@@ -22,6 +21,7 @@ import SearchedVideos from "./pages/SearchedVideos";
 import ForgetPassword from "./components/auth/ForgetPassword";
 import ResetPassword from "./components/auth/ResetPassword";
 import { useEffect } from "react";
+import { RootState } from "./store/store";
 function App() {
     const theme = useSelector((state: RootState) => state.theme.mode);
     useEffect(() => {
@@ -45,19 +45,19 @@ function App() {
                 </Route>
                 <Route element={<RootLayOut />}>
                     <Route path="/" element={<Home />} />
-                    <Route path="/videos/:videoId" element={<Video />} />
-                    <Route path="/:username/channel" element={<Channel />} />
+                    <Route path="/video" element={<Video />} />
+                    <Route path="/channel" element={<Channel />} />
                     <Route path="/watch-history" element={<WatchHistory />} />
                     <Route path="/liked-videos" element={<LikedVideos />} />
                     <Route path="/my-videos" element={<MyVideos />} />
                     <Route path="/watch-later" element={<WatchLater />} />
                     <Route path="/playlists" element={<PlayLists />} />
                     <Route
-                        path="/playlist/:playlistId"
+                        path="/playlist"
                         element={<Playlist />}
                     />
                     <Route
-                        path="/:username/playlist-n-history"
+                        path="/playlist-n-history"
                         element={<PlaylistNhistory />}
                     />
                     <Route path="/subscriptions" element={<Subscriptions />} />

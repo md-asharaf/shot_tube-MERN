@@ -2,12 +2,11 @@ import { Link } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useSelector } from "react-redux";
 import { IVideoData } from "@/interfaces";
-import userServices from "@/services/user.services";
-import { RootState } from "@/provider";
+import userServices from "@/services/User";
 import { Button } from "@/components/ui/button";
 import { MdDelete } from "react-icons/md";
 import { Loader2} from "lucide-react";
-import { formatDuration } from "@/lib/utils";
+import { formatDuration, formatViews } from "@/lib/utils";
 import {
     AlertDialog,
     AlertDialogAction,
@@ -20,6 +19,7 @@ import {
 } from "@/components/ui/alert-dialog";
 import ThreeDots from "@/components/root/ThreeDots";
 import { toast } from "sonner";
+import { RootState } from "@/store/store";
 
 const WatchHistory = () => {
     const userId = useSelector((state: RootState) => state.auth.userData?._id);
@@ -114,7 +114,7 @@ const WatchHistory = () => {
                         key={video._id}
                     >
                         <Link
-                            to={`/videos/${video._id}`}
+                            to={`/video?v=${video._id}`}
                             className="w-full sm:w-3/4 flex flex-col gap-4 p-2 sm:flex-row hover:bg-zinc-200 hover:dark:bg-zinc-800 rounded-lg overflow-hidden"
                         >
                             <div className="relative w-64 min-w-64">
@@ -133,7 +133,7 @@ const WatchHistory = () => {
                                     {video.title}
                                 </h3>
                                 <p className="text-gray-400">
-                                    {`${video.creator.fullname} • ${video.views} views`}
+                                    {`${video.creator.fullname} • ${formatViews(video.views)}`}
                                 </p>
                             </div>
                         </Link>

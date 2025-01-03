@@ -6,15 +6,35 @@ import {
 } from "@aws-sdk/client-s3";
 
 import { getSignedUrl } from "@aws-sdk/s3-request-presigner";
+import { Upload } from "@aws-sdk/lib-storage";
 
-const s3Client = new S3Client({
+export const s3Client = new S3Client({
     region: "ap-south-1",
     credentials: {
         accessKeyId: process.env.AWS_ACCESS_KEY_ID,
         secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
     },
 });
-
+export const handleMultipartUpload = async (
+    key: string,
+    file: File,
+    abortController: AbortController
+) => {
+    const instance = new Upload({
+        client: s3Client,
+        params: {
+            Bucket: process.env.AWS_S3_BUCKET_NAME,
+            Key: key,
+            Body: file,
+            ContentType: file.type,
+        },
+        leavePartsOnError: false,
+        partSize: 5 * 1024 * 1024,
+        queueSize: 4,
+        abortController,
+    });
+    return instance;
+};
 export const putObjectUrl = async (
     bucket: string,
     key: string,
@@ -42,11 +62,7 @@ export const uploadFile = async (file: File) => {
     const fileExtension = file.name.split(".").pop();
     const key = `uploads/user-uploads/${Date.now()}.${fileExtension}`;
     try {
-        const url = await putObjectUrl(
-            "shot-tube-videos",
-            key,
-            contentType
-        );
+        const url = await putObjectUrl("shot-tube-videos", key, contentType);
         const response = await fetch(url, {
             method: "PUT",
             body: file,
@@ -84,4 +100,3 @@ export const downloadImageAndUploadToS3 = async (
         console.error("Error downloading or uploading image:", error);
     }
 };
-

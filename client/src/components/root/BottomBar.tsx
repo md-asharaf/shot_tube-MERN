@@ -1,6 +1,5 @@
 import { NavLink } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { RootState } from "@/provider";
 import { GoHome, GoHomeFill } from "react-icons/go";
 import { SiYoutubeshorts } from "react-icons/si";
 import {
@@ -9,6 +8,7 @@ import {
     MdSubscriptions,
     MdVideoLibrary,
 } from "react-icons/md";
+import { RootState } from "@/store/store";
 
 const BottomBar = () => {
     const username = useSelector(
@@ -47,7 +47,7 @@ const BottomBar = () => {
                 )}
             </NavLink>
             {username && (
-                <NavLink to={`/${username}/playlist-n-history`}>
+                <NavLink to={`/playlist-n-history?u=${username}`}>
                     {({ isActive }) => (
                         <div className="flex flex-col items-center">
                             {isActive ? (

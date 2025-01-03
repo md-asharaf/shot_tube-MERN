@@ -1,14 +1,14 @@
 import { IVideoData } from "@/interfaces";
-import videoServices from "@/services/video.services";
+import videoServices from "@/services/Video";
 import { useQuery } from "@tanstack/react-query";
 import { formatDistanceToNowStrict } from "date-fns";
-import { Link } from "react-router-dom";
-import { useQuerry } from "@/provider/video.slice";
+import { Link, useSearchParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
-import { formatDuration } from "@/lib/utils";
+import { formatDuration, formatViews } from "@/lib/utils";
 import DefaultAvatarImage from "@/assets/images/profile.png";
 const SearchedVideos = () => {
-    const { query } = useQuerry();
+    const [searchParams] = useSearchParams();
+    const query = searchParams.get("q");
     const { data: videos, isLoading } = useQuery({
         queryKey: ["searched-videos", query],
         queryFn: async (): Promise<IVideoData[]> => {
@@ -31,9 +31,9 @@ const SearchedVideos = () => {
             </div>
         );
     return (
-        <div className="flex flex-col gap-y-4 px-4 md:px-12 lg:px-40 dark:text-gray-100 text-gray-900 min-h-screen">
+        <div className="flex flex-col gap-y-4 px-4 md:px-12 lg:px-40 min-h-screen">
             {videos?.map((video) => (
-                <Link to={`/videos/${video._id}`} key={video._id}>
+                <Link to={`/video?v=${video._id}`} key={video._id}>
                     <div className="flex gap-x-4 rounded-lg">
                         <div className="relative flex-shrink-0 w-1/2 lg:w-2/5 xl:w-1/3 aspect-video">
                             <img
@@ -50,10 +50,10 @@ const SearchedVideos = () => {
                                 <h2 className="text-lg lg:text-xl font-semibold truncate">
                                     {video.title}
                                 </h2>
-                                <p className="text-sm lg:text-base text-gray-500">
+                                <p className="text-sm lg:text-base text-muted-foreground">
                                     {`${
-                                        video.views
-                                    } views • ${formatDistanceToNowStrict(
+                                        formatViews(video.views)
+                                    } • ${formatDistanceToNowStrict(
                                         new Date(video.createdAt)
                                     ).replace("about", "")} ago`}
                                 </p>
@@ -71,7 +71,7 @@ const SearchedVideos = () => {
                                     {video.creator.fullname}
                                 </p>
                             </div>
-                            <p className="text-sm lg:text-base text-gray-500 mt-4 line-clamp-3">
+                            <p className="text-sm lg:text-base text-muted-foreground mt-4">
                                 {video.description}
                             </p>
                         </div>

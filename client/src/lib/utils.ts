@@ -11,7 +11,7 @@ export function shortName(name: string | undefined) {
     }
     return splitName[0][0].toUpperCase();
 }
-export function getVideMetadata(
+export function getVideoMetadata(
     file: File
 ): Promise<{ height: number; width: number; duration: number }> {
     return new Promise((resolve, reject) => {
@@ -41,4 +41,10 @@ export function formatDuration(duration: string) {
 
 export function sanitizeFileName(fileName: string) {
     return fileName.replace(/[^a-zA-Z0-9.]/g, "_");
+}
+
+export function formatViews(count: number) {
+    if (count >= 1000000) return `${(count / 1000000).toFixed(1)}M views`;
+    if (count >= 1000) return `${(count / 1000).toFixed(1)}K views`;
+    return `${count} views`;
 }

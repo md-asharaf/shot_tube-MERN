@@ -2,12 +2,12 @@ import { Link } from "react-router-dom";
 import { IVideoData } from "@/interfaces";
 import { formatDistanceToNowStrict } from "date-fns";
 import { Button } from "@/components/ui/button";
-import { formatDuration } from "@/lib/utils";
+import { formatDuration, formatViews } from "@/lib/utils";
 import React, { useEffect, useState } from "react";
 import ThreeDots from "./ThreeDots";
 import { useMutation } from "@tanstack/react-query";
-import playlistServices from "@/services/playlist.services";
-import likeServices from "@/services/like.services";
+import playlistServices from "@/services/Playlist";
+import likeServices from "@/services/Like";
 import { toast } from "sonner";
 import ColorThief from "colorthief";
 interface Props {
@@ -27,7 +27,6 @@ const PlaylistComp: React.FC<Props> = ({ playlist, refetch = () => {} }) => {
 
     useEffect(() => {
         if (playlist.videos.length === 0) return;
-
         const image = new Image();
         image.crossOrigin = "anonymous";
         image.src = playlist.videos[0].thumbnail;
@@ -52,7 +51,7 @@ const PlaylistComp: React.FC<Props> = ({ playlist, refetch = () => {} }) => {
             console.error("Failed to load image.");
             setBackground("rgb(200, 200, 200)");
         };
-    }, [playlist]);
+    }, []);
 
     const { mutate: remove } = useMutation({
         mutationFn: async ({
@@ -103,8 +102,8 @@ const PlaylistComp: React.FC<Props> = ({ playlist, refetch = () => {} }) => {
                     </p>
                     <p className="text-xs ">
                         {`${playlist.videos?.length} videos • ${
-                            playlist.totalViews
-                        } views • Last updated on ${new Date(
+                            formatViews(playlist.totalViews)
+                        } • Last updated on ${new Date(
                             playlist.updatedAt
                         ).toDateString()}`}
                     </p>
@@ -126,7 +125,7 @@ const PlaylistComp: React.FC<Props> = ({ playlist, refetch = () => {} }) => {
 
             <div className="flex flex-col w-full lg:w-2/3 xl:w-3/4">
                 {playlist.videos?.map((video, index) => (
-                    <Link to={`/videos/${video._id}`} key={video._id}>
+                    <Link to={`/video?v=${video._id}`} key={video._id}>
                         <div className="flex items-start p-1 hover:bg-zinc-200 dark:hover:bg-zinc-800 rounded-lg transition duration-200 ease-in-out">
                             <div className="text-gray-500 text-xl mr-2 font-semibold">
                                 {index + 1}
@@ -149,8 +148,8 @@ const PlaylistComp: React.FC<Props> = ({ playlist, refetch = () => {} }) => {
                                 </h3>
                                 <p className="text-gray-400 text-sm">
                                     {`${video.creator.fullname} • ${
-                                        video.views
-                                    } views • ${formatDistanceToNowStrict(
+                                        formatViews(video.views)
+                                    } • ${formatDistanceToNowStrict(
                                         new Date(video.createdAt)
                                     ).replace("about", "")} ago`}
                                 </p>

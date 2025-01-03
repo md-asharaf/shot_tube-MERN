@@ -1,9 +1,9 @@
 import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "react-hook-form";
-import videoService from "@/services/video.services";
+import videoService from "@/services/Video";
 import { Button } from "../ui/button";
 import { useDispatch } from "react-redux";
-import { toggleVideoModal } from "@/provider/ui.slice";
+import { toggleVideoModal } from "@/store/reducers/ui";
 import { Input } from "@/components/ui/input";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { VideoFormValidation } from "../ui/validation";
@@ -16,9 +16,7 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { useState } from "react";
-import { getVideMetadata, sanitizeFileName } from "@/lib/utils";
-import { S3Client } from "@aws-sdk/client-s3";
-import { Progress, Upload } from "@aws-sdk/lib-storage";
+import { getVideoMetadata, sanitizeFileName } from "@/lib/utils";
 import DragDropInput from "./DragAndDropInput";
 import { IVideoUploadForm } from "@/interfaces";
 import { toast } from "sonner";
@@ -28,21 +26,12 @@ import {
     DialogHeader,
     DialogTitle,
     DialogDescription,
-    DialogOverlay,
 } from "@/components/ui/dialog";
-
-const s3Client = new S3Client({
-    region: "ap-south-1",
-    credentials: {
-        accessKeyId: process.env.AWS_ACCESS_KEY_ID,
-        secretAccessKey: process.env.AWS_SECRET_ACCESS_KEY,
-    },
-});
-const BUCKET = process.env.AWS_S3_BUCKET_NAME;
-
+import { handleMultipartUpload } from "@/lib/s3";
+import { resizeImageWithPica } from "@/lib/pica";
 const VideoUpload = () => {
+    const [controller, setController] = useState<AbortController | null>(null);
     const dispatch = useDispatch();
-    const [uploadProgress, setUploadProgress] = useState<number>(0);
     const [isUploading, setIsUploading] = useState<boolean>(false);
     const form = useForm<IVideoUploadForm>({
         resolver: zodResolver(VideoFormValidation),
@@ -53,79 +42,84 @@ const VideoUpload = () => {
             thumbnail: undefined,
         },
     });
-    const abortController = new AbortController();
 
     const uploadFile = async (file: File, key: string) => {
-        toast.promise(
-            new Promise(async (resolve, reject) => {
-                try {
-                    const upload = new Upload({
-                        client: s3Client,
-                        params: {
-                            Bucket: BUCKET,
-                            Key: key,
-                            Body: file,
-                            ContentType: file.type,
-                        },
-                        abortController,
-                    });
-                    upload.on("httpUploadProgress", (progress: Progress) => {
-                        if (file.type.includes("video")) {
-                            setUploadProgress(
-                                Math.round(
-                                    (progress.loaded / progress.total) * 100
-                                )
-                            );
-                        }
-                    });
-
-                    await upload.done();
-                    resolve("success");
-                } catch (error) {
-                    if (error.name === "AbortError") {
-                        reject("Upload aborted");
-                    } else {
-                        reject("Upload failed");
-                    }
-                }
-            }),
-            {
-                loading: `Uploading ${
-                    file.type.includes("video") ? "video" : "thumbnail"
-                } ${uploadProgress}%`,
-                success: `${
-                    file.type.includes("video") ? "video" : "thumbnail"
-                } uploaded successfully`,
-                error: (err) =>
-                    `${
-                        file.type.includes("video") ? "video" : "thumbnail"
-                    } ${err}`,
-            }
+        const abortController = new AbortController();
+        setController(abortController);
+        const toastId = toast.loading(
+            `Uploading ${
+                file.type.includes("video") ? "video" : "thumbnail"
+            } 0%`
         );
+        try {
+            const upload = await handleMultipartUpload(
+                key,
+                file,
+                abortController
+            );
+            upload.on("httpUploadProgress", (progress) => {
+                if (file.type.includes("video")) {
+                    const percentage = Math.round(
+                        (progress.loaded / (progress.total || 1)) * 100
+                    );
+                    toast.loading(
+                        `Uploading ${
+                            file.type.includes("video") ? "video" : "thumbnail"
+                        } ${percentage}%`,
+                        { id: toastId }
+                    );
+                }
+            });
+            await upload.done();
+            toast.success(
+                `${
+                    file.type.includes("video") ? "Video" : "Thumbnail"
+                } uploaded successfully`,
+                { id: toastId }
+            );
+        } catch (error) {
+            if (error.name === "AbortError") {
+                toast.error(
+                    `${
+                        file.type.includes("video") ? "Video" : "Thumbnail"
+                    } upload aborted`,
+                    { id: toastId }
+                );
+            } else {
+                toast.error(
+                    `${
+                        file.type.includes("video") ? "Video" : "Thumbnail"
+                    } upload failed`,
+                    { id: toastId }
+                );
+            }
+            throw error;
+        }
     };
-
-    const abortUpload = () => {
-        abortController.abort();
+    const handleAbort = () => {
+        if (controller) {
+            controller.abort();
+        }
     };
-
-    const uploadVideo = async (values: IVideoUploadForm) => {
+    const handleSubmit = async (values: IVideoUploadForm) => {
         setIsUploading(true);
-        setUploadProgress(0);
-
         const { title, description, video, thumbnail } = values;
         try {
-            const { duration, height, width } = await getVideMetadata(video);
+            const resizedThumbnail = await resizeImageWithPica(thumbnail, 1280, 720);
+            const { duration, height, width } = await getVideoMetadata(video);
             const videoSplits = video.name.split(".");
             const videoKey = `${Date.now()}_${sanitizeFileName(
                 videoSplits[0]
             )}_${width}_${height}.${videoSplits[1]}`;
             const thumbnailKey = `uploads/user-uploads/${Date.now()}_${sanitizeFileName(
-                thumbnail.name
+                resizedThumbnail.name
             )}`;
+
             await Promise.all([
                 uploadFile(video, `uploads/user-uploads/${videoKey}`),
-                uploadFile(thumbnail, thumbnailKey),
+                uploadFile(resizedThumbnail, thumbnailKey),
             ]);
+
             await videoService.upload({
                 title,
                 description,
@@ -140,12 +134,12 @@ const VideoUpload = () => {
                     .slice(0, -1)
                     .join(".")}/subtitle.vtt`,
             });
-
-            dispatch(toggleVideoModal());
-            toast.success("Video uploaded");
+            setTimeout(
+                () => toast.success("Video post created successfully"),
+                2000
+            );
         } catch (err) {
-            console.error("Upload failed, no video post created:", err);
-            toast.error("Upload failed");
+            setTimeout(() => toast.error("Failed to create video post"), 2000);
         } finally {
             setIsUploading(false);
         }
@@ -153,7 +147,6 @@ const VideoUpload = () => {
 
     return (
         <Dialog open={true} onOpenChange={() => dispatch(toggleVideoModal())}>
-            <DialogOverlay className="bg-black/5"/>
             <DialogContent className="max-w-[500px]">
                 <DialogHeader>
                     <DialogTitle>Upload Video</DialogTitle>
@@ -163,7 +156,7 @@ const VideoUpload = () => {
                 </DialogHeader>
                 <Form {...form}>
                     <form
-                        onSubmit={form.handleSubmit(uploadVideo)}
+                        onSubmit={form.handleSubmit(handleSubmit)}
                         className="space-y-4"
                     >
                         <FormField
@@ -171,7 +164,9 @@ const VideoUpload = () => {
                             name="title"
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel htmlFor="title">Title:</FormLabel>
+                                    <FormLabel htmlFor="title">
+                                        Title:
+                                    </FormLabel>
                                     <FormControl>
                                         <Input
                                             type="text"
@@ -220,12 +215,13 @@ const VideoUpload = () => {
                                 type="submit"
                                 className="mr-4"
                             >
-                                {isUploading ? "Uploading..." : "Publish"}
+                                {isUploading ? `Uploading...` : "Publish"}
                             </Button>
                             <Button
                                 type="button"
                                 variant={"destructive"}
-                                onClick={abortUpload}
+                                onClick={handleAbort}
+                                disabled={!isUploading}
                             >
                                 Cancel
                             </Button>
