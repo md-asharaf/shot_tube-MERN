@@ -8,8 +8,11 @@ class LikeController {
     toggleCommentLike = asyncHandler(async (req, res) => {
         const { commentId } = req.params;
         const userId = req.user?._id;
-        if (!userId || !commentId) {
-            throw new ApiError(400, "Comment id and userId are required")
+        if(!userId){
+            throw new ApiError(401,"unauthorized")
+        }
+        if (!commentId) {
+            throw new ApiError(400, "Comment id is required")
         }
         const dbLike = await Like.findOne({ commentId: new mongoose.Types.ObjectId(commentId), userId: new mongoose.Types.ObjectId(userId) })
         let response;
@@ -28,8 +31,11 @@ class LikeController {
     })
     toggleVideoLike = asyncHandler(async (req, res) => {
         const { videoId } = req.params;
-        const userId = req.user._id;
-        if (!videoId || !userId) throw new ApiError(400, "Video id and User id are required");
+        const userId = req.user?._id;
+        if(!userId){
+            throw new ApiError(401,"unauthorized")
+        }
+        if (!videoId) throw new ApiError(400, "Video id is required");
         const dbLike = await Like.findOne({ videoId: new mongoose.Types.ObjectId(videoId), userId: new mongoose.Types.ObjectId(userId) });
         let response;
         if (!dbLike) {
@@ -47,7 +53,7 @@ class LikeController {
     })
     toggleTweetLike = asyncHandler(async (req, res) => {
         const { tweetId } = req.params;
-        const userId = req.user._id;
+        const userId = req.user?._id;
         if (!tweetId || !userId) throw new ApiError(400, "Tweet id nand User id are required");
         const dbLike = await Like.findOne({ tweetId: new mongoose.Types.ObjectId(tweetId), userId: new mongoose.Types.ObjectId(userId) })
         if (!dbLike) {
@@ -65,8 +71,10 @@ class LikeController {
 
     isLiked = asyncHandler(async (req, res) => {
         const { commentId, videoId, tweetId } = req.params;
-        const userId = req.user._id;
-        if (!userId) throw new ApiError(400, "User id is required");
+        const userId = req.user?._id;
+        if(!userId){
+            throw new ApiError(401,"unauthorized")
+        }
         if (!commentId && !videoId && !tweetId) throw new ApiError(400, "Comment id, video id or tweet id is required");
         let liked = false;
         if (commentId) {

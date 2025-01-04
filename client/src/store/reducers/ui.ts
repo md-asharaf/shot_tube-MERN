@@ -1,33 +1,37 @@
 import { IUiData } from "@/interfaces";
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+
 const rawData = localStorage.getItem("ui_data");
-let uiData: IUiData | null = null;
-if (rawData) {
-    uiData = JSON.parse(rawData);
+let uiData: Partial<IUiData> | null = null;
+try {
+    uiData = rawData ? JSON.parse(rawData) : null;
+} catch {
+    uiData = null;
 }
-const initialState = {
-    isMenuOpen: uiData?.isMenuOpen == null ? true : uiData?.isMenuOpen,
-    isVideoModalOpen: uiData?.isVideoModalOpen == null ? false : uiData?.isVideoModalOpen,
+
+const initialState: IUiData = {
+    isMenuOpen: uiData?.isMenuOpen ?? true, 
+    isVideoModalOpen: uiData?.isVideoModalOpen ?? false, 
+    isLoginPopoverVisible: uiData?.isLoginPopoverVisible ?? false, 
 };
 
 const uiSlice = createSlice({
     name: "ui",
     initialState,
     reducers: {
-        toggleMenu: (
-            state: IUiData,
-            action: {
-                payload: boolean;
-            }
-        ) => {
-            state.isMenuOpen = action.payload==null ? !state.isMenuOpen : action.payload;
-            localStorage.setItem("ui_data", JSON.stringify(state));
+        toggleMenu: (state, action: PayloadAction<boolean | undefined>) => {
+            state.isMenuOpen = action.payload ?? !state.isMenuOpen;
         },
-        toggleVideoModal: (state: IUiData) => {
+        toggleVideoModal: (state) => {
             state.isVideoModalOpen = !state.isVideoModalOpen;
-            localStorage.setItem("ui_data", JSON.stringify(state));
         },
+        toggleLoginPopover: (state, action: PayloadAction<boolean | undefined>) => {
+            state.isLoginPopoverVisible = action.payload ?? !state.isLoginPopoverVisible;
+        },
+        resetUiState: () => initialState,
     },
 });
-export const { toggleMenu, toggleVideoModal } = uiSlice.actions;
+
+export const { toggleMenu, toggleVideoModal, toggleLoginPopover, resetUiState } = uiSlice.actions;
+
 export default uiSlice.reducer;

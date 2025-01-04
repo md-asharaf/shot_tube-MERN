@@ -1,11 +1,20 @@
 import { IUser } from "@/interfaces";
 import { createSlice } from "@reduxjs/toolkit";
-interface IAuthState {
+interface IAuthData{
     userData: IUser | null;
 }
-const initialState: IAuthState = {
-    userData: null,
+const rawData = localStorage.getItem("auth_data");
+let authData: Partial<IAuthData> | null = null;
+try {
+    authData = rawData ? JSON.parse(rawData) : null;
+} catch {
+    authData = null;
+}
+
+const initialState: IAuthData = {
+    userData: authData?.userData ?? null,
 };
+
 const authSlice = createSlice({
     name: "auth",
     initialState,

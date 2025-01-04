@@ -2,12 +2,21 @@ import { configureStore } from "@reduxjs/toolkit";
 import authReducer from "./reducers/auth";
 import uiReducer from "./reducers/ui";
 import themeReducer from "./reducers/theme";
-const store = configureStore({
+import { uiMiddleware } from "./middlewares/uiMiddleware";
+import { authMiddleware } from "./middlewares/authMiddleware";
+import { themeMiddleware } from "./middlewares/themeMiddleware";
+export const store = configureStore({
     reducer: {
         auth: authReducer,
         ui: uiReducer,
         theme: themeReducer,
     },
+    middleware: (getDefaultMiddleware) =>
+        getDefaultMiddleware().concat(uiMiddleware, authMiddleware, themeMiddleware),
 });
-export default store;
-export type RootState = ReturnType<typeof store.getState>;
+export type AppDispatch = typeof store.dispatch;
+export type RootState = {
+    auth: ReturnType<typeof authReducer>,
+    ui: ReturnType<typeof uiReducer>,
+    theme: ReturnType<typeof themeReducer>
+};

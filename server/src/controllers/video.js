@@ -7,10 +7,12 @@ import { User } from "../models/user.js";
 import { Like } from "../models/like.js";
 class VideoController {
     publishVideo = asyncHandler(async (req, res) => {
+        const userId = req.user?._id;
+        if(!userId){
+            throw new ApiError(401,"unauthorized")
+        } 
         const { title, description, video, thumbnail, duration, subtitle } = req.body;
         if (!title || !description || !video || !thumbnail || !duration) throw new ApiError(400, "Please provide All required fields")
-        const userId = req.user?._id;
-        if (!userId) throw new ApiError(400, "Please provide userId")
         const newVideo = await Video.create({
             video,
             thumbnail,
@@ -29,7 +31,10 @@ class VideoController {
     deleteVideo = asyncHandler(async (req, res) => {
         const { videoId } = req.params;
         const userId = req.user?._id;
-        if (!userId || !videoId) throw new ApiError(400, "Please provide userId and videoId")
+        if(!userId){
+            throw new ApiError(401,"unauthorized")
+        } 
+        if (!videoId) throw new ApiError(400, "video id is required")
         const video = await Video.findById(videoId);
         if (!video) {
             throw new ApiError(400, "invalid videoId")
@@ -43,7 +48,10 @@ class VideoController {
     updateVideoDetails = asyncHandler(async (req, res) => {
         const { videoId } = req.params;
         const userId = req.user?._id;
-        if (!userId || !videoId) throw new ApiError(400, "Please provide userId and videoId")
+        if(!userId){
+            throw new ApiError(401,"unauthorized")
+        }
+        if (!videoId) throw new ApiError(400, "videoId is required")
         const { title, description } = req.body;
         if (!title && !description) {
             throw new ApiError(400, "Please provide title or description")
@@ -123,8 +131,9 @@ class VideoController {
     })
     getLikedVideos = asyncHandler(async (req, res) => {
         const userId = req.user?._id;
-        if (!userId) throw new ApiError(400, "Please provide userId");
-    
+        if(!userId){
+            throw new ApiError(401,"unauthorized")
+        } 
         const likedVideos = await Like.aggregate([
             {
                 $match: {

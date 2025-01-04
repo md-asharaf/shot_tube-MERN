@@ -1,19 +1,26 @@
 import axios from "axios";
 import { ApiResponse } from "@/interfaces";
+import { store } from "@/store/store"; 
+import { toggleLoginPopover } from "@/store/reducers/ui";
+import { logout } from "@/store/reducers/auth";
+
 const axiosInstance = axios.create({
     baseURL: process.env.BACKEND_BASE_URL,
 });
+
 axiosInstance.interceptors.response.use(
     (response) => {
         return response.data.data;
     },
     (error) => {
         if (error.response?.status === 401) {
-            // showLoginPopover();
+            store.dispatch(logout())
+            store.dispatch(toggleLoginPopover(true));
         }
         return Promise.reject(error.response?.data as ApiResponse);
     }
 );
+
 const formdataConfig = {
     headers: {
         "content-type": "multipart/form-data",
@@ -44,4 +51,5 @@ class Axios {
         return await axiosInstance.patch(url, data, config);
     };
 }
+
 export default new Axios();

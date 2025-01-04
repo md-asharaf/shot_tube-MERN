@@ -8,8 +8,11 @@ class TweetController {
     createTweet = asyncHandler(async (req, res) => {
         const { content } = req.body;
         const userId = req.user?._id;
-        if (!userId || !content) {
-            throw new ApiError(400, "Content and userId are required")
+        if(!userId){
+            throw new ApiError(401,"unauthorized")
+        }
+        if (!content) {
+            throw new ApiError(400, "Content is required")
         }
         const tweet = await Tweet.create({
             content,
@@ -25,8 +28,11 @@ class TweetController {
         const { tweetId } = req.params;
         const { content } = req.body;
         const userId = req.user?._id;
-        if (!content || !tweetId || !userId) {
-            throw new ApiError(400, "Content,userId and tweetId are required")
+        if(!userId){
+            throw new ApiError(401,"unauthorized")
+        }
+        if (!content || !tweetId) {
+            throw new ApiError(400, "Content and tweetId are required")
         }
         const tweet = await Tweet.findById(tweetId);
         if (!tweet) {
@@ -42,8 +48,11 @@ class TweetController {
     deleteTweet = asyncHandler(async (req, res) => {
         const { tweetId } = req.params;
         const userId = req.user?._id;
-        if (!tweetId || !userId) {
-            throw new ApiError(400, "Tweet id and User id are required")
+        if(!userId){
+            throw new ApiError(401,"unauthorized")
+        }
+        if (!tweetId) {
+            throw new ApiError(400, "Tweet id is required")
         }
         const tweet = await Tweet.findById(tweetId);
         if (!tweet) {
@@ -60,9 +69,9 @@ class TweetController {
     })
 
     getUserTweets = asyncHandler(async (req, res) => {
-        const { userId } = req.params;
-        if (!userId) {
-            throw new ApiError(400, "User id is required")
+        const userId = req.user?._id;
+        if(!userId){
+            throw new ApiError(401,"unauthorized")
         }
         const tweets = await Tweet.aggregate([
             {

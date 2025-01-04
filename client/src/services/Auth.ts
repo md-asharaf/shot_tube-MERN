@@ -1,5 +1,5 @@
 import Axios from "@/lib/axios";
-import { ApiResponse, ILoginForm, IRegisterForm } from "@/interfaces";
+import { ILoginForm, IRegisterForm } from "@/interfaces";
 
 class AuthService {
     login = async (data: ILoginForm) => await Axios.post("/users/login", data);

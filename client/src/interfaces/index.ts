@@ -24,6 +24,7 @@ export interface ILoginForm {
 export interface IUiData {
     isMenuOpen: boolean;
     isVideoModalOpen: boolean;
+    isLoginPopoverVisible: boolean;
 }
 export interface IAction {
     type: string;

@@ -36,7 +36,10 @@ class UserController {
     changeCurrentPassword = asyncHandler(async (req, res) => {
         const { password, newPassword, confirmPassword } = req.body;
         const userId = req.user?._id;
-        if (!password || !newPassword || !confirmPassword || !userId) {
+        if(!userId){
+            throw new ApiError(401,"unauthorized")
+        }
+        if (!password || !newPassword || !confirmPassword) {
             throw new ApiError(400, "All fields are required")
         }
         if (!(newPassword === confirmPassword)) {
@@ -80,11 +83,14 @@ class UserController {
     })
     updateAccountDetails = asyncHandler(async (req, res) => {
         const userId = req.user?._id;
+        if(!userId){
+            throw new ApiError(401,"unauthorized")
+        }
         const { email, fullname, avatar, coverImage } = req.body;
-        if (!email || !fullname || !avatar || !coverImage || !userId) {
+        if (!email || !fullname || !avatar || !coverImage) {
             throw new ApiError(400, "All fields are required")
         }
-        const user = await User.findByIdAndUpdate(req.user?._id, {
+        const user = await User.findByIdAndUpdate(userId, {
             $set: {
                 fullname,
                 email,
@@ -179,8 +185,11 @@ class UserController {
     addVideoToWatchHistory = asyncHandler(async (req, res) => {
         const { videoId } = req.params;
         const userId = req.user?._id;
-        if (!userId || !videoId) {
-            throw new ApiError(400, "User id and video id both are required")
+        if(!userId){
+            throw new ApiError(401,"unauthorized")
+        }
+        if (!videoId) {
+            throw new ApiError(400, "video id is required")
         }
         const response = await User.findByIdAndUpdate(userId, {
             $push: {
@@ -195,8 +204,11 @@ class UserController {
     removeVideoFromWatchHistory = asyncHandler(async (req, res) => {
         const { videoId } = req.params;
         const userId = req.user?._id;
-        if (!userId || !videoId) {
-            throw new ApiError(400, "User id and video id both are required")
+        if(!userId){
+            throw new ApiError(401,"unauthorized")
+        }
+        if (!videoId) {
+            throw new ApiError(400, "video id is required")
         }
         const response = await User.findByIdAndUpdate(userId, {
             $pull: {
@@ -210,8 +222,8 @@ class UserController {
     })
     getWatchHistory = asyncHandler(async (req, res) => {
         const userId = req.user?._id;
-        if (!userId) {
-            throw new ApiError(400, "User id is required")
+        if(!userId){
+            throw new ApiError(401,"unauthorized")
         }
         const users = await User.aggregate([
             {
@@ -258,8 +270,8 @@ class UserController {
     })
     clearWatchHistory = asyncHandler(async (req, res) => {
         const userId = req.user?._id;
-        if (!userId) {
-            throw new ApiError(400, "User id is required")
+        if(!userId){
+            throw new ApiError(401,"unauthorized")
         }
         await User.findByIdAndUpdate(userId, { $set: { watchHistory: [] } }, { new: true });
         return res.status(200).json(new ApiResponse(200, null, "Watch history cleared"))
@@ -267,8 +279,11 @@ class UserController {
     saveVideoToWatchLater = asyncHandler(async (req, res) => {
         const { videoId } = req.params;
         const userId = req.user?._id;
-        if (!userId || !videoId) {
-            throw new ApiError(400, "User id and video id both are required")
+        if(!userId){
+            throw new ApiError(401,"unauthorized")
+        }
+        if (!videoId) {
+            throw new ApiError(400, "video id is required")
         }
         const response = await User.findByIdAndUpdate(userId, {
             $push: { watchLater: new mongoose.Types.ObjectId(videoId) }
@@ -281,8 +296,11 @@ class UserController {
     removeVideoFromWatchLater = asyncHandler(async (req, res) => {
         const { videoId } = req.params;
         const userId = req.user?._id;
-        if (!userId || !videoId) {
-            throw new ApiError(400, "User id and video id both are required")
+        if(!userId){
+            throw new ApiError(401,"unauthorized")
+        }
+        if (!videoId) {
+            throw new ApiError(400, "video id is required")
         }
         const response = await User.findByIdAndUpdate(userId, {
             $pull: { watchLater: new mongoose.Types.ObjectId(videoId) }
@@ -294,8 +312,8 @@ class UserController {
     })
     getWatchLater = asyncHandler(async (req, res) => {
         const userId = req.user?._id;
-        if (!userId) {
-            throw new ApiError(400, "User id is required")
+        if(!userId){
+            throw new ApiError(401,"unauthorized")
         }
         const users = await User.aggregate([
             {
@@ -343,8 +361,11 @@ class UserController {
     isSavedToWatchLater = asyncHandler(async (req, res) => {
         const { videoId } = req.params;
         const userId = req.user?._id;
-        if (!userId || !videoId) {
-            throw new ApiError(400, "User id and video id both are required")
+        if(!userId){
+            throw new ApiError(401,"unauthorized")
+        }
+        if ( !videoId) {
+            throw new ApiError(400, "video id bis required")
         }
         const user = await User.findById(userId);
         if (!user) {

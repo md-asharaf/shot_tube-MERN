@@ -4,7 +4,7 @@ import playlistControllers from "../controllers/playlist.js"
 const router = Router();
 
 router.get("/:playlistId", playlistControllers.getPlaylistById);
-router.get("/all-playlists/:userId", playlistControllers.getUserPlaylists);
+router.get("/all-playlists/:userId",verifyJWT, playlistControllers.getUserPlaylists);
 router.get("/is-video-saved/:videoId/:playlistId",playlistControllers.isSavedToPlaylist);
 router.post("/create-playlist", verifyJWT, playlistControllers.createPlaylist);
 router.patch("/update-playlist/:playlistId", playlistControllers.updatePlaylist);

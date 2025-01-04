@@ -25,6 +25,4 @@ router.patch("/update-account-details", verifyJWT, userControllers.updateAccount
 router.delete("/clear-watch-history", verifyJWT, userControllers.clearWatchHistory)
 router.delete("/remove-from-watch-history/:videoId", verifyJWT, userControllers.removeVideoFromWatchHistory)
 
-
-
 export default router;

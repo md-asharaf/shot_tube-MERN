@@ -59,8 +59,11 @@ class CommentController {
         const { content, sentiment } = req.body;
         const { videoId } = req.params;
         const userId = req.user?._id;
-        if (!content || !videoId || !userId || !sentiment) {
-            throw new ApiError(400, "Content, video ID, user ID and sentiment are required")
+        if(!userId){
+            throw new ApiError(401,"unauthorized")
+        }
+        if (!content || !videoId || !sentiment) {
+            throw new ApiError(400, "Content, video ID and sentiment are required")
         }
         const video = await Video.findById(videoId);
         if (!video) {
@@ -83,8 +86,11 @@ class CommentController {
     deleteComment = asyncHandler(async (req, res) => {
         const { commentId } = req.params;
         const userId = req.user?._id;
-        if (!commentId || !userId) {
-            throw new ApiError(400, "Comment ID and User id is required")
+        if(!userId){
+            throw new ApiError(401,"unauthorized")
+        }
+        if (!commentId) {
+            throw new ApiError(400, "Comment ID is required")
         }
         const deletedComment = await Comment.findOneAndDelete({ _id: new mongoose.Types.ObjectId(commentId), userId:new mongoose.Types.ObjectId(userId) });
         if (!deletedComment) {
@@ -96,8 +102,11 @@ class CommentController {
         const { content } = req.body;
         const { commentId } = req.params;
         const userId = req.user?._id;
-        if (!commentId || !content || !userId) {
-            throw new ApiError(400, "comment ID and content and User id all are required")
+        if(!userId){
+            throw new ApiError(401,"unauthorized")
+        }
+        if (!commentId || !content) {
+            throw new ApiError(400, "comment ID and content are required")
         }
 
         const comment = await Comment.findOne({  _id: new mongoose.Types.ObjectId(commentId), userId:new mongoose.Types.ObjectId(userId) });

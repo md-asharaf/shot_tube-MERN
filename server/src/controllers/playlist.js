@@ -8,8 +8,11 @@ class PlaylistController {
     createPlaylist = asyncHandler(async (req, res) => {
         const { name, description } = req.body;
         const userId = req.user?._id;
-        if (!name || !userId) {
-            throw new ApiError(400, "Name and userId are required")
+        if(!userId){
+            throw new ApiError(401,"unauthorized")
+        }
+        if (!name) {
+            throw new ApiError(400, "Name is required")
         }
         const playlist = await PlayList.create({
             name,
@@ -34,9 +37,9 @@ class PlaylistController {
         return res.status(200).json(new ApiResponse(200, { isSaved }, "Video is saved to playlist"));
     })
     getUserPlaylists = asyncHandler(async (req, res) => {
-        const { userId } = req.params;
-        if (!userId) {
-            throw new ApiError(400, "UserId is required")
+        const userId = req.user?._id;
+        if(!userId){
+            throw new ApiError(401,"unauthorized")
         }
         const playlists = await PlayList.aggregate([
             {

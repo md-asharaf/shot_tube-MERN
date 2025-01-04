@@ -90,11 +90,7 @@ class AuthController {
             sameSite: "none"
         };
         return res
-            .cookie("accessToken", accessToken, options).cookie("refreshToken", refreshToken, options).json(new ApiResponse(200, {
-                loggedInUser,
-                accessToken,
-                refreshToken,
-            }, "user logged in successfully"))
+            .cookie("accessToken", accessToken, options).cookie("refreshToken", refreshToken, options).json(new ApiResponse(200, { user: loggedInUser }, "user logged in successfully"))
     })
     logoutUser = asyncHandler(async (req, res) => {
         const options = {
