@@ -71,3 +71,7 @@ export interface IPlaylist {
     createdAt: Date;
     updatedAt: Date;
 }
+export interface PartETag {
+    PartNumber: number;
+    ETag: string;
+}

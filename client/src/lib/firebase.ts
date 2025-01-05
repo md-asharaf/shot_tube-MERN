@@ -6,7 +6,7 @@ import {
     signInWithPopup,
     signOut,
 } from "firebase/auth";
-import {downloadImageAndUploadToS3} from "./s3";
+import {downloadImageAndUploadToS3} from "./upload";
 const firebaseConfig = {
     apiKey: process.env.FIREBASE_API_KEY,
     authDomain: process.env.FIREBASE_AUTH_DOMAIN,

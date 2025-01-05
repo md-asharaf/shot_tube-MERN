@@ -35,7 +35,7 @@ const NavBar = () => {
     try {
       await logoutFromGoogle();
       await authServices.logout();
-      toast.success("Logged out successfully");
+      toast.info("Logged out!!");
       dispatch(logout());
     } catch (error) {
       toast.error(error.message);

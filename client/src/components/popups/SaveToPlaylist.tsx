@@ -74,9 +74,13 @@ const SaveToPlaylist: React.FC<Props> = ({
         queryKey: ["is-saved-statuses", videoId, playlists],
         queryFn: async (): Promise<boolean[]> => {
             return await Promise.all(
-                playlists?.map((p) =>
-                    playlistServices.isSavedToPlaylist(videoId, p._id)
-                )
+                playlists?.map(async (p) => {
+                    const data = await playlistServices.isSavedToPlaylist(
+                        videoId,
+                        p._id
+                    );
+                    return data.isSaved;
+                })
             );
         },
         enabled: !!videoId && !!playlists,
@@ -173,9 +177,11 @@ const SaveToPlaylist: React.FC<Props> = ({
     });
 
     if (isPlaylistsLoading || isWatchLaterLoading || isPlaylistsStatusLoading) {
-        return <div className="w-full mx-auto">
-            <Loader2 className="animate-spin h-6 w-6"/>
-        </div>
+        return (
+            <div className="w-full mx-auto">
+                <Loader2 className="animate-spin h-6 w-6" />
+            </div>
+        );
     }
 
     return (

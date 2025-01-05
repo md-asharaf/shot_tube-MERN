@@ -24,19 +24,29 @@ import {
     DialogTitle,
     DialogDescription,
 } from "@/components/ui/dialog";
-import { handleMultipartUpload } from "@/lib/s3";
 import { resizeImageWithPica } from "@/lib/pica";
 import { RootState } from "@/store/store";
 import { VideoFormValidation } from "../ui/validation";
 import DragDropInput from "../DragAndDropInput";
 import { Button } from "../ui/button";
+import { v4 as uuid } from "uuid";
+import uploadService from "@/services/Upload";
+import { uploadAllParts, uploadToPresignedUrl } from "@/lib/upload";
+interface IMetaData {
+    uploadId: string;
+    videoKey: string;
+}
+const BUCKET01=process.env.AWS_S3_BUCKET;
+const BUCKET02=process.env.AWS_S3_BUCKET_NAME;
 const VideoUpload = () => {
     const isVideoModalOpen = useSelector(
         (state: RootState) => state.ui.isVideoModalOpen
     );
-    const [controller, setController] = useState<AbortController | null>(null);
     const dispatch = useDispatch();
     const [isUploading, setIsUploading] = useState<boolean>(false);
+    const [uploadMetaData, setUploadMetaData] = useState<IMetaData | null>(
+        null
+    );
     const form = useForm<IVideoUploadForm>({
         resolver: zodResolver(VideoFormValidation),
         defaultValues: {
@@ -46,69 +56,10 @@ const VideoUpload = () => {
             thumbnail: undefined,
         },
     });
-
-    const uploadFile = async (file: File, key: string) => {
-        const abortController = new AbortController();
-        setController(abortController);
-        const toastId = toast.loading(
-            `Uploading ${
-                file.type.includes("video") ? "video" : "thumbnail"
-            } 0%`
-        );
-        try {
-            const upload = await handleMultipartUpload(
-                key,
-                file,
-                abortController
-            );
-            upload.on("httpUploadProgress", (progress) => {
-                if (file.type.includes("video")) {
-                    const percentage = Math.round(
-                        (progress.loaded / (progress.total || 1)) * 100
-                    );
-                    toast.loading(
-                        `Uploading ${
-                            file.type.includes("video") ? "video" : "thumbnail"
-                        } ${percentage}%`,
-                        { id: toastId }
-                    );
-                }
-            });
-            await upload.done();
-            toast.success(
-                `${
-                    file.type.includes("video") ? "Video" : "Thumbnail"
-                } uploaded successfully`,
-                { id: toastId }
-            );
-        } catch (error) {
-            if (error.name === "AbortError") {
-                toast.error(
-                    `${
-                        file.type.includes("video") ? "Video" : "Thumbnail"
-                    } upload aborted`,
-                    { id: toastId }
-                );
-            } else {
-                toast.error(
-                    `${
-                        file.type.includes("video") ? "Video" : "Thumbnail"
-                    } upload failed`,
-                    { id: toastId }
-                );
-            }
-            throw error;
-        }
-    };
-    const handleAbort = () => {
-        if (controller) {
-            controller.abort();
-        }
-    };
     const handleSubmit = async (values: IVideoUploadForm) => {
         setIsUploading(true);
-        const { title, description, video, thumbnail } = values;
         try {
+            const { title, description, video, thumbnail } = values;
             const resizedThumbnail = await resizeImageWithPica(
                 thumbnail,
                 1280,
@@ -116,45 +67,89 @@ const VideoUpload = () => {
             );
             const { duration, height, width } = await getVideoMetadata(video);
             const videoSplits = video.name.split(".");
-            const videoKey = `${Date.now()}_${sanitizeFileName(
+            const videoKey = `${uuid()}_${sanitizeFileName(
                 videoSplits[0]
             )}_${width}_${height}.${videoSplits[1]}`;
-            const thumbnailKey = `uploads/user-uploads/${Date.now()}_${sanitizeFileName(
+            const thumbnailKey = `uploads/user-uploads/${uuid()}_${sanitizeFileName(
                 resizedThumbnail.name
             )}`;
-
-            await Promise.all([
-                uploadFile(video, `uploads/user-uploads/${videoKey}`),
-                uploadFile(resizedThumbnail, thumbnailKey),
-            ]);
-
+            const contentType = video.type || "application/octet-stream";
+            const videoUploadTask = async () => {
+                const toastId = toast.loading("Uploading video : 0%");
+                try {
+                    const { uploadId, presignedUrls } = await uploadService.initiateMultipartUpload(
+                        videoKey,
+                        contentType,
+                        100
+                    );
+                    setUploadMetaData({ uploadId, videoKey });
+    
+                    const partETags = await uploadAllParts(
+                        presignedUrls,
+                        video,
+                        (progress) => {
+                            toast.loading(`Uploading video : ${progress}%`, {
+                                id: toastId,
+                            });
+                        }
+                    );
+    
+                    await uploadService.completeMultiPartUpload(uploadId, videoKey, partETags);
+                    setUploadMetaData(null);
+                    toast.success("Video uploaded successfully!", { id: toastId });
+                } catch (error) {
+                    toast.error(error.message, { id: toastId });
+                    throw error;
+                }
+            };
+    
+            await videoUploadTask();
+            const { url } = await uploadService.getPutObjectPresignedUrl(
+                thumbnailKey,
+                resizedThumbnail.type
+            );
+            await uploadToPresignedUrl(url, resizedThumbnail);
             await videoService.upload({
                 title,
                 description,
-                video: `https://public-shot-tube-videos.s3.ap-south-1.amazonaws.com/${videoKey
+                video: `https://${BUCKET01}.s3.ap-south-1.amazonaws.com/${videoKey
                     .split(".")
                     .slice(0, -1)
                     .join(".")}/master.m3u8`,
-                thumbnail: `https://shot-tube-videos.s3.ap-south-1.amazonaws.com/${thumbnailKey}`,
+                thumbnail: `https://${BUCKET02}.s3.ap-south-1.amazonaws.com/${thumbnailKey}`,
                 duration,
-                subtitle: `https://public-shot-tube-videos.s3.ap-south-1.amazonaws.com/${videoKey
+                subtitle: `https://${BUCKET01}.s3.ap-south-1.amazonaws.com/${videoKey
                     .split(".")
                     .slice(0, -1)
                     .join(".")}/subtitle.vtt`,
             });
             setTimeout(
-                () => toast.success("Video post created successfully"),
-                2000
+                () => toast.success("Video post created!"),
+                1000
             );
         } catch (err) {
-            setTimeout(() => toast.error("Failed to create video post"), 2000);
+            setTimeout(() => toast.error("Failed to create video post"), 1000);
         } finally {
             setIsUploading(false);
         }
     };
-
+    const handleAbort = async () => {
+        try {
+            await uploadService.abortMultiPartUpload(
+                uploadMetaData.uploadId,
+                uploadMetaData.videoKey
+            );
+            setUploadMetaData(null);
+            toast.warning("Upload aborted!!");
+        } catch (error) {
+            toast.error("Failed to abort upload");
+        }
+    };
     return (
-        <Dialog open={isVideoModalOpen} onOpenChange={() => dispatch(toggleVideoModal())}>
+        <Dialog
+            open={isVideoModalOpen}
+            onOpenChange={() => dispatch(toggleVideoModal())}
+        >
             <DialogContent className="max-w-[500px]">
                 <DialogHeader>
                     <DialogTitle>Upload Video</DialogTitle>

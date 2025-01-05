@@ -31,7 +31,6 @@ export function getVideoMetadata(
         video.src = URL.createObjectURL(file);
     });
 }
-
 export function formatDuration(duration: string) {
     const durationNumber = parseInt(duration);
     const minutes = Math.floor(durationNumber / 60);
@@ -48,3 +47,5 @@ export function formatViews(count: number) {
     if (count >= 1000) return `${(count / 1000).toFixed(1)}K views`;
     return `${count} views`;
 }
+
+
