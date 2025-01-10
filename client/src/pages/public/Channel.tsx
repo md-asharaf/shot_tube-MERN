@@ -15,6 +15,7 @@ import { RootState } from "@/store/store";
 import { toggleMenu } from "@/store/reducers/ui";
 import NProgress from "nprogress";
 import "nprogress/nprogress.css";
+import { DropdownMenuSeparator } from "@radix-ui/react-dropdown-menu";
 
 const Channel = () => {
     const dispatch = useDispatch();
@@ -106,6 +107,7 @@ const Channel = () => {
                 </div>
             </div>
             <h3 className="text-xl font-semibold">Videos</h3>
+            <hr />
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                 {videosLoading ? (
                     <div className="flex justify-center w-full">

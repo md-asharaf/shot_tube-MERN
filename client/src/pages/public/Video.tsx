@@ -36,6 +36,7 @@ const Video = () => {
 
     const {
         data: video,
+        isLoading,
         isError,
         error,
     } = useQuery({
@@ -84,7 +85,7 @@ const Video = () => {
     const { data: recommendedVideos } = useQuery({
         queryKey: ["recommendedVideos", videoId],
         queryFn: async (): Promise<IVideoData[]> => {
-            const data = await videoService.recommendedVideos(videoId);
+            const data = await videoService.recommendedVideos(videoId, userId);
             return data.recommendations;
         },
         enabled: !!videoId,
@@ -123,7 +124,8 @@ const Video = () => {
     useEffect(() => {
         dispatch(toggleMenu(false));
     }, []);
-    if (isError) return <div>Error: {error.message}</div>;
+    if (isError) return <div>Error: {error?.message}</div>;
+    if(isLoading) return null
     return (
         <div className="flex flex-col space-y-4 xl:flex-row w-full">
             <div className="space-y-4 w-full xl:w-2/3 2xl:w-[70%]">
@@ -173,12 +175,8 @@ const Video = () => {
                             </Link>
 
                             <Button
-                                variant="default"
-                                className={`${
-                                    !isSubscribed
-                                        ? "bg-red-400 hover:bg-red-600"
-                                        : "bg-gray-200 hover:bg-gray-400"
-                                } shadow-none text-black rounded-3xl`}
+                                variant={isSubscribed ? "secondary" : "default"}
+                                className="rounded-full"
                                 onClick={() => toggleSubscription()}
                             >
                                 {isSubscribed ? "Subscribed" : "Subscribe"}
@@ -187,20 +185,19 @@ const Video = () => {
                         {!isMobile && (
                             <div className="flex sm:items-center justify-end gap-4 sm:gap-2">
                                 <Button
-                                    className={`${
-                                        isLiked &&
-                                        "text-blue-500 hover:text-blue-500"
-                                    } dark:bg-zinc-600 border-none bg-zinc-200 h-7 sm:h-9`}
-                                    variant="outline"
+                                    variant="secondary"
                                     onClick={() => toggleVideoLike()}
+                                    className="rounded-full"
                                 >
-                                    <ThumbsUp width={24} height={24} />
+                                    <ThumbsUp fill={isLiked?"black":"white"}/> 2.2k
                                 </Button>
-                                <SaveToPlaylist
-                                    videoId={videoId}
-                                    className="dark:bg-zinc-600 border-none bg-zinc-200 h-7 sm:h-9 px-3 rounded-md"
-                                >
-                                    <Bookmark />
+                                <SaveToPlaylist videoId={videoId}>
+                                    <Button
+                                        variant="secondary"
+                                        className="rounded-full"
+                                    >
+                                        <Bookmark /> Save
+                                    </Button>
                                 </SaveToPlaylist>
                             </div>
                         )}

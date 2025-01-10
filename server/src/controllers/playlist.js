@@ -8,9 +8,6 @@ class PlaylistController {
     createPlaylist = asyncHandler(async (req, res) => {
         const { name, description } = req.body;
         const userId = req.user?._id;
-        if(!userId){
-            throw new ApiError(401,"unauthorized")
-        }
         if (!name) {
             throw new ApiError(400, "Name is required")
         }
@@ -38,13 +35,10 @@ class PlaylistController {
     })
     getUserPlaylists = asyncHandler(async (req, res) => {
         const userId = req.user?._id;
-        if(!userId){
-            throw new ApiError(401,"unauthorized")
-        }
         const playlists = await PlayList.aggregate([
             {
                 $match: {
-                    userId: new mongoose.Types.ObjectId(userId)
+                    userId
                 }
             },
             {

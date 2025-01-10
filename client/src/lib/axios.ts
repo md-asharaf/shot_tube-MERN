@@ -1,8 +1,12 @@
 import axios from "axios";
 import { ApiResponse } from "@/interfaces";
-import { store } from "@/store/store"; 
-import { toggleLoginPopover } from "@/store/reducers/ui";
+import { store } from "@/store/store";
+import {
+    setLoginPopoverMessage,
+    toggleLoginPopover,
+} from "@/store/reducers/ui";
 import { logout } from "@/store/reducers/auth";
+import { set } from "date-fns";
 
 const axiosInstance = axios.create({
     baseURL: process.env.BACKEND_BASE_URL,
@@ -14,8 +18,11 @@ axiosInstance.interceptors.response.use(
     },
     (error) => {
         if (error.response?.status === 401) {
-            store.dispatch(logout())
+            store.dispatch(logout());
             store.dispatch(toggleLoginPopover(true));
+            store.dispatch(
+                setLoginPopoverMessage(error.response?.data?.message)
+            );
         }
         return Promise.reject(error.response?.data as ApiResponse);
     }

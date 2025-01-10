@@ -32,6 +32,7 @@ const Library = ({
           </Button>
         </Link>
       </div>
+      <hr />
       <div className="relative">
         <Carousel className="w-full">
           <CarouselContent>

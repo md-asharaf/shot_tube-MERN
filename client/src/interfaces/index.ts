@@ -25,6 +25,7 @@ export interface IUiData {
     isMenuOpen: boolean;
     isVideoModalOpen: boolean;
     isLoginPopoverVisible: boolean;
+    loginPopoverMessage: string;
 }
 export interface IAction {
     type: string;
@@ -74,4 +75,19 @@ export interface IPlaylist {
 export interface PartETag {
     PartNumber: number;
     ETag: string;
+}
+export interface INotification {
+    video?: {
+        _id: string;
+        thumbnail: string;
+        creatorImage: string;
+    };
+    tweet?: {
+        _id: string;
+        thumbnail: string;
+        creatorImage: string;
+    };
+    message: string;
+    read: boolean;
+    createdAt: Date;
 }

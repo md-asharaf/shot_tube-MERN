@@ -42,7 +42,6 @@ const SaveToPlaylist: React.FC<Props> = ({
 
     const {
         data: playlists,
-        isLoading: isPlaylistsLoading,
         refetch: refetchPlaylists,
     } = useQuery({
         queryKey: ["playlists", userId],
@@ -55,10 +54,9 @@ const SaveToPlaylist: React.FC<Props> = ({
 
     const {
         data: isSavedToWatchLater,
-        isLoading: isWatchLaterLoading,
         refetch: refetchIsSavedToWatchLater,
     } = useQuery({
-        queryKey: ["is-video-saved", videoId],
+        queryKey: ["is-video-saved", videoId,userId],
         queryFn: async () => {
             const data = await userServices.isSavedToWatchLater(videoId);
             return data.isSaved;
@@ -68,7 +66,6 @@ const SaveToPlaylist: React.FC<Props> = ({
 
     const {
         data: isSavedToPlaylists,
-        isLoading: isPlaylistsStatusLoading,
         refetch: refetchIsSavedToPlaylists,
     } = useQuery({
         queryKey: ["is-saved-statuses", videoId, playlists],
@@ -176,14 +173,6 @@ const SaveToPlaylist: React.FC<Props> = ({
         },
     });
 
-    if (isPlaylistsLoading || isWatchLaterLoading || isPlaylistsStatusLoading) {
-        return (
-            <div className="w-full mx-auto">
-                <Loader2 className="animate-spin h-6 w-6" />
-            </div>
-        );
-    }
-
     return (
         <>
             <Dialog
@@ -223,7 +212,7 @@ const SaveToPlaylist: React.FC<Props> = ({
                                 <input
                                     type="checkbox"
                                     className="h-5 w-5"
-                                    checked={isSavedToPlaylists[index]}
+                                    checked={isSavedToPlaylists&&isSavedToPlaylists[index]}
                                     onChange={(e) => {
                                         if (e.target.checked) {
                                             add({ playlistId: playlist._id });

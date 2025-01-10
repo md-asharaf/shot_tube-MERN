@@ -8,9 +8,6 @@ import { Like } from "../models/like.js";
 class VideoController {
     publishVideo = asyncHandler(async (req, res) => {
         const userId = req.user?._id;
-        if(!userId){
-            throw new ApiError(401,"unauthorized")
-        } 
         const { title, description, video, thumbnail, duration, subtitle } = req.body;
         if (!title || !description || !video || !thumbnail || !duration) throw new ApiError(400, "Please provide All required fields")
         const newVideo = await Video.create({
@@ -31,9 +28,6 @@ class VideoController {
     deleteVideo = asyncHandler(async (req, res) => {
         const { videoId } = req.params;
         const userId = req.user?._id;
-        if(!userId){
-            throw new ApiError(401,"unauthorized")
-        } 
         if (!videoId) throw new ApiError(400, "video id is required")
         const video = await Video.findById(videoId);
         if (!video) {
@@ -48,9 +42,6 @@ class VideoController {
     updateVideoDetails = asyncHandler(async (req, res) => {
         const { videoId } = req.params;
         const userId = req.user?._id;
-        if(!userId){
-            throw new ApiError(401,"unauthorized")
-        }
         if (!videoId) throw new ApiError(400, "videoId is required")
         const { title, description } = req.body;
         if (!title && !description) {
@@ -131,13 +122,10 @@ class VideoController {
     })
     getLikedVideos = asyncHandler(async (req, res) => {
         const userId = req.user?._id;
-        if(!userId){
-            throw new ApiError(401,"unauthorized")
-        } 
         const likedVideos = await Like.aggregate([
             {
                 $match: {
-                    userId: new mongoose.Types.ObjectId(userId),
+                    userId,
                     videoId: { $ne: null },
                 },
             },
@@ -151,7 +139,7 @@ class VideoController {
             },
             {
                 $addFields: {
-                    video: { $first: "$video" }, 
+                    video: { $first: "$video" },
                 },
             },
             {
@@ -165,13 +153,13 @@ class VideoController {
             {
                 $addFields: {
                     creator: {
-                        $first: "$creator", 
+                        $first: "$creator",
                     },
                 },
             },
             {
                 $project: {
-                    _id: "$video._id", 
+                    _id: "$video._id",
                     title: "$video.title",
                     thumbnail: "$video.thumbnail",
                     duration: "$video.duration",
@@ -187,7 +175,7 @@ class VideoController {
                 },
             },
         ]);
-    
+
         return res
             .status(200)
             .json(
@@ -198,7 +186,7 @@ class VideoController {
                 )
             );
     });
-    
+
     getSingleVideo = asyncHandler(async (req, res) => {
         const { videoId } = req.params;
         const video = await Video.aggregate(
@@ -272,11 +260,11 @@ class VideoController {
 
     getVideosByQuery = asyncHandler(async (req, res) => {
         const { query, page = 1, limit = 10 } = req.query;
-    
+
         if (!query) throw new ApiError(400, "Please provide a search query");
-    
+
         const skip = (page - 1) * limit;
-    
+
         const pipeline = [
             // Match stage: Search in title and description
             {
@@ -346,9 +334,9 @@ class VideoController {
             { $skip: skip },
             { $limit: parseInt(limit) },
         ];
-    
+
         const videos = await Video.aggregate(pipeline);
-    
+
         // Count total for pagination metadata
         const total = await Video.countDocuments({
             $or: [
@@ -356,22 +344,21 @@ class VideoController {
                 { description: { $regex: query, $options: "i" } },
             ],
         });
-    
+
         const metadata = {
             total,
             page: parseInt(page),
             limit: parseInt(limit),
             totalPages: Math.ceil(total / limit),
         };
-    
+
         return res.status(200).json(
             new ApiResponse(200, { videos, metadata }, "Videos fetched successfully")
         );
     });
-    
+
     getRecommendedVideos = asyncHandler(async (req, res) => {
-        const { user } = req;
-        const { videoId } = req.params;
+        const { videoId, userId } = req.query;
         if (!videoId) {
             throw new ApiError(400, "Please provide videoId")
         }
@@ -383,8 +370,8 @@ class VideoController {
         let watchedVideoIds = [];
         let recommendations = [];
 
-        if (user) {
-            const userData = await User.findById(user._id).populate('watchHistory');
+        if (userId) {
+            const userData = await User.findById(new mongoose.Types.ObjectId(userId)).populate('watchHistory');
             watchedVideoIds = userData.watchHistory.map(video => video._id);
 
             recommendations = await Video.aggregate([
@@ -455,7 +442,7 @@ class VideoController {
             ]);
         }
 
-        if (!user || recommendations.length < 10) {
+        if (!userId || recommendations.length < 10) {
             const additionalVideos = await Video.aggregate([
                 {
                     $match: {

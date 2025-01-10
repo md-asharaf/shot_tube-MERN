@@ -5,7 +5,7 @@ const router = Router();
 
 router.get("/all-videos", videoControllers.getAllVideos);
 router.get("/search-videos", videoControllers.getVideosByQuery);
-router.get("/recommended-videos/:videoId", verifyJWT, videoControllers.getRecommendedVideos);
+router.get("/recommended-videos", videoControllers.getRecommendedVideos);
 router.get("/user-videos/:userId", videoControllers.getUserVideos);
 router.get("/liked-videos", verifyJWT, videoControllers.getLikedVideos);
 router.get("/:videoId", videoControllers.getSingleVideo);

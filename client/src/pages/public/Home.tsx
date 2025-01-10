@@ -11,7 +11,7 @@ import NProgress from "nprogress";
 import "nprogress/nprogress.css";
 const Home = () => {
     const loaderRef = useRef(null);
-    const { data, hasNextPage, fetchNextPage } = useInfiniteQuery({
+    const { data, hasNextPage, fetchNextPage,isLoading } = useInfiniteQuery({
         queryKey: ["videos"],
         queryFn: async ({ pageParam }): Promise<IVideoData[]> => {
             NProgress.start();

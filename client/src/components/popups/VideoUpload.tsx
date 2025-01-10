@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/dialog";
 import { resizeImageWithPica } from "@/lib/pica";
 import { RootState } from "@/store/store";
-import { VideoFormValidation } from "../../validations";
+import { VideoFormValidation } from "@/validations";
 import DragDropInput from "../DragAndDropInput";
 import { Button } from "../ui/button";
 import { v4 as uuid } from "uuid";
@@ -36,9 +36,11 @@ interface IMetaData {
     uploadId: string;
     videoKey: string;
 }
-const BUCKET01=process.env.AWS_S3_BUCKET;
-const BUCKET02=process.env.AWS_S3_BUCKET_NAME;
+const BUCKET01 = process.env.AWS_S3_BUCKET;
+const BUCKET02 = process.env.AWS_S3_BUCKET_NAME;
 const VideoUpload = () => {
+    const [abortController, setAbortController] =
+        useState<AbortController | null>(null);
     const isVideoModalOpen = useSelector(
         (state: RootState) => state.ui.isVideoModalOpen
     );
@@ -75,35 +77,107 @@ const VideoUpload = () => {
             )}`;
             const contentType = video.type || "application/octet-stream";
             const videoUploadTask = async () => {
-                const toastId = toast.loading("Uploading video : 0%");
+                const toastId = toast.loading("Uploading video : 0%", {
+                    action: {
+                        label: "Abort",
+                        onClick: handleAbort,
+                        actionButtonStyle: {
+                            backgroundColor: "red",
+                            padding: "0.5rem 1rem",
+                        },
+                    },
+                });
                 try {
-                    const { uploadId, presignedUrls } = await uploadService.initiateMultipartUpload(
-                        videoKey,
-                        contentType,
-                        100
-                    );
+                    const { uploadId, presignedUrls } =
+                        await uploadService.initiateMultipartUpload(
+                            videoKey,
+                            contentType,
+                            100
+                        );
                     setUploadMetaData({ uploadId, videoKey });
-    
+
                     const partETags = await uploadAllParts(
                         presignedUrls,
                         video,
                         (progress) => {
                             toast.loading(`Uploading video : ${progress}%`, {
                                 id: toastId,
+                                action: {
+                                    label: "Abort",
+                                    onClick: handleAbort,
+                                    actionButtonStyle: {
+                                        backgroundColor: "red",
+                                        padding: "0.5rem 1rem",
+                                    },
+                                },
                             });
                         }
                     );
-    
-                    await uploadService.completeMultiPartUpload(uploadId, videoKey, partETags);
-                    setUploadMetaData(null);
-                    toast.success("Video uploaded successfully!", { id: toastId });
+
+                    await uploadService.completeMultiPartUpload(
+                        uploadId,
+                        videoKey,
+                        partETags
+                    );
+                    toast.success("Video uploaded successfully!", {
+                        id: toastId,
+                    });
                 } catch (error) {
                     toast.error(error.message, { id: toastId });
                     throw error;
+                } finally {
+                    setUploadMetaData(null);
                 }
             };
-    
-            await videoUploadTask();
+
+            if (video.size >= 500 * 1024 * 1024) await videoUploadTask();
+            else {
+                const toastId = toast.loading("Uploading video : 0%", {
+                    action: {
+                        label: "Abort",
+                        onClick: handleAbort,
+                        actionButtonStyle: {
+                            backgroundColor: "red",
+                            padding: "0.5rem 1rem",
+                        },
+                    },
+                });
+                try {
+                    const { url } =
+                        await uploadService.getPutObjectPresignedUrl(
+                            videoKey,
+                            contentType
+                        );
+                    const controller = new AbortController();
+                    setAbortController(controller);
+                    await uploadToPresignedUrl(
+                        url,
+                        video,
+                        controller,
+                        (progress) => {
+                            toast.loading(`Uploading video : ${progress}%`, {
+                                id: toastId,
+                                action: {
+                                    label: "Abort",
+                                    onClick: handleAbort,
+                                    actionButtonStyle: {
+                                        backgroundColor: "red",
+                                        padding: "0.5rem 1rem",
+                                    },
+                                },
+                            });
+                        }
+                    );
+                    toast.success("Video uploaded successfully!", {
+                        id: toastId,
+                    });
+                } catch (error) {
+                    toast.error(error.message, { id: toastId });
+                    throw error;
+                } finally {
+                    setAbortController(null);
+                }
+            }
             const { url } = await uploadService.getPutObjectPresignedUrl(
                 thumbnailKey,
                 resizedThumbnail.type
@@ -123,23 +197,24 @@ const VideoUpload = () => {
                     .slice(0, -1)
                     .join(".")}/subtitle.vtt`,
             });
-            setTimeout(
-                () => toast.success("Video post created!"),
-                1000
-            );
+            setTimeout(() => toast.success("Video post created!"), 1000);
         } catch (err) {
+            console.log(err);
             setTimeout(() => toast.error("Failed to create video post"), 1000);
         } finally {
             setIsUploading(false);
+            dispatch(toggleVideoModal());
         }
     };
     const handleAbort = async () => {
         try {
+            if (abortController) {
+                return abortController.abort();
+            }
             await uploadService.abortMultiPartUpload(
                 uploadMetaData.uploadId,
                 uploadMetaData.videoKey
             );
-            setUploadMetaData(null);
             toast.warning("Upload aborted!!");
         } catch (error) {
             toast.error("Failed to abort upload");

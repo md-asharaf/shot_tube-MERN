@@ -12,6 +12,7 @@ router.get("/watch-later", verifyJWT, userControllers.getWatchLater)
 router.get("/channel/:username", userControllers.getUserDetails)
 router.get("/watch-later", verifyJWT, userControllers.getWatchLater)
 router.get("/is-saved-to-watch-later/:videoId", verifyJWT, userControllers.isSavedToWatchLater)
+router.get("/refresh-tokens", authControllers.refreshTokens);
 router.post("/login", authControllers.loginUser);
 router.post("/register", authControllers.registerUser);
 router.post("/google-login", authControllers.googleSignIn);

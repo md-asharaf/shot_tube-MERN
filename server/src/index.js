@@ -4,8 +4,8 @@ import { webSocketServer } from "./lib/web-socket.js";
 import { initConsumers } from "./lib/kafka/consumer.js";
 import { initProducer } from "./lib/kafka/producer.js"
 
-const BACKEND_PORT = process.env.BACKEND_PORT || 8000;
-const WEB_SOCKET_PORT = process.env.WEB_SOCKET_PORT || 4000;
+const BACKEND_PORT = process.env.BACKEND_PORT;
+const WEB_SOCKET_PORT = process.env.WEB_SOCKET_PORT;
 let consumer1;
 let consumer2;
 let producer;

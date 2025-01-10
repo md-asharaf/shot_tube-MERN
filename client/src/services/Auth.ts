@@ -10,6 +10,7 @@ class AuthService {
         await Axios.post("/users/google-login", data);
     sendResetLinkOnEmail = async (email: string) =>
         await Axios.post("/users/forget-password", { email });
+    loginViaRefreshToken = async () => await Axios.get("/users/refresh-tokens");
 }
 
 export default new AuthService();

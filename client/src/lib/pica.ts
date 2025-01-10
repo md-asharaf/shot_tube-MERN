@@ -1,46 +1,67 @@
-import pica from 'pica';
+import pica from "pica";
 
-export const resizeImageWithPica = (file:File, targetWidth:number = 1280, targetHeight:number = 720):Promise<File> => {
-  return new Promise((resolve, reject) => {
-    const reader = new FileReader();
+export const resizeImageWithPica = (
+    file: File,
+    targetWidth: number = 1280,
+    targetHeight: number = 720
+): Promise<File> => {
+    return new Promise((resolve) => {
+        const reader = new FileReader();
 
-    reader.onload = (event) => {
-      const img = new Image();
-      
-      img.onload = () => {
-        const canvas = document.createElement('canvas');
-        canvas.width = targetWidth;
-        canvas.height = targetHeight;
+        reader.onload = (event) => {
+            const img = new Image();
 
-        pica()
-          .resize(img, canvas)
-          .then(() => {
-            canvas.toBlob(
-              (blob) => {
-                if (blob) {
-                  const resizedFile = new File([blob], file.name, {
-                    type: file.type,
-                    lastModified: Date.now(),
-                  });
-                  resolve(resizedFile);
-                } else {
-                  reject(new Error('Failed to create Blob'));
-                }
-              },
-              file.type,
-              0.9
-            );
-          })
-          .catch((err) => reject(err));
-      };
+            img.onload = () => {
+                const canvas = document.createElement("canvas");
+                canvas.width = targetWidth;
+                canvas.height = targetHeight;
 
-      img.onerror = (error) => reject(error);
+                pica()
+                    .resize(img, canvas, {
+                        unsharpAmount: 80,
+                        unsharpRadius: 0.6,
+                        unsharpThreshold: 2,
+                    })
+                    .then(() => {
+                        canvas.toBlob(
+                            (blob) => {
+                                if (blob) {
+                                    const resizedFile = new File(
+                                        [blob],
+                                        file.name,
+                                        {
+                                            type: file.type,
+                                            lastModified: Date.now(),
+                                        }
+                                    );
+                                    resolve(resizedFile);
+                                } else {
+                                    resolve(file);
+                                }
+                            },
+                            file.type,
+                            0.9
+                        );
+                    })
+                    .catch((err) => {
+                        console.error(err);
+                        resolve(file);
+                    });
+            };
 
-      img.src = event.target.result as string;
-    };
+            img.onerror = (error) => {
+                console.error(error);
+                resolve(file);
+            };
 
-    reader.onerror = (error) => reject(error);
+            img.src = event.target.result as string;
+        };
 
-    reader.readAsDataURL(file);
-  });
+        reader.onerror = (error) => {
+            console.error(error);
+            resolve(file);
+        };
+
+        reader.readAsDataURL(file);
+    });
 };

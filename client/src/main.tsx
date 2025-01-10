@@ -15,7 +15,7 @@ export const queryClient = new QueryClient({
             retry: 3,
             retryDelay: (attemptIndex) =>
                 Math.min(1000 * 2 ** attemptIndex, 30000),
-        }
+        },
     },
 });
 const rootElement = document.getElementById("root");
@@ -23,7 +23,7 @@ const root = createRoot(rootElement);
 root.render(
     <Provider store={store}>
         <QueryClientProvider client={queryClient}>
-            <Toaster position="bottom-right" richColors />
+            <Toaster position="bottom-right" richColors expand />
             <App />
         </QueryClientProvider>
     </Provider>

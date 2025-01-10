@@ -9,7 +9,7 @@ export async function detectEmotion(req, res, next) {
             messages: [
                 {
                     role: "user",
-                    content: `Analyze the sentiment of this comment: "${content}" and return if it's positive, negative, or neutral. only response with only one of these three options.`,
+                    content: `Analyze the sentiment of this comment: "${content}" and return if it's positive, negative, or neutral. only give response with only one of these three options.`,
                 },
             ],
             model: "llama3-8b-8192",

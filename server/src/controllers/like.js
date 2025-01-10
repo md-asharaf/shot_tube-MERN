@@ -8,16 +8,12 @@ class LikeController {
     toggleCommentLike = asyncHandler(async (req, res) => {
         const { commentId } = req.params;
         const userId = req.user?._id;
-        if(!userId){
-            throw new ApiError(401,"unauthorized")
-        }
         if (!commentId) {
             throw new ApiError(400, "Comment id is required")
         }
-        const dbLike = await Like.findOne({ commentId: new mongoose.Types.ObjectId(commentId), userId: new mongoose.Types.ObjectId(userId) })
-        let response;
+        const dbLike = await Like.findOne({ commentId: new mongoose.Types.ObjectId(commentId), userId })
         if (!dbLike) {
-            response = await Like.create({
+            await Like.create({
                 commentId,
                 userId,
                 videoId: null,
@@ -25,21 +21,17 @@ class LikeController {
             })
         }
         else {
-            response = await Like.findByIdAndDelete(dbLike._id)
+            await Like.findByIdAndDelete(dbLike._id)
         }
         return res.status(200).json(new ApiResponse(200, null, `${dbLike ? "unliked" : "liked"} comment`))
     })
     toggleVideoLike = asyncHandler(async (req, res) => {
         const { videoId } = req.params;
         const userId = req.user?._id;
-        if(!userId){
-            throw new ApiError(401,"unauthorized")
-        }
         if (!videoId) throw new ApiError(400, "Video id is required");
-        const dbLike = await Like.findOne({ videoId: new mongoose.Types.ObjectId(videoId), userId: new mongoose.Types.ObjectId(userId) });
-        let response;
+        const dbLike = await Like.findOne({ videoId: new mongoose.Types.ObjectId(videoId), userId });
         if (!dbLike) {
-            response = await Like.create({
+            await Like.create({
                 videoId,
                 userId,
                 commentId: null,
@@ -47,7 +39,7 @@ class LikeController {
             })
         }
         else {
-            response = await Like.findByIdAndDelete(dbLike._id)
+            await Like.findByIdAndDelete(dbLike._id)
         }
         return res.status(200).json(new ApiResponse(200, null, `${dbLike ? "unliked" : "liked"} video`));
     })
@@ -55,7 +47,7 @@ class LikeController {
         const { tweetId } = req.params;
         const userId = req.user?._id;
         if (!tweetId || !userId) throw new ApiError(400, "Tweet id nand User id are required");
-        const dbLike = await Like.findOne({ tweetId: new mongoose.Types.ObjectId(tweetId), userId: new mongoose.Types.ObjectId(userId) })
+        const dbLike = await Like.findOne({ tweetId: new mongoose.Types.ObjectId(tweetId), userId })
         if (!dbLike) {
             await Like.create({
                 userId,
@@ -72,21 +64,18 @@ class LikeController {
     isLiked = asyncHandler(async (req, res) => {
         const { commentId, videoId, tweetId } = req.params;
         const userId = req.user?._id;
-        if(!userId){
-            throw new ApiError(401,"unauthorized")
-        }
         if (!commentId && !videoId && !tweetId) throw new ApiError(400, "Comment id, video id or tweet id is required");
         let liked = false;
         if (commentId) {
-            const dbLike = await Like.findOne({ commentId: new mongoose.Types.ObjectId(commentId), userId: new mongoose.Types.ObjectId(userId) });
+            const dbLike = await Like.findOne({ commentId: new mongoose.Types.ObjectId(commentId) });
             liked = dbLike ? true : false;
         }
         if (videoId) {
-            const dbLike = await Like.findOne({ videoId: new mongoose.Types.ObjectId(videoId), userId: new mongoose.Types.ObjectId(userId) });
+            const dbLike = await Like.findOne({ videoId: new mongoose.Types.ObjectId(videoId), userId });
             liked = dbLike ? true : false;
         }
         if (tweetId) {
-            const dbLike = await Like.findOne({ tweetId: new mongoose.Types.ObjectId(tweetId), userId: new mongoose.Types.ObjectId(userId) });
+            const dbLike = await Like.findOne({ tweetId: new mongoose.Types.ObjectId(tweetId), userId });
             liked = dbLike ? true : false;
         }
         return res.status(200).json(new ApiResponse(200, { isLiked: liked }, `user has${liked ? "" : " not"} liked this video`))

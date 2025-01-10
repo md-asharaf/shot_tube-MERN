@@ -4,6 +4,7 @@ import {
     toggleMenu,
     toggleVideoModal,
     toggleLoginPopover,
+    setLoginPopoverMessage,
 } from "../reducers/ui";
 
 export const uiMiddleware: Middleware<{}, RootState> =
@@ -12,7 +13,8 @@ export const uiMiddleware: Middleware<{}, RootState> =
         if (
             toggleMenu.match(action) ||
             toggleVideoModal.match(action) ||
-            toggleLoginPopover.match(action)
+            toggleLoginPopover.match(action) ||
+            setLoginPopoverMessage.match(action)
         ) {
             const uiState = store.getState().ui;
             localStorage.setItem("ui_data", JSON.stringify(uiState));

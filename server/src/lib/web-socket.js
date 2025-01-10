@@ -1,13 +1,13 @@
 import http from 'http';
-import socketIo from 'socket.io';
+import { Server } from 'socket.io';
 import { validateAccessToken } from '../middlewares/auth.js';
 import { validateIdToken } from '../lib/firebase-admin.js';
 export const webSocketServer = http.createServer();
-const io = socketIo(webSocketServer, {
+const io = new Server(webSocketServer, {
   cors: {
-      origin: process.env.CLIENT_URL,
-      methods: ["GET", "POST"],
-      allowedHeaders: ["Authorization"],
+    origin: process.env.CLIENT_URL,
+    methods: ["GET", "POST"],
+    allowedHeaders: ["Authorization"],
   },
 });
 

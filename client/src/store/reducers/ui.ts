@@ -1,5 +1,6 @@
 import { IUiData } from "@/interfaces";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { set } from "date-fns";
 
 const rawData = localStorage.getItem("ui_data");
 let uiData: Partial<IUiData> | null = null;
@@ -12,7 +13,8 @@ try {
 const initialState: IUiData = {
     isMenuOpen: uiData?.isMenuOpen ?? true, 
     isVideoModalOpen: uiData?.isVideoModalOpen ?? false, 
-    isLoginPopoverVisible: uiData?.isLoginPopoverVisible ?? false, 
+    isLoginPopoverVisible: uiData?.isLoginPopoverVisible ?? false,
+    loginPopoverMessage: uiData?.loginPopoverMessage ?? "", 
 };
 
 const uiSlice = createSlice({
@@ -28,10 +30,12 @@ const uiSlice = createSlice({
         toggleLoginPopover: (state, action: PayloadAction<boolean | undefined>) => {
             state.isLoginPopoverVisible = action.payload ?? !state.isLoginPopoverVisible;
         },
-        resetUiState: () => initialState,
+        setLoginPopoverMessage: (state, action: PayloadAction<string>) => {
+            state.loginPopoverMessage = action.payload;
+        },
     },
 });
 
-export const { toggleMenu, toggleVideoModal, toggleLoginPopover, resetUiState } = uiSlice.actions;
+export const { toggleMenu, toggleVideoModal, toggleLoginPopover,setLoginPopoverMessage } = uiSlice.actions;
 
 export default uiSlice.reducer;

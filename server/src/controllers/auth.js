@@ -2,6 +2,7 @@ import { User } from "../models/user.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/handler.js";
+import jwt from "jsonwebtoken";
 class AuthController {
     googleSignIn = asyncHandler(async (req, res) => {
         const { email, fullname, avatar, idToken } = req.body;
@@ -100,6 +101,26 @@ class AuthController {
         };
         return res.status(200).clearCookie("idToken", options).clearCookie("accessToken", options).clearCookie("refreshToken", options).json(new ApiResponse(200, null, "User logged out successfully"))
     })
+    refreshTokens = asyncHandler(async (req, res) => {
+        const { refreshToken } = req.cookies;
+        if(!refreshToken){
+            throw new ApiError(400, "Refresh token is required");
+        }
+        const { _id } = jwt.verify(refreshToken, process.env.REFRESH_TOKEN_SECRET);
+        const user = await User.findById(_id);
+        if (!user || user.refreshToken !== refreshToken) {
+            throw new ApiError(400, "Invalid refresh token");
+        }
+        const newAccessToken = await user.generateAccessToken();
+        const newRefreshToken = await user.generateRefreshToken();
+        user.refreshToken = newRefreshToken;
+        await user.save({ validateBeforeSave: false });
 
+        const options = { httpOnly: true, secure: true, sameSite: "none" };
+        res.cookie("accessToken", newAccessToken, options);
+        res.cookie("refreshToken", newRefreshToken, options);
+
+        return res.status(200).json(new ApiResponse(200, { user }, "Tokens refreshed successfully"));
+    })
 }
 export default new AuthController();

@@ -8,9 +8,6 @@ class TweetController {
     createTweet = asyncHandler(async (req, res) => {
         const { content } = req.body;
         const userId = req.user?._id;
-        if(!userId){
-            throw new ApiError(401,"unauthorized")
-        }
         if (!content) {
             throw new ApiError(400, "Content is required")
         }
@@ -28,9 +25,6 @@ class TweetController {
         const { tweetId } = req.params;
         const { content } = req.body;
         const userId = req.user?._id;
-        if(!userId){
-            throw new ApiError(401,"unauthorized")
-        }
         if (!content || !tweetId) {
             throw new ApiError(400, "Content and tweetId are required")
         }
@@ -48,9 +42,6 @@ class TweetController {
     deleteTweet = asyncHandler(async (req, res) => {
         const { tweetId } = req.params;
         const userId = req.user?._id;
-        if(!userId){
-            throw new ApiError(401,"unauthorized")
-        }
         if (!tweetId) {
             throw new ApiError(400, "Tweet id is required")
         }
@@ -70,13 +61,10 @@ class TweetController {
 
     getUserTweets = asyncHandler(async (req, res) => {
         const userId = req.user?._id;
-        if(!userId){
-            throw new ApiError(401,"unauthorized")
-        }
         const tweets = await Tweet.aggregate([
             {
                 $match: {
-                    userId: new mongoose.Types.ObjectId(userId)
+                    userId
                 }
             },
             {

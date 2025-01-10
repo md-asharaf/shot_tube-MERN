@@ -1,6 +1,7 @@
 import { PartETag } from "@/interfaces";
 import { v4 as uuidv4 } from "uuid";
 import uploadService from "@/services/Upload";
+import axios from "axios";
 export const downloadImageAndUploadToS3 = async (
     imageUrl: string,
     fileName: string
@@ -19,32 +20,40 @@ export const downloadImageAndUploadToS3 = async (
         await uploadToPresignedUrl(url, file);
         return `https://${process.env.AWS_S3_BUCKET_NAME}.s3.amazonaws.com/${fileKey}`;
     } catch (error) {
-        console.error("Error downloading or uploading image:", error);
         throw error;
     }
 };
+
 export const uploadToPresignedUrl = async (
     presignedUrl: string,
-    fileOrPart: File | Blob
-): Promise<string | boolean> => {
+    fileOrPart: File | Blob,
+    controller?: AbortController,
+    onProgress?: (progress: number) => void
+) => {
     try {
-        const response = await fetch(presignedUrl, {
-            method: "PUT",
-            body: fileOrPart,
+        const response = await axios.put(presignedUrl, fileOrPart, {
+            signal: controller?.signal,
             headers: {
-                "Content-Type": "application/octet-stream",
+                "Content-Type": fileOrPart.type || "application/octet-stream",
+            },
+            onUploadProgress(progressEvent) {
+                if (progressEvent.total) {
+                    const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+                    if (onProgress) {
+                        onProgress(percentCompleted);
+                    }
+                }
             },
         });
 
-        if (!response.ok) {
-            throw new Error(`Failed to upload: ${response.statusText}`);
-        }
-        const eTag = response.headers.get("etag");
-        return eTag || true;
+        const eTag = response.headers["etag"];
+        return eTag;
     } catch (error) {
         throw error;
     }
 };
+
+
 export const uploadAllParts = async (
     presignedUrls: string[],
     file: File | Blob,

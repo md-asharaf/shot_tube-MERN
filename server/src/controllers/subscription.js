@@ -9,13 +9,10 @@ class SubscriptionController {
     toggleSubscription = asyncHandler(async (req, res) => {
         const { channelId } = req.params;
         const subscriberId = req.user?._id;
-        if(!subscriberId){
-            throw new ApiError(401,"unauthorized")
-        }
         if (!channelId) {
             throw new ApiError(400, "Channel Id is required")
         }
-        let subscription = await Subscription.findOne({ channelId: new mongoose.Types.ObjectId(channelId), subscriberId: new mongoose.Types.ObjectId(subscriberId) });
+        let subscription = await Subscription.findOne({ channelId: new mongoose.Types.ObjectId(channelId), subscriberId });
         if (subscription) {
             await Subscription.findByIdAndDelete(subscription._id, { new: true });
             subscription = null;
@@ -115,13 +112,10 @@ class SubscriptionController {
     isSubscribed = asyncHandler(async (req, res) => {
         const { channelId } = req.params;
         const subscriberId = req.user?._id;
-        if(!subscriberId){
-            throw new ApiError(401,"unauthorized")
-        }
         if (!channelId) {
             throw new ApiError(400, "Channel Id is required")
         }
-        const isSubscribed = await Subscription.findOne({ channelId: new mongoose.Types.ObjectId(channelId), subscriberId: new mongoose.Types.ObjectId(subscriberId) }) ? true : false;
+        const isSubscribed = await Subscription.findOne({ channelId: new mongoose.Types.ObjectId(channelId), subscriberId }) ? true : false;
         return res.status(200).json(new ApiResponse(200, { isSubscribed }, `User is ${isSubscribed ? "" : "not"} subscribed to this channel`));
     })
     getSubscribersCount = asyncHandler(async (req, res) => {
