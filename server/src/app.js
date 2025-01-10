@@ -2,7 +2,7 @@ import "dotenv/config";
 import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser"
-import {errorHandler} from "./utils/handler.js";
+import { errorHandler } from "./utils/handler.js";
 import userRoutes from "./routes/user.js";
 import tweetRoutes from "./routes/tweet.js";
 import commentRoutes from "./routes/comment.js";
@@ -28,9 +28,8 @@ app.use(bodyParser.urlencoded({
 app.use(express.json());
 app.use(express.static("public"))
 app.use(cookieParser())
-
-app.use("/hello",(req,res)=>{
-    res.send("Hello World")
+app.use('/test', (req, res) => {
+    res.send('Hello World!')
 })
 app.use("/api/v1/users", userRoutes)
 
@@ -50,4 +49,4 @@ app.use("/api/v1/uploads", uploadRoutes)
 
 app.use(errorHandler)
 
-export { app }
+export { app as backendApp }

@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { Link, useNavigate } from "react-router-dom";
-import { signUpFormValidation } from "../../components/ui/validation";
+import { signUpFormValidation } from "../../validations";
 import { IoLogoYoutube } from "react-icons/io";
 import authService from "@/services/Auth";
 import { IRegisterForm } from "@/interfaces";

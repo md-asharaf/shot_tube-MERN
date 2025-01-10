@@ -13,13 +13,15 @@ import Comments from "@/components/Comments";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import videoServices from "@/services/Video";
 import VideoPlayer from "@/components/VideoPlayer";
-import { Bookmark, Loader2, ThumbsUp } from "lucide-react";
+import { Bookmark, ThumbsUp } from "lucide-react";
 import userServices from "@/services/User";
 import ThreeDots from "@/components/ThreeDots";
 import { formatViews } from "@/lib/utils";
 import { useWindowSize } from "@/hooks/use-window";
 import { RootState } from "@/store/store";
 import { toggleMenu } from "@/store/reducers/ui";
+import NProgress from "nprogress";
+import "nprogress/nprogress.css";
 const Video = () => {
     const dispatch = useDispatch();
     const playerRef = useRef(null);
@@ -34,13 +36,14 @@ const Video = () => {
 
     const {
         data: video,
-        isLoading,
         isError,
         error,
     } = useQuery({
         queryKey: ["video", videoId],
         queryFn: async (): Promise<IVideoData> => {
+            NProgress.start();
             const data = await videoService.singleVideo(videoId);
+            NProgress.done();
             return data.video;
         },
         enabled: !!videoId,
@@ -120,13 +123,6 @@ const Video = () => {
     useEffect(() => {
         dispatch(toggleMenu(false));
     }, []);
-    if (isLoading) {
-        return (
-            <div className="flex w-[90%] justify-center">
-                <Loader2 className="h-10 w-10 animate-spin" />
-            </div>
-        );
-    }
     if (isError) return <div>Error: {error.message}</div>;
     return (
         <div className="flex flex-col space-y-4 xl:flex-row w-full">

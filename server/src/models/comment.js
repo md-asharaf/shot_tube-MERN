@@ -5,15 +5,22 @@ const commentSchema = new Schema({
         type: String,
         required: true
     },
-    videoId: {
-        type: Schema.Types.ObjectId,
-        ref: "Video",
-        required: true
-    },
     userId: {
         type: Schema.Types.ObjectId,
         ref: "User",
         required: true
+    },
+    videoId: {
+        type: Schema.Types.ObjectId,
+        ref: "Video",
+    },
+    tweetId:{
+        type: Schema.Types.ObjectId,
+        ref: "Tweet",
+    },
+    commentId:{
+        type: Schema.Types.ObjectId,
+        ref: "Comment",
     },
     sentiment: {
         type: String,

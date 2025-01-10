@@ -7,13 +7,16 @@ import VideoTitle from "@/components/VideoTitle";
 import videoServices from "@/services/Video";
 import LoadingSkeleton from "@/components/LoadingSkeleton";
 import { IVideoData } from "@/interfaces";
-
+import NProgress from "nprogress";
+import "nprogress/nprogress.css";
 const Home = () => {
     const loaderRef = useRef(null);
-    const { data, isLoading, hasNextPage, fetchNextPage } = useInfiniteQuery({
+    const { data, hasNextPage, fetchNextPage } = useInfiniteQuery({
         queryKey: ["videos"],
         queryFn: async ({ pageParam }): Promise<IVideoData[]> => {
+            NProgress.start();
             const data = await videoServices.allVideos(12, pageParam);
+            NProgress.done();
             return data.videos;
         },
         initialPageParam: 0,

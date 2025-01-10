@@ -26,7 +26,7 @@ import {
 } from "@/components/ui/dialog";
 import { resizeImageWithPica } from "@/lib/pica";
 import { RootState } from "@/store/store";
-import { VideoFormValidation } from "../ui/validation";
+import { VideoFormValidation } from "../../validations";
 import DragDropInput from "../DragAndDropInput";
 import { Button } from "../ui/button";
 import { v4 as uuid } from "uuid";

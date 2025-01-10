@@ -2,7 +2,7 @@ import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Input } from "@/components/ui/input";
 import { Link, useNavigate, useSearchParams } from "react-router-dom";
-import { signInFormValidation } from "@/components/ui/validation";
+import { signInFormValidation } from "@/validations";
 import { loginWithGoogle } from "@/lib/firebase";
 import {
     Form,
