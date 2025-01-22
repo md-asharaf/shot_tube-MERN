@@ -1,6 +1,14 @@
 import { kafka } from './client.js';
 
-const producer = kafka.producer();
+const producer = kafka.producer({
+  allowAutoTopicCreation: true, // Automatically create topics if they don't exist
+  retry: {
+    retries: 5,
+    initialRetryTime: 300,
+    maxRetryTime: 30000,
+  },
+  acks: -1,
+});
 
 const initProducer = async () => {
   try {
@@ -10,7 +18,6 @@ const initProducer = async () => {
     console.error('Error connecting Kafka producer:', error);
     process.exit(1);
   }
-  return producer;
 };
 
 const publishNotification = async (notification) => {
@@ -20,13 +27,10 @@ const publishNotification = async (notification) => {
       messages: [
         { value: JSON.stringify(notification) },
       ],
-      acks: 1, 
-      retries: 5, 
-      timeout: 3000,
     });
     console.log('Notification sent to Kafka');
   } catch (error) {
-    console.error('Error producing notification to Kafka', error);
+    console.error('Error producing notification to Kafka:', error);
   }
 };
 

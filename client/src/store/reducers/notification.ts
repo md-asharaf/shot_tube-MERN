@@ -1,29 +1,28 @@
 import { INotification } from "@/interfaces";
 import { createSlice } from "@reduxjs/toolkit";
 interface INotificationsData {
-    socket: any;
+    isConnected: boolean;
     notifications: INotification[];
 }
 
-const rawData = localStorage.getItem("notification_data")
-let notificationsData : Partial<INotificationsData> | null = null;
+const rawData = localStorage.getItem("notification_data");
+let notificationsData: Partial<INotificationsData> | null = null;
 try {
     notificationsData = rawData ? JSON.parse(rawData) : null;
 } catch (error) {
     notificationsData = null;
 }
-const initialState = {
-    socket: notificationsData?.socket ?? null,
+const initialState: INotificationsData = {
+    isConnected: notificationsData?.isConnected ?? false,
     notifications: notificationsData?.notifications ?? [],
 };
-
 
 const notificationSlice = createSlice({
     name: "notification",
     initialState,
     reducers: {
-        connectSocket: (state, action) => {
-            state.socket = action.payload;
+        connectSocket: (state) => {
+            state.isConnected = true;
         },
         addNotification: (state, action) => {
             state.notifications.push(action.payload);
@@ -36,9 +35,15 @@ const notificationSlice = createSlice({
         },
         markNotificationAsRead: (state, action) => {
             state.notifications[action.payload].read = true;
-        }
+        },
     },
 });
 
-export const { connectSocket, addNotification, setNotifications, disconnectSocket , markNotificationAsRead  } = notificationSlice.actions;
+export const {
+    connectSocket,
+    addNotification,
+    setNotifications,
+    disconnectSocket,
+    markNotificationAsRead,
+} = notificationSlice.actions;
 export default notificationSlice.reducer;

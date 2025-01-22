@@ -13,6 +13,9 @@ export default function useNotification() {
     useEffect(() => {
         const socket = io(SOCKET_URL, {
             withCredentials: true,
+            extraHeaders: {
+                "Cookie": document.cookie 
+            }
         });
 
         socket.on("notification", (notification) => {
@@ -22,7 +25,7 @@ export default function useNotification() {
 
         socket.on("connect", () => {
             console.log("Connected to WebSocket server");
-            dispatch(connectSocket(socket));
+            dispatch(connectSocket());
         });
 
         socket.on("disconnect", () => {

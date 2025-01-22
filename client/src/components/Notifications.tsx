@@ -1,5 +1,4 @@
 import { useDispatch, useSelector } from "react-redux";
-import useSocketNotifications from "@/hooks/use-notification";
 import { RootState } from "@/store/store";
 import {
     DropdownMenu,
@@ -16,18 +15,18 @@ import { IoNotificationsOutline } from "react-icons/io5";
 const Notifications = () => {
     const dispatch = useDispatch();
     const notifications = useSelector(
-        (state: RootState) => state.notification.notifications
+        (state: RootState) => state.notification?.notifications
     );
     const userId = useSelector((state: RootState) => state.auth.userData?._id);
     useQuery({
         queryKey: ["notifications", userId],
         queryFn: async () => {
             const data = await notificationService.getNotifications();
-            dispatch(setNotifications(data.notifications));
+            dispatch(setNotifications(data.notifications.docs));
+            return true;
         },
+        enabled: !!userId,
     });
-    useSocketNotifications();
-
     return (
         <DropdownMenu>
             <DropdownMenuTrigger>
@@ -38,7 +37,7 @@ const Notifications = () => {
             <DropdownMenuContent>
                 <DropdownMenuLabel>Notifications</DropdownMenuLabel>
                 <DropdownMenuSeparator />
-                {notifications.map((notification, index) => (
+                {notifications?.map((notification, index) => (
                     <DropdownMenuItem key={index} className="flex space-x-4">
                         {notification.message}
                     </DropdownMenuItem>

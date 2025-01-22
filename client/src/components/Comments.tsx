@@ -152,6 +152,7 @@ const Comments = ({ videoId, playerRef }) => {
                 <Loader2 className="h-10 w-10 animate-spin" />
             </div>
         );
+
     return (
         <div className="px-2">
             <div className="font-bold text-2xl text-zinc-600 dark:text-zinc-300 mb-2">
@@ -162,9 +163,7 @@ const Comments = ({ videoId, playerRef }) => {
                     <div className="flex gap-y-1 flex-col justify-start">
                         <div className="flex items-center gap-2">
                             <img
-                                src={
-                                    userData?.avatar || DefaultProfileImage
-                                }
+                                src={userData?.avatar || DefaultProfileImage}
                                 className="rounded-full h-10 w-10"
                             />
                             <textarea
@@ -222,8 +221,9 @@ const Comments = ({ videoId, playerRef }) => {
                                     className="rounded-full h-10 w-10 cursor-pointer"
                                     onClick={() =>
                                         navigate(
-                                            `/${comment.creator.username}/channel`,{
-                                                viewTransition:true
+                                            `/${comment.creator.username}/channel`,
+                                            {
+                                                viewTransition: true,
                                             }
                                         )
                                     }
@@ -234,8 +234,9 @@ const Comments = ({ videoId, playerRef }) => {
                                         <div
                                             onClick={() =>
                                                 navigate(
-                                                    `/${comment.creator.username}/channel`,{
-                                                        viewTransition:true
+                                                    `/${comment.creator.username}/channel`,
+                                                    {
+                                                        viewTransition: true,
                                                     }
                                                 )
                                             }
@@ -291,6 +292,7 @@ const Comments = ({ videoId, playerRef }) => {
                                                 }
                                                 variant="ghost"
                                                 className={`rounded-full text-lg p-2 dark:hover:bg-zinc-800 dark:hover:text-white ${
+                                                    liked &&
                                                     liked[index] &&
                                                     "text-blue-500 dark:hover:text-blue-500"
                                                 }`}

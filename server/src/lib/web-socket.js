@@ -2,24 +2,27 @@ import http from 'http';
 import { Server } from 'socket.io';
 import { validateAccessToken } from '../middlewares/auth.js';
 import { validateIdToken } from '../lib/firebase-admin.js';
+import cookie from "cookie"
 export const webSocketServer = http.createServer();
 const io = new Server(webSocketServer, {
   cors: {
-    origin: process.env.CLIENT_URL,
+    origin: [process.env.CLIENT_URL],
     methods: ["GET", "POST"],
-    allowedHeaders: ["Authorization"],
+    credentials: true,
   },
 });
 
 const userSocketMap = {};
-
 io.use(async (socket, next) => {
-  const { accessToken, idToken } = socket.handshake.auth;
+  const { accessToken, idToken } = cookie.parse(socket.handshake.headers.cookie);
   try {
-    socket.user =
-      (idToken && (await validateIdToken(idToken))) ||
-      (accessToken && (await validateAccessToken(accessToken))) ||
-      null;
+    let user=null;
+    if(idToken){
+      user  = await validateIdToken(idToken);
+    }else if(accessToken){
+      user = await validateAccessToken(accessToken);
+    }
+    socket.user = user;
     return next();
   } catch (error) {
     return next(new Error('Authentication error:', error.message));
@@ -29,14 +32,11 @@ io.use(async (socket, next) => {
 io.on('connection', (socket) => {
   console.log('User connected', socket.id);
   const userId = socket.user?._id;
-
   if (!userSocketMap[userId]) {
     userSocketMap[userId] = [];
   }
   userSocketMap[userId].push(socket.id);
-
-  socket.emit('notification', { message: 'Welcome to the notification service!' });
-
+  
   socket.on('disconnect', () => {
     console.log('User disconnected', socket.id);
 

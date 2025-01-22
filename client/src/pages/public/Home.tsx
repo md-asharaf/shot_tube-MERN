@@ -26,7 +26,7 @@ const Home = () => {
     });
 
     const observerCallback = useCallback(
-        (entries) => {
+        (entries:any) => {
             const [entry] = entries;
             if (entry.isIntersecting && hasNextPage) {
                 fetchNextPage();

@@ -2,6 +2,7 @@ import admin from "firebase-admin";
 import fs from "fs";
 import path from "path";
 import { fileURLToPath } from "url";
+import { User } from "../models/user.js";
 
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
@@ -18,6 +19,6 @@ export const validateIdToken = async (idToken) => {
         const { email } = await admin.auth().verifyIdToken(idToken);
         return await User.findOne({ email });
     } catch (error) {
-        return null;
+        throw error;
     }
 };

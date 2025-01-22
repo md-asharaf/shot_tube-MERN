@@ -10,7 +10,6 @@ import { toggleTheme } from "@/store/reducers/theme";
 import { Menu, Plus, Search, User } from "lucide-react";
 import { RootState } from "@/store/store";
 import Notifications from "./Notifications";
-
 const NavBar = () => {
     const dispatch = useDispatch();
     const theme = useSelector((state: RootState) => state.theme.mode);

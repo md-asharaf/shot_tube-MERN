@@ -125,7 +125,7 @@ const Video = () => {
         dispatch(toggleMenu(false));
     }, []);
     if (isError) return <div>Error: {error?.message}</div>;
-    if(isLoading) return null
+    if (isLoading) return null;
     return (
         <div className="flex flex-col space-y-4 xl:flex-row w-full">
             <div className="space-y-4 w-full xl:w-2/3 2xl:w-[70%]">
@@ -189,7 +189,10 @@ const Video = () => {
                                     onClick={() => toggleVideoLike()}
                                     className="rounded-full"
                                 >
-                                    <ThumbsUp fill={isLiked?"black":"white"}/> 2.2k
+                                    <ThumbsUp
+                                        fill={isLiked ? "black" : "white"}
+                                    />{" "}
+                                    2.2k
                                 </Button>
                                 <SaveToPlaylist videoId={videoId}>
                                     <Button
@@ -224,27 +227,25 @@ const Video = () => {
                                     </div>
                                     <div className="flex items-center space-x-2">
                                         <Button
-                                            className={`${
-                                                isLiked &&
-                                                "text-blue-500 hover:text-blue-500"
-                                            } dark:bg-zinc-600 border-none bg-zinc-200 h-7 sm:h-9`}
                                             variant="outline"
                                             onClick={() => toggleVideoLike()}
+                                            className="rounded-full hover:bg-black"
                                         >
                                             <ThumbsUp
-                                                height={100}
-                                                width={100}
-                                            />
+                                                fill={
+                                                    isLiked ? "black" : "white"
+                                                }
+                                            />{" "}
+                                            2.2k
                                         </Button>
-                                        <Button
-                                            disabled={!userId}
-                                            className="dark:bg-zinc-600 border-none bg-zinc-200 h-7 sm:h-9 px-3 rounded-md"
-                                            variant="outline"
-                                        >
-                                            <SaveToPlaylist videoId={videoId}>
-                                                <Bookmark />
-                                            </SaveToPlaylist>
-                                        </Button>
+                                        <SaveToPlaylist videoId={videoId}>
+                                            <Button
+                                                variant="outline"   
+                                                className="rounded-full hover:bg-black"
+                                            >
+                                                <Bookmark /> Save
+                                            </Button>
+                                        </SaveToPlaylist>
                                     </div>
                                 </div>
                                 {isExpanded && (

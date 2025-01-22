@@ -10,6 +10,7 @@ import likeRoutes from "./routes/like.js";
 import subscriptionRoutes from "./routes/subscription.js";
 import videoRoutes from "./routes/video.js";
 import playlistRoutes from "./routes/playlist.js";
+import notificationRoutes from "./routes/notification.js";
 import uploadRoutes from "./routes/upload.js";
 import bodyParser from "body-parser"
 const app = express();
@@ -47,6 +48,8 @@ app.use("/api/v1/playlists", playlistRoutes)
 
 app.use("/api/v1/uploads", uploadRoutes)
 
+app.use('/api/v1/notifications',notificationRoutes)
+
 app.use(errorHandler)
 
-export { app as backendApp }
+export { app }

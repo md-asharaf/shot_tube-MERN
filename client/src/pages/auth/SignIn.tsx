@@ -35,9 +35,7 @@ const SignIn = () => {
         try {
             const data = await authService.login(values);
             toast.success("Logged in successfully");
-            navigate(redirect || "/",{
-                viewTransition: true,
-            });
+            navigate(redirect || "/");
             dispatch(login(data.user));
         } catch (error) {
             dispatch(logout());
@@ -50,9 +48,7 @@ const SignIn = () => {
             const userGoogleData = await loginWithGoogle();
             const data = await authService.googleLogin(userGoogleData);
             toast.success("Logged in successfully");
-            navigate(redirect || "/",{
-                viewTransition: true,
-            });
+            navigate(redirect || "/");
             dispatch(login(data.user));
         } catch (error) {
             dispatch(logout());

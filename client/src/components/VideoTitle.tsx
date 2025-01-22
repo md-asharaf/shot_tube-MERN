@@ -39,7 +39,7 @@ const VideoTitle: React.FC<Props> = ({ video, creator }) => {
           <span
             onClick={(e) => {
               e.preventDefault();
-              navigate(`/channel?u=${creator.username}`,{viewTransition:true});
+              navigate(`/channel?u=${creator.username}`);
             }}
             className="font-semibold text-gray-500 dark:text-zinc-400 hover:text-black truncate cursor-pointer"
           >

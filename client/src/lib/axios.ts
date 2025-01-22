@@ -6,8 +6,7 @@ import {
     toggleLoginPopover,
 } from "@/store/reducers/ui";
 import { logout } from "@/store/reducers/auth";
-import { set } from "date-fns";
-
+import authServices from "@/services/Auth";
 const axiosInstance = axios.create({
     baseURL: process.env.BACKEND_BASE_URL,
 });
@@ -17,8 +16,9 @@ axiosInstance.interceptors.response.use(
         return response.data.data;
     },
     (error) => {
-        if (error.response?.status === 401) {
+        if (error.response?.status === 401 && !store.getState().ui.isLoginPopoverVisible) {
             store.dispatch(logout());
+            authServices.logout();
             store.dispatch(toggleLoginPopover(true));
             store.dispatch(
                 setLoginPopoverMessage(error.response?.data?.message)

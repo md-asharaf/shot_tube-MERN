@@ -8,7 +8,7 @@ export const validateAccessToken = async (accessToken) => {
         const { _id, email, fullname, username } = jwt.verify(accessToken, process.env.ACCESS_TOKEN_SECRET);
         return await User.findOne({ _id, email, fullname, username });
     } catch (error) {
-        return null;
+        throw error;
     }
 };
 export const verifyJWT = asyncHandler(async (req, res, next) => {

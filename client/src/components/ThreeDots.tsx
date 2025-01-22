@@ -18,11 +18,11 @@ export default function ThreeDots({ videoId, task = null }: IThreeDots) {
     const userId = useSelector((state: RootState) => state.auth.userData?._id);
     const { data: isSavedToWatchLater, refetch } = useQuery({
         queryKey: ["is-video-saved", videoId],
-        queryFn: async () => {
+        queryFn: async ():Promise<boolean> => {
             const data = await userServices.isSavedToWatchLater(videoId);
             return data.isSaved;
         },
-        enabled: !!videoId && !!userId,
+        enabled: !!userId,
     });
     const { mutate: saveToWatchLater } = useMutation({
         mutationFn: async () => {

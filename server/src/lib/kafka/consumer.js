@@ -2,8 +2,14 @@ import { kafka } from './client.js';
 import { insertNotifications } from '../../db/index.js';
 import { sendNotificationToUser } from '../../lib/web-socket.js';
 
-const backendConsumer = kafka.consumer({ groupId: 'backend-group' });
-const webSocketConsumer = kafka.consumer({ groupId: 'websocket-group' });
+const backendConsumer = kafka.consumer({
+  groupId: 'backend-group', sessionTimeout: 30000,
+  heartbeatInterval: 2000
+});
+const webSocketConsumer = kafka.consumer({
+  groupId: 'websocket-group', sessionTimeout: 30000,
+  heartbeatInterval: 2000
+});
 
 export const initConsumers = async () => {
   try {
@@ -11,20 +17,16 @@ export const initConsumers = async () => {
     await webSocketConsumer.connect();
     console.log('Consumers connected to Kafka');
 
-    await backendConsumer.subscribe({ topic: 'notifications' });
-    await webSocketConsumer.subscribe({ topic: 'notifications' });
+    await backendConsumer.subscribe({ topic: 'notifications', fromBeginning: false });
+    await webSocketConsumer.subscribe({ topic: 'notifications', fromBeginning: false });
     console.log('Consumers subscribed to notifications topic');
 
     await backendConsumer.run({
-      eachBatch: async ({ batch, heartbeat, commitOffsetsIfNecessary }) => {
+      eachBatch: async ({ batch }) => {
         try {
           const notifications = batch.messages.map((message) => JSON.parse(message.value.toString()));
-          console.log('Received batch of notifications:', notifications);
-
           await insertNotifications(notifications);
           console.log('Notifications stored in database');
-
-          await commitOffsetsIfNecessary();
         } catch (error) {
           console.error('Error processing notifications for backend:', error);
         }
@@ -32,22 +34,17 @@ export const initConsumers = async () => {
     });
 
     await webSocketConsumer.run({
-      eachMessage: async ({ message, heartbeat, commitOffsetsIfNecessary }) => {
+      eachMessage: async ({ message }) => {
         try {
           const notification = JSON.parse(message.value.toString());
           const { userId, ...rest } = notification;
-          console.log(`Sending notification to user ${userId}:`, rest);
-
           sendNotificationToUser(userId, rest);
-
-          await commitOffsetsIfNecessary();
         } catch (error) {
           console.error('Error sending notification to user via WebSocket:', error);
         }
       },
     });
 
-    return { backendConsumer, webSocketConsumer };
   } catch (error) {
     console.error('Error during consumer initialization:', error);
     process.exit(1);
