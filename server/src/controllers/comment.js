@@ -101,6 +101,8 @@ class CommentController {
                 thumbnail: video.thumbnail,
                 creatorImage: videoCreator.avatar,
             },
+            read: false,
+            createdAt: new Date(Date.now()),
         });
         return res
             .status(201)

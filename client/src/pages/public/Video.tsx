@@ -205,7 +205,7 @@ const Video = () => {
                             </div>
                         )}
                         {isMobile && (
-                            <div className="w-full p-2 shadow-md rounded-xl bg-zinc-200 dark:bg-[#272727]">
+                            <div className="w-full p-2 shadow-md rounded-xl bg-[#F2F2F2] dark:bg-[#28292A]">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center space-x-2 font-bold">
                                         <div>{formatViews(video.views)}</div>

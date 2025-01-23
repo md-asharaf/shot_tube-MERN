@@ -54,7 +54,7 @@ const Comments = ({ videoId, playerRef }) => {
         enabled: !!comments && !!userData,
     });
 
-    const { mutate: addComment } = useMutation({
+    const { mutate: addComment, isPending } = useMutation({
         mutationFn: async ({
             videoId,
             content,
@@ -198,7 +198,11 @@ const Comments = ({ videoId, playerRef }) => {
                                     variant="outline"
                                     className="bg-blue-500 hover:bg-blue-400 h-7 sm:h-9 p-1 sm:p-2 rounded-full"
                                 >
-                                    Comment
+                                    {isPending ? (
+                                        <Loader2 className="h-5 w-5 animate-spin" />
+                                    ) : (
+                                        "Comment"
+                                    )}
                                 </Button>
                             </div>
                         )}

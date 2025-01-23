@@ -1,7 +1,7 @@
 import { kafka } from './client.js';
 
 const producer = kafka.producer({
-  allowAutoTopicCreation: true, // Automatically create topics if they don't exist
+  allowAutoTopicCreation: true,
   retry: {
     retries: 5,
     initialRetryTime: 300,

@@ -38,6 +38,7 @@ export const initConsumers = async () => {
         try {
           const notification = JSON.parse(message.value.toString());
           const { userId, ...rest } = notification;
+          console.log("rest",rest)
           sendNotificationToUser(userId, rest);
         } catch (error) {
           console.error('Error sending notification to user via WebSocket:', error);

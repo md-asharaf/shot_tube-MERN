@@ -24,7 +24,11 @@ const notificationSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
-}, { timestamps: true });
+    createdAt: {
+        type: Date,
+        required: true,
+    }
+});
 
 notificationSchema.plugin(MAP);
 

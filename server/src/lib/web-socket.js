@@ -49,6 +49,7 @@ io.on('connection', (socket) => {
 });
 
 export const sendNotificationToUser = (userId, notification) => {
+  console.log("notification",notification)
   const socketIds = userSocketMap[userId];
   if (socketIds) {
     socketIds.forEach(socketId => {

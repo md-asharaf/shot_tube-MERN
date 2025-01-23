@@ -20,7 +20,6 @@ interface IChannel {
 }
 
 const BigDrawer = () => {
-    const location = useLocation();
     const dispatch = useDispatch();
     const userId = useSelector((state: RootState) => state.auth.userData?._id);
     const username = useSelector(
@@ -196,21 +195,20 @@ const BigDrawer = () => {
                 }`}
             >
                 {(isSmallScreen || isVideoPage) && (
-                    <div className="pb-4 pl-2 pt-[17px] flex items-center gap-x-2 md:gap-x-4">
+                    <div className="pb-4 pl-2 pt-[18px] flex items-center gap-x-2 md:gap-x-4">
                         <Menu
+                            strokeWidth={1.5}
                             className="text-4xl hover:bg-muted rounded-lg hidden sm:block"
                             onClick={() => {
                                 dispatch(toggleMenu());
                             }}
                         />
                         <button
-                            className="flex items-center"
-                            onClick={() => (window.location.href = "/")}
+                            className="flex items-center hover:bg-transparent text-lg space-x-1"
+                            onClick={() => (location.href = "/")}
                         >
-                            <ImYoutube className="text-3xl w-10 dark:text-white text-black" />
-                            <h1 className="font-extrabold text-red-500">
-                                ShotTube
-                            </h1>
+                            <ImYoutube color="red" className="text-xl" />
+                            <h1 className="font-bold">ShotTube</h1>
                         </button>
                     </div>
                 )}
