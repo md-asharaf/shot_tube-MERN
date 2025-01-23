@@ -13,6 +13,7 @@ import { GoDot } from "react-icons/go";
 import DefaultProfileImage from "@/assets/images/profile.png";
 import { Loader2, ThumbsUp, Trash2 } from "lucide-react";
 import { RootState } from "@/store/store";
+import { toast } from "sonner";
 
 const Comments = ({ videoId, playerRef }) => {
     const navigate = useNavigate();
@@ -65,6 +66,7 @@ const Comments = ({ videoId, playerRef }) => {
             await commentServices.comment(videoId, content);
         },
         onSuccess: () => {
+            toast.success("Comment added");
             setContent("");
             refetchComments();
             return true;
@@ -86,6 +88,7 @@ const Comments = ({ videoId, playerRef }) => {
             await commentServices.deleteComment(commentId);
         },
         onSuccess: () => {
+            toast.success("Comment deleted");
             refetchComments();
             return true;
         },
@@ -159,7 +162,11 @@ const Comments = ({ videoId, playerRef }) => {
                 {`${comments.length} Comments`}
             </div>
             <div className="flex flex-col">
-                {userData && (
+                {userData && isPending ? (
+                    <div className="flex items-center justify-center">
+                        <Loader2 className="h-6 w-6 animate-spin" />
+                    </div>
+                ) : (
                     <div className="flex gap-y-1 flex-col justify-start">
                         <div className="flex items-center gap-2">
                             <img
@@ -198,11 +205,7 @@ const Comments = ({ videoId, playerRef }) => {
                                     variant="outline"
                                     className="bg-blue-500 hover:bg-blue-400 h-7 sm:h-9 p-1 sm:p-2 rounded-full"
                                 >
-                                    {isPending ? (
-                                        <Loader2 className="h-5 w-5 animate-spin" />
-                                    ) : (
-                                        "Comment"
-                                    )}
+                                    Comment
                                 </Button>
                             </div>
                         )}
