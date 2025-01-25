@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from "react";
+import { useCallback } from "react";
 import { Link } from "react-router-dom";
 import { useInfiniteQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
@@ -7,51 +7,36 @@ import VideoTitle from "@/components/VideoTitle";
 import videoServices from "@/services/Video";
 import LoadingSkeleton from "@/components/LoadingSkeleton";
 import { IVideoData } from "@/interfaces";
-import NProgress from "nprogress";
-import "nprogress/nprogress.css";
 const Home = () => {
-    const loaderRef = useRef(null);
-    const { data, hasNextPage, fetchNextPage,isLoading } = useInfiniteQuery({
-        queryKey: ["videos"],
-        queryFn: async ({ pageParam }): Promise<IVideoData[]> => {
-            NProgress.start();
-            const data = await videoServices.allVideos(12, pageParam);
-            NProgress.done();
-            return data.videos;
-        },
-        initialPageParam: 0,
-        getNextPageParam: (lastPage, allPages) => {
-            return lastPage.length === 12 ? allPages.length : undefined;
-        },
-    });
+    const { data, hasNextPage, fetchNextPage, isLoading, isFetchingNextPage } =
+        useInfiniteQuery({
+            queryKey: ["videos"],
+            queryFn: async ({ pageParam }): Promise<IVideoData[]> => {
+                const data = await videoServices.allVideos(12, pageParam);
+                return data.videos;
+            },
+            initialPageParam: 0,
+            getNextPageParam: (lastPage, allPages) => {
+                return lastPage.length === 12 ? allPages.length : undefined;
+            },
+        });
 
     const observerCallback = useCallback(
-        (entries:any) => {
+        (entries: IntersectionObserverEntry[]) => {
             const [entry] = entries;
-            if (entry.isIntersecting && hasNextPage) {
+            if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
                 fetchNextPage();
             }
         },
-        [fetchNextPage, hasNextPage]
+        [fetchNextPage, hasNextPage, isFetchingNextPage]
     );
-
-    useEffect(() => {
+    const getRef = (node: HTMLDivElement) => {
+        if (!node) return;
         const observer = new IntersectionObserver(observerCallback, {
-            root: null,
-            rootMargin: "0px",
-            threshold: 0.2,
+            threshold: 0.5,
         });
-
-        if (loaderRef.current) {
-            observer.observe(loaderRef.current);
-        }
-
-        return () => {
-            if (loaderRef.current) {
-                observer.unobserve(loaderRef.current);
-            }
-        };
-    }, [observerCallback, loaderRef.current]);
+        observer.observe(node);
+    };
     return (
         <>
             {isLoading ? (
@@ -91,9 +76,9 @@ const Home = () => {
 
                     <div
                         className="flex items-center justify-center h-10"
-                        ref={loaderRef}
+                        ref={getRef}
                     >
-                        {hasNextPage && (
+                        {isFetchingNextPage && (
                             <Loader2 className="animate-spin h-10 w-10" />
                         )}
                     </div>

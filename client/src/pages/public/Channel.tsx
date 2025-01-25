@@ -13,9 +13,6 @@ import subscriptionServices from "@/services/Subscription";
 import { Loader2 } from "lucide-react";
 import { RootState } from "@/store/store";
 import { toggleMenu } from "@/store/reducers/ui";
-import NProgress from "nprogress";
-import "nprogress/nprogress.css";
-import { DropdownMenuSeparator } from "@radix-ui/react-dropdown-menu";
 
 const Channel = () => {
     const dispatch = useDispatch();
@@ -29,9 +26,7 @@ const Channel = () => {
             user: IUser;
             subscribersCount: number;
         }> => {
-            NProgress.start();
             const data = await userServices.getUserChannel(username);
-            NProgress.done();
             return data.channel;
         },
         enabled: !!username,

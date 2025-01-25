@@ -40,10 +40,7 @@ const SaveToPlaylist: React.FC<Props> = ({
     const closeDialogs = () =>
         setDialogState({ mainDialog: false, newPlaylistDialog: false });
 
-    const {
-        data: playlists,
-        refetch: refetchPlaylists,
-    } = useQuery({
+    const { data: playlists, refetch: refetchPlaylists } = useQuery({
         queryKey: ["playlists", userId],
         queryFn: async (): Promise<IPlaylist[]> => {
             const data = await playlistServices.getAllPlaylists(userId);
@@ -52,36 +49,32 @@ const SaveToPlaylist: React.FC<Props> = ({
         enabled: !!userId,
     });
 
-    const {
-        data: isSavedToWatchLater,
-        refetch: refetchIsSavedToWatchLater,
-    } = useQuery({
-        queryKey: ["is-video-saved", videoId,userId],
-        queryFn: async () => {
-            const data = await userServices.isSavedToWatchLater(videoId);
-            return data.isSaved;
-        },
-        enabled: !!videoId && !!userId,
-    });
+    const { data: isSavedToWatchLater, refetch: refetchIsSavedToWatchLater } =
+        useQuery({
+            queryKey: ["is-video-saved", videoId, userId],
+            queryFn: async () => {
+                const data = await userServices.isSavedToWatchLater(videoId);
+                return data.isSaved;
+            },
+            enabled: !!videoId && !!userId,
+        });
 
-    const {
-        data: isSavedToPlaylists,
-        refetch: refetchIsSavedToPlaylists,
-    } = useQuery({
-        queryKey: ["is-saved-statuses", videoId, playlists],
-        queryFn: async (): Promise<boolean[]> => {
-            return await Promise.all(
-                playlists?.map(async (p) => {
-                    const data = await playlistServices.isSavedToPlaylist(
-                        videoId,
-                        p._id
-                    );
-                    return data.isSaved;
-                })
-            );
-        },
-        enabled: !!videoId && !!playlists,
-    });
+    const { data: isSavedToPlaylists, refetch: refetchIsSavedToPlaylists } =
+        useQuery({
+            queryKey: ["is-saved-statuses", videoId, playlists],
+            queryFn: async (): Promise<boolean[]> => {
+                return await Promise.all(
+                    playlists?.map(async (p) => {
+                        const data = await playlistServices.isSavedToPlaylist(
+                            videoId,
+                            p._id
+                        );
+                        return data.isSaved;
+                    })
+                );
+            },
+            enabled: !!videoId && !!playlists,
+        });
 
     const { mutate: saveToWatchLater } = useMutation({
         mutationFn: async () => {
@@ -181,8 +174,13 @@ const SaveToPlaylist: React.FC<Props> = ({
                     setDialogState((prev) => ({ ...prev, mainDialog: isOpen }))
                 }
             >
-                <DialogTrigger className={className}>{children}</DialogTrigger>
-                <DialogContent className="w-60 bg-white dark:bg-[#212121] rounded-lg">
+                <DialogTrigger asChild className={className}>
+                    <div>{children}</div>
+                </DialogTrigger>
+                <DialogContent
+                    className="w-60 bg-white dark:bg-[#212121] rounded-lg"
+                    aria-describedby=""
+                >
                     <DialogHeader>
                         <DialogTitle>Save video to...</DialogTitle>
                     </DialogHeader>
@@ -212,7 +210,10 @@ const SaveToPlaylist: React.FC<Props> = ({
                                 <input
                                     type="checkbox"
                                     className="h-5 w-5"
-                                    checked={isSavedToPlaylists&&isSavedToPlaylists[index]}
+                                    checked={
+                                        isSavedToPlaylists &&
+                                        isSavedToPlaylists[index]
+                                    }
                                     onChange={(e) => {
                                         if (e.target.checked) {
                                             add({ playlistId: playlist._id });

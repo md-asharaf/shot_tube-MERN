@@ -61,7 +61,7 @@ export default function ThreeDots({ videoId, task = null }: IThreeDots) {
                 e.preventDefault();
             }}
         >
-            <Popover>
+            <Popover modal>
                 <PopoverTrigger asChild>
                     <EllipsisVertical />
                 </PopoverTrigger>

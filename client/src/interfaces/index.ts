@@ -77,6 +77,7 @@ export interface PartETag {
     ETag: string;
 }
 export interface INotification {
+    id: number;
     video?: {
         _id: string;
         thumbnail: string;

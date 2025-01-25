@@ -20,8 +20,6 @@ import { formatViews } from "@/lib/utils";
 import { useWindowSize } from "@/hooks/use-window";
 import { RootState } from "@/store/store";
 import { toggleMenu } from "@/store/reducers/ui";
-import NProgress from "nprogress";
-import "nprogress/nprogress.css";
 const Video = () => {
     const dispatch = useDispatch();
     const playerRef = useRef(null);
@@ -42,9 +40,7 @@ const Video = () => {
     } = useQuery({
         queryKey: ["video", videoId],
         queryFn: async (): Promise<IVideoData> => {
-            NProgress.start();
             const data = await videoService.singleVideo(videoId);
-            NProgress.done();
             return data.video;
         },
         enabled: !!videoId,

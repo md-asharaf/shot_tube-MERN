@@ -77,7 +77,6 @@ class CommentController {
             userId,
             sentiment,
         });
-
         if (!comment) {
             throw new ApiError(500, "Comment could not be created");
         }
@@ -119,7 +118,7 @@ class CommentController {
         if (!deletedComment) {
             throw new ApiError(404, "Comment not found or you are not authorized to delete it")
         }
-        return res.status(200).json(new ApiResponse(200, { deletedComment }, "Comment deleted successfully"))
+        return res.status(200).json(new ApiResponse(200, { commentId: deletedComment._id }, "Comment deleted successfully"))
     })
     updateComment = asyncHandler(async (req, res) => {
         const { content } = req.body;
@@ -139,7 +138,7 @@ class CommentController {
         if (!updatedComment) {
             throw new ApiError(500, "comment could not be updated")
         }
-        return res.status(200).json(new ApiResponse(200, { updatedComment }, "Comment updated successfully"))
+        return res.status(200).json(new ApiResponse(200, { commentId:updatedComment._id }, "Comment updated successfully"))
     })
 }
 

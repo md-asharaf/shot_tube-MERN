@@ -39,6 +39,7 @@ const VideoTitle: React.FC<Props> = ({ video, creator }) => {
           <span
             onClick={(e) => {
               e.preventDefault();
+              e.stopPropagation();
               navigate(`/channel?u=${creator.username}`);
             }}
             className="font-semibold text-gray-500 dark:text-zinc-400 hover:text-black truncate cursor-pointer"
@@ -54,8 +55,8 @@ const VideoTitle: React.FC<Props> = ({ video, creator }) => {
       </div>
       <button
         onClick={(e) => {
-          e.stopPropagation();
           e.preventDefault();
+          e.stopPropagation();
         }}
       >
         <ThreeDots videoId={video._id} />

@@ -1,37 +1,28 @@
 import { INotification } from "@/interfaces";
 import { createSlice } from "@reduxjs/toolkit";
 interface INotificationsData {
-    isConnected: boolean;
+    newNotificationCount: number;
     notifications: INotification[];
 }
-
-const rawData = localStorage.getItem("notification_data");
-let notificationsData: Partial<INotificationsData> | null = null;
-try {
-    notificationsData = rawData ? JSON.parse(rawData) : null;
-} catch (error) {
-    notificationsData = null;
-}
+const notificationCount = localStorage.getItem("new_notification_count");
 const initialState: INotificationsData = {
-    isConnected: notificationsData?.isConnected ?? false,
-    notifications: notificationsData?.notifications ?? [],
+    newNotificationCount: Number(notificationCount) ?? 0,
+    notifications: [],
 };
 
 const notificationSlice = createSlice({
     name: "notification",
     initialState,
     reducers: {
-        connectSocket: (state) => {
-            state.isConnected = true;
+        resetNotificationCount: (state) => {
+            state.newNotificationCount = 0;
         },
         addNotification: (state, action) => {
             state.notifications.push(action.payload);
+            state.newNotificationCount += 1;
         },
         setNotifications: (state, action) => {
             state.notifications = action.payload;
-        },
-        disconnectSocket: (state) => {
-            state = initialState;
         },
         markNotificationAsRead: (state, action) => {
             state.notifications[action.payload].read = true;
@@ -40,10 +31,9 @@ const notificationSlice = createSlice({
 });
 
 export const {
-    connectSocket,
+    resetNotificationCount,
     addNotification,
     setNotifications,
-    disconnectSocket,
     markNotificationAsRead,
 } = notificationSlice.actions;
 export default notificationSlice.reducer;

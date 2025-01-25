@@ -11,5 +11,5 @@ router.use(verifyJWT);
 router.post("/toggle-comment-like/:commentId", likeControllers.toggleCommentLike);
 router.post("/toggle-video-like/:videoId", likeControllers.toggleVideoLike);
 router.post("/toggle-tweet-like/:tweetId", likeControllers.toggleTweetLike);
-
+router.get('/is-video-comment-liked/:videoId',likeControllers.isVideoCommentLiked);
 export default router;

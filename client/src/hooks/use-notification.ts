@@ -1,8 +1,4 @@
-import {
-    addNotification,
-    connectSocket,
-    disconnectSocket,
-} from "@/store/reducers/notification";
+import { addNotification } from "@/store/reducers/notification";
 import { useEffect } from "react";
 import { useDispatch } from "react-redux";
 import { io } from "socket.io-client";
@@ -14,8 +10,8 @@ export default function useNotification() {
         const socket = io(SOCKET_URL, {
             withCredentials: true,
             extraHeaders: {
-                "Cookie": document.cookie 
-            }
+                Cookie: document.cookie,
+            },
         });
 
         socket.on("notification", (notification) => {
@@ -25,12 +21,10 @@ export default function useNotification() {
 
         socket.on("connect", () => {
             console.log("Connected to WebSocket server");
-            dispatch(connectSocket());
         });
 
         socket.on("disconnect", () => {
             console.log("Disconnected from WebSocket server");
-            dispatch(disconnectSocket());
         });
 
         return () => {
@@ -38,5 +32,5 @@ export default function useNotification() {
         };
     }, [dispatch]);
 
-    return ;
+    return;
 }

@@ -1,26 +1,19 @@
 import { Middleware } from "@reduxjs/toolkit";
 import { RootState } from "../store";
 import {
-    connectSocket,
-    disconnectSocket,
+    resetNotificationCount,
     addNotification,
-    setNotifications,
-    markNotificationAsRead,
 } from "../reducers/notification";
 export const notificationMiddleware: Middleware<{}, RootState> =
     (store) => (next) => (action) => {
         const result = next(action);
         if (
-            connectSocket.match(action) ||
-            disconnectSocket.match(action) ||
-            addNotification.match(action) ||
-            setNotifications.match(action) ||
-            markNotificationAsRead.match(action)
+            resetNotificationCount.match(action) ||
+            addNotification.match(action)
         ) {
-            const notificationState = store.getState().notification;
             localStorage.setItem(
-                "notification_data",
-                JSON.stringify(notificationState)
+                "new_notification_count",
+                store.getState().notification.newNotificationCount.toString()
             );
         }
         return result;

@@ -1,12 +1,12 @@
 import commentServices from "@/services/Comment";
-import { useMutation, useQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
 import { useSelector } from "react-redux";
 import { Button } from "./ui/button";
 import { formatDistanceToNowStrict } from "date-fns";
 import likeServices from "@/services/Like";
 import { IComment } from "@/interfaces";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useCallback, useRef, useState } from "react";
 import { FaPlus } from "react-icons/fa";
 import { FiMinus } from "react-icons/fi";
 import { GoDot } from "react-icons/go";
@@ -22,35 +22,35 @@ const Comments = ({ videoId, playerRef }) => {
     const [isInputFocused, setIsInputFocused] = useState(false);
     const [inputHeight, setInputHeight] = useState(0);
     const {
-        data: comments,
+        data: commentsPages,
         isLoading: commentsLoading,
-        refetch: refetchComments,
-    } = useQuery({
+        isFetchingNextPage,
+        fetchNextPage,
+        hasNextPage,
+    } = useInfiniteQuery({
         queryKey: ["comments", videoId],
-        queryFn: async (): Promise<IComment[]> => {
-            const data = await commentServices.getComments(videoId);
-            return data.comments.docs;
+        queryFn: async ({
+            pageParam,
+        }): Promise<{
+            docs: IComment[];
+            hasNextPage: boolean;
+            totalDocs: number;
+        }> => {
+            const data = await commentServices.getComments(videoId, pageParam);
+            return data.comments;
         },
+        initialPageParam: 1,
+        getNextPageParam: (lastPage, allPages) =>
+            lastPage.hasNextPage ? allPages.length + 1 : undefined,
         enabled: !!videoId,
     });
-
-    const {
-        data: liked,
-        isLoading: likedLoading,
-        refetch: refetchCommentsLike,
-    } = useQuery({
+    let comments = commentsPages?.pages.flatMap((page) => page.docs);
+    const totalComments = commentsPages?.pages[0].totalDocs;
+    const { data: isLikedOfComments, isLoading: likesLoading } = useQuery({
         queryKey: ["commentsLike", videoId],
-        queryFn: async (): Promise<boolean[]> => {
-            const likes: boolean[] = await Promise.all(
-                comments?.map(async (comment) => {
-                    const data = await likeServices.isLiked(
-                        comment._id,
-                        "comment"
-                    );
-                    return data.isLiked;
-                })
-            );
-            return likes;
+        queryFn: async () => {
+            const data = await likeServices.getIsLikedOfVideoComments(videoId);
+            return data.isLiked;
         },
         enabled: !!comments && !!userData,
     });
@@ -63,13 +63,19 @@ const Comments = ({ videoId, playerRef }) => {
             videoId: string;
             content: string;
         }) => {
-            await commentServices.comment(videoId, content);
+            const data = await commentServices.comment(videoId, content);
+            return data.comment;
         },
-        onSuccess: () => {
+        onSuccess: (comment) => {
             toast.success("Comment added");
             setContent("");
-            refetchComments();
-            return true;
+            commentsPages.pages[0].totalDocs++;
+            commentsPages.pages[0].docs.unshift({
+                ...comment,
+                creator: userData,
+            });
+            setInputHeight(0);
+            setIsInputFocused(false);
         },
     });
 
@@ -77,20 +83,25 @@ const Comments = ({ videoId, playerRef }) => {
         mutationFn: async ({ commentId }: { commentId: string }) => {
             await likeServices.toggleLike(commentId, "comment");
         },
-        onSuccess: () => {
-            refetchCommentsLike();
-            return true;
+        onSuccess: (_, vars) => {
+            isLikedOfComments[vars.commentId] =
+                !isLikedOfComments[vars.commentId];
         },
     });
 
     const { mutate: deleteComment } = useMutation({
         mutationFn: async ({ commentId }: { commentId: string }) => {
-            await commentServices.deleteComment(commentId);
+            const data = await commentServices.deleteComment(commentId);
+            return data.commentId;
         },
-        onSuccess: () => {
+        onSuccess: (commentId) => {
             toast.success("Comment deleted");
-            refetchComments();
-            return true;
+            commentsPages.pages[0].totalDocs--;
+            commentsPages.pages.forEach((page) => {
+                page.docs = page.docs.filter(
+                    (comment) => comment._id !== commentId
+                );
+            });
         },
     });
 
@@ -148,18 +159,37 @@ const Comments = ({ videoId, playerRef }) => {
             }
         }
     };
+    const observerCallback = useCallback(
+        (entries: IntersectionObserverEntry[]) => {
+            const [entry] = entries;
+            if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
+                fetchNextPage();
+            }
+        },
+        [fetchNextPage, hasNextPage, isFetchingNextPage]
+    );
 
-    if (commentsLoading || likedLoading)
+    const getRef = useCallback(
+        (node: HTMLDivElement | null) => {
+            if (!node) return;
+
+            const observer = new IntersectionObserver(observerCallback, {
+                threshold: 0.5,
+            });
+            observer.observe(node);
+        },
+        [observerCallback]
+    );
+    if (commentsLoading || likesLoading)
         return (
             <div className="w-full flex justify-center">
                 <Loader2 className="h-10 w-10 animate-spin" />
             </div>
         );
-
     return (
         <div className="px-2">
             <div className="font-bold text-2xl text-zinc-600 dark:text-zinc-300 mb-2">
-                {`${comments.length} Comments`}
+                {`${totalComments} Comments`}
             </div>
             <div className="flex flex-col">
                 {userData && isPending ? (
@@ -212,7 +242,9 @@ const Comments = ({ videoId, playerRef }) => {
                     </div>
                 )}
 
-                <div className="flex flex-col mt-2 space-y-2">
+                <div
+                    className="flex flex-col mt-2 space-y-2 overflow-y-auto overflow-x-hidden"
+                >
                     {comments?.map((comment, index) => {
                         const sentiment = comment.sentiment?.toLowerCase();
                         return (
@@ -283,7 +315,7 @@ const Comments = ({ videoId, playerRef }) => {
                                             </span>
                                         </div>
                                     </div>
-                                    <div>
+                                    <div className="break-words whitespace-pre-wrap">
                                         {processComment(
                                             comment.content,
                                             onTimestampClick
@@ -299,8 +331,10 @@ const Comments = ({ videoId, playerRef }) => {
                                                 }
                                                 variant="ghost"
                                                 className={`rounded-full text-lg p-2 dark:hover:bg-zinc-800 dark:hover:text-white ${
-                                                    liked &&
-                                                    liked[index] &&
+                                                    isLikedOfComments &&
+                                                    isLikedOfComments[
+                                                        comment._id
+                                                    ] &&
                                                     "text-blue-500 dark:hover:text-blue-500"
                                                 }`}
                                             >
@@ -327,6 +361,14 @@ const Comments = ({ videoId, playerRef }) => {
                             </div>
                         );
                     })}
+                    <div
+                        className="h-10 flex items-center justify-center"
+                        ref={getRef}
+                    >
+                        {isFetchingNextPage && (
+                            <Loader2 className="h-10 w-10 animate-spin" />
+                        )}
+                    </div>
                 </div>
             </div>
         </div>

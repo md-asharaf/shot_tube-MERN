@@ -38,7 +38,7 @@ const Library = ({
           <CarouselContent>
             {videos ? (
               videos.map((video) => (
-                <CarouselItem key={video._id} className="pl-4 basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5 2xl:basis-1/6">
+                <CarouselItem key={video._id} className="pl-4 basis-10/12 md:basis-1/3 lg:basis-1/4 xl:basis-1/5 2xl:basis-1/6">
                   <Link
                     to={`/video?v=${video._id}`}
                     className="flex flex-col gap-2 hover:bg-muted rounded-lg p-2"
@@ -65,7 +65,7 @@ const Library = ({
               ))
             ) : (
               playlists?.map((playlist) => (
-                <CarouselItem key={playlist._id} className="pl-4 basis-1/2 md:basis-1/3 lg:basis-1/4 xl:basis-1/5 2xl:basis-1/6">
+                <CarouselItem key={playlist._id} className="pl-4 basis-10/12 md:basis-1/3 lg:basis-1/4 xl:basis-1/5 2xl:basis-1/6">
                   <Link
                     to={`/playlist?p=${playlist._id}`}
                     className="flex flex-col gap-2 hover:bg-muted rounded-lg p-2"

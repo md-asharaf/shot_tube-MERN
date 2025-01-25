@@ -3,7 +3,7 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 import { Like } from "../models/like.js";
 import mongoose from "mongoose";
-
+import { Comment } from "../models/comment.js";
 class LikeController {
     toggleCommentLike = asyncHandler(async (req, res) => {
         const { commentId } = req.params;
@@ -79,6 +79,19 @@ class LikeController {
             liked = dbLike ? true : false;
         }
         return res.status(200).json(new ApiResponse(200, { isLiked: liked }, `user has${liked ? "" : " not"} liked this video`))
+    })
+    isVideoCommentLiked = asyncHandler(async (req, res) => {
+        const { videoId } = req.params;
+        const userId = req.user?._id;
+        if (!videoId) throw new ApiError(400, "Video id is required");
+        const comments = await Comment.find({
+            videoId: new mongoose.Types.ObjectId(videoId),
+        })
+        let isLiked = {};
+        for (let comment of comments) {
+            isLiked[comment._id] = !!(await Like.findOne({ commentId: comment._id, userId }))
+        }
+        return res.status(200).json(new ApiResponse(200, { isLiked }, "User has liked these comments"))
     })
 }
 
