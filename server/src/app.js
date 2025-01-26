@@ -12,6 +12,7 @@ import videoRoutes from "./routes/video.js";
 import playlistRoutes from "./routes/playlist.js";
 import notificationRoutes from "./routes/notification.js";
 import uploadRoutes from "./routes/upload.js";
+import replyRoutes from "./routes/reply.js"
 import bodyParser from "body-parser"
 const app = express();
 const ORIGIN = process.env.CLIENT_URL
@@ -49,6 +50,8 @@ app.use("/api/v1/playlists", playlistRoutes)
 app.use("/api/v1/uploads", uploadRoutes)
 
 app.use('/api/v1/notifications',notificationRoutes)
+
+app.use('/api/v1/replies',replyRoutes)
 
 app.use(errorHandler)
 

@@ -95,6 +95,7 @@ const Channel = () => {
                         <Button
                             variant={isSubscribed ? "default" : "destructive"}
                             onClick={() => toggleSubscription()}
+                            className="rounded-full"
                         >
                             {isSubscribed ? "Unsubscribe" : "Subscribe"}
                         </Button>

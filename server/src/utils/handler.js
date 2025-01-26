@@ -1,5 +1,5 @@
 import { ApiResponse } from "./ApiResponse.js"
-const errorHandler = (err, _, res) => {
+const errorHandler = (err, req, res,next) => {
     console.error("API ERROR: ", err);
     const status = (err.errorInfo || err.name === "TokenExpiredError") ? 401 : (err.status || 500);
     const message = (err.errorInfo || err.name === "TokenExpiredError") ? "Your session has expired. Please log in again to continue." : (err.message || "internal server error");

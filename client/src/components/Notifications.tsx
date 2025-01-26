@@ -102,7 +102,6 @@ const Notifications = () => {
         },
         [observerCallback]
     );
-
     return (
         <DropdownMenu onOpenChange={onDropDownOpenChange}>
             <DropdownMenuTrigger>
@@ -117,7 +116,7 @@ const Notifications = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent
                 collisionPadding={100}
-                className="max-w-[480px] dark:bg-[#282828] p-0"
+                className="w-[455px] dark:bg-[#282828] p-0"
             >
                 <div className="sticky top-0 z-10">
                     <DropdownMenuLabel>Notifications</DropdownMenuLabel>
@@ -135,9 +134,9 @@ const Notifications = () => {
                                     markAsRead(notification.createdAt)
                                 }
                                 key={index}
-                                className="flex items-start hover:dark:bg-[#3E3E3E] space-x-4"
+                                className="flex items-start hover:dark:bg-[#3E3E3E] space-x-2"
                             >
-                                <div className="flex space-x-4 w-3/4 items-start overflow-hidden">
+                                <div className="flex space-x-2 w-3/4 items-start overflow-hidden">
                                     <div className="flex items-center">
                                         <div className="h-1.5 w-1.5 mr-2">
                                             {!notification.read && (
@@ -170,8 +169,8 @@ const Notifications = () => {
                                         </div>
                                     </div>
                                 </div>
-                                <div className="flex space-x-2 w-1/4">
-                                    <div className="w-25">
+                                <div className="flex space-x-1 w-1/4">
+                                    <div className="min-w-[80px]">
                                         <img
                                             src={
                                                 notification.video?.thumbnail ||
@@ -184,7 +183,7 @@ const Notifications = () => {
                                     </div>
                                     <DropdownMenu
                                     >
-                                        <DropdownMenuTrigger>
+                                        <DropdownMenuTrigger className="p-0">
                                             <div className="p-1 rounded-full hover:bg-muted">
                                                 <EllipsisVertical className="text-sm" />
                                             </div>
