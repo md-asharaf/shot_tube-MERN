@@ -11,11 +11,11 @@ try {
 
 const initialState: IUiData = {
     isMenuOpen: uiData?.isMenuOpen ?? true, 
-    isVideoModalOpen: uiData?.isVideoModalOpen ?? false, 
-    isLoginPopoverVisible: uiData?.isLoginPopoverVisible ?? false,
-    isShareModalOpen: uiData?.isShareModalOpen ?? false,
-    videoId: uiData?.videoId ?? "",
-    loginPopoverMessage: uiData?.loginPopoverMessage ?? "", 
+    isVideoModalOpen: false, 
+    isLoginPopoverVisible: false,
+    isShareModalOpen: false,
+    videoId: "",
+    loginPopoverMessage: "", 
 };
 
 const uiSlice = createSlice({
