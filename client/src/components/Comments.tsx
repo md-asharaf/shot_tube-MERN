@@ -11,6 +11,7 @@ import { FaPlus } from "react-icons/fa";
 import { FiMinus } from "react-icons/fi";
 import { GoDot } from "react-icons/go";
 import DefaultProfileImage from "@/assets/images/profile.png";
+import replyServices from "@/services/Reply";
 import {
     ChevronDown,
     ChevronUp,
@@ -33,15 +34,20 @@ import {
     CollapsibleTrigger,
 } from "@/components/ui/collapsible";
 import Replies from "./Replies";
+import TextArea from "./ReusableTextArea";
+import { queryClient } from "@/main";
 
 const Comments = ({ videoId, playerRef }) => {
+    const theme = useSelector((state: RootState) => state.theme.mode);
     const navigate = useNavigate();
     const userData = useSelector((state: RootState) => state.auth.userData);
     const [isRepliesOpen, setIsRepliesOpen] = useState([]);
-    const [targetCommentId, setTargetCommentId] = useState("");
-    const [content, setContent] = useState<string>("");
-    const [isInputFocused, setIsInputFocused] = useState(false);
-    const [inputHeight, setInputHeight] = useState(0);
+    const [editingCommentId, setEditingCommentId] = useState<string | null>(
+        null
+    );
+    const [replyingToCommentId, setReplyingToCommentId] = useState<
+        string | null
+    >(null);
     const {
         data: commentsPages,
         isLoading: commentsLoading,
@@ -65,12 +71,12 @@ const Comments = ({ videoId, playerRef }) => {
             lastPage.hasNextPage ? allPages.length + 1 : undefined,
         enabled: !!videoId,
     });
-    let comments = commentsPages?.pages.flatMap((page) => page.docs);
+    const comments = commentsPages?.pages.flatMap((page) => page.docs);
     const totalComments = commentsPages?.pages[0].totalDocs;
     const { data: isLikedOfComments, isLoading: likesLoading } = useQuery({
         queryKey: ["commentsLike", videoId],
         queryFn: async () => {
-            const data = await likeServices.getIsLikedOfVideoComments(videoId);
+            const data = await likeServices.getVideoCommentsLike(videoId);
             return data.isLiked;
         },
         enabled: !!comments && !!userData,
@@ -89,7 +95,6 @@ const Comments = ({ videoId, playerRef }) => {
         },
         onSuccess: (comment) => {
             toast.success("Comment added");
-            resetInput();
             commentsPages.pages[0].totalDocs++;
             commentsPages.pages[0].docs.unshift({
                 ...comment,
@@ -99,17 +104,21 @@ const Comments = ({ videoId, playerRef }) => {
     });
 
     const { mutate: toggleCommentLike } = useMutation({
-        mutationFn: async ({ commentId }: { commentId: string }) => {
+        mutationFn: async (commentId: string) => {
             await likeServices.toggleLike(commentId, "comment");
         },
-        onSuccess: (_, vars) => {
-            isLikedOfComments[vars.commentId] =
-                !isLikedOfComments[vars.commentId];
+        onSuccess: (_, commentId) => {
+            isLikedOfComments[commentId] = {
+                status: !isLikedOfComments[commentId]?.status,
+                count:
+                    isLikedOfComments[commentId]?.count +
+                    (isLikedOfComments[commentId]?.status ? -1 : 1),
+            };
         },
     });
 
     const { mutate: deleteComment } = useMutation({
-        mutationFn: async ({ commentId }: { commentId: string }) => {
+        mutationFn: async (commentId: string) => {
             const data = await commentServices.deleteComment(commentId);
             return data.commentId;
         },
@@ -124,31 +133,41 @@ const Comments = ({ videoId, playerRef }) => {
         },
     });
     const { mutate: updateComment } = useMutation({
-        mutationFn: async () => {
-            await commentServices.updateComment(targetCommentId, content);
+        mutationFn: async (content: string) => {
+            await commentServices.updateComment(editingCommentId, content);
         },
-        onSuccess: () => {
+        onSuccess: (_, content) => {
             commentsPages.pages.forEach((page) => {
                 page.docs.forEach((comment) => {
-                    if (comment._id === targetCommentId)
+                    if (comment._id === editingCommentId)
                         comment.content = content;
                 });
             });
-            resetInput();
             toast.success("Comment updated");
         },
+        onSettled: () => {
+            setEditingCommentId(null);
+        },
     });
-    const resetInput = () => {
-        setContent("");
-        setTargetCommentId("");
-        setIsInputFocused(false);
-        setInputHeight(0);
-    };
-
-    const handleInputChange = (e: React.ChangeEvent<HTMLTextAreaElement>) => {
-        setContent(e.target.value);
-        setInputHeight(e.target.scrollHeight);
-    };
+    const { mutate: addReply } = useMutation({
+        mutationFn: async (content: string) => {
+            const data = await replyServices.addReply(
+                replyingToCommentId,
+                content
+            );
+            return data.reply;
+        },
+        onSuccess: () => {
+            toast.success("Reply added");
+        },
+        onSettled: () => {
+            queryClient.invalidateQueries({
+                queryKey: ["replies", replyingToCommentId],
+                exact: true,
+            });
+            setReplyingToCommentId(null);
+        },
+    });
     const observerCallback = useCallback(
         (entries: IntersectionObserverEntry[]) => {
             const [entry] = entries;
@@ -231,216 +250,276 @@ const Comments = ({ videoId, playerRef }) => {
                         <Loader2 className="h-6 w-6 animate-spin" />
                     </div>
                 ) : (
-                    <div className="flex gap-y-1 flex-col justify-start">
-                        <div className="flex items-center gap-2">
-                            <img
-                                src={userData?.avatar || DefaultProfileImage}
-                                className="rounded-full h-10 w-10"
-                            />
-                            <textarea
-                                value={content}
-                                onChange={handleInputChange}
-                                placeholder="Add a public comment..."
-                                className={`outline-none shadow-none dark:bg-black w-full resize-none overflow-hidden border-b border-gray-500 focus:border-gray-300 transition-all`}
-                                onFocus={() => setIsInputFocused(true)}
-                                onBlur={() => {
-                                    if (!content) {
-                                        setIsInputFocused(false);
-                                    }
-                                }}
-                                style={{ height: inputHeight || "25px" }}
-                            />
-                        </div>
-
-                        {(isInputFocused || content) && (
-                            <div className="flex space-x-2 justify-end">
-                                <Button
-                                    onClick={resetInput}
-                                    variant="ghost"
-                                    className="h-7 sm:h-9 rounded-full"
-                                >
-                                    Cancel
-                                </Button>
-                                <Button
-                                    disabled={content === ""}
-                                    onClick={() =>
-                                        targetCommentId
-                                            ? updateComment()
-                                            : addComment({ videoId, content })
-                                    }
-                                    variant="outline"
-                                    className="bg-blue-500 hover:bg-blue-400 h-7 sm:h-9 p-1 sm:p-3 rounded-full"
-                                >
-                                    {targetCommentId ? "Save" : "Comment"}
-                                </Button>
-                            </div>
-                        )}
-                    </div>
+                    <TextArea
+                        userAvatar={userData?.avatar}
+                        placeholder="Add a public comment..."
+                        onSubmit={(content) => addComment({ videoId, content })}
+                        submitLabel="Comment"
+                    />
                 )}
 
-                <div className="flex flex-col mt-2 space-y-2 overflow-y-auto overflow-x-hidden">
+                <div className="flex flex-col mt-4 space-y-2 overflow-y-auto overflow-x-hidden">
                     {comments?.map((comment, index) => {
                         const sentiment = comment.sentiment?.toLowerCase();
                         return (
-                            <div key={index} className="flex justify-between">
-                                <div className="flex space-x-2 items-start">
-                                    <img
-                                        src={
-                                            comment.creator.avatar ||
-                                            DefaultProfileImage
+                            <div key={comment._id}>
+                                {editingCommentId === comment._id ? (
+                                    <TextArea
+                                        userAvatar={userData?.avatar}
+                                        initialValue={comment.content}
+                                        onSubmit={(content) =>
+                                            updateComment(content)
                                         }
-                                        className="rounded-full h-10 w-10 cursor-pointer"
-                                        onClick={() =>
-                                            navigate(
-                                                `/${comment.creator.username}/channel`,
-                                                {
-                                                    viewTransition: true,
-                                                }
-                                            )
+                                        onCancel={() =>
+                                            setEditingCommentId(null)
                                         }
-                                        loading="lazy"
+                                        submitLabel="Save"
                                     />
+                                ) : (
                                     <div>
-                                        <div className="flex items-center space-x-2">
-                                            <div
-                                                onClick={() =>
-                                                    navigate(
-                                                        `/${comment.creator.username}/channel`,
-                                                        {
-                                                            viewTransition:
-                                                                true,
-                                                        }
-                                                    )
-                                                }
-                                                className="text-sm font-medium cursor-pointer"
-                                            >
-                                                {`@${comment.creator.username} `}
-                                            </div>
-                                            <div className="text-gray-500 dark:text-zinc-400 text-[12px]">
-                                                {formatDistanceToNowStrict(
-                                                    new Date(comment.createdAt),
-                                                    {
-                                                        addSuffix: true,
+                                        <div className="flex justify-between">
+                                            <div className="flex space-x-2 items-start">
+                                                <img
+                                                    src={
+                                                        comment.creator
+                                                            .avatar ||
+                                                        DefaultProfileImage
                                                     }
-                                                )}
+                                                    className="rounded-full h-10 w-10 cursor-pointer"
+                                                    onClick={() =>
+                                                        navigate(
+                                                            `/channel?u=${comment.creator.username}`,
+                                                            {
+                                                                viewTransition:
+                                                                    true,
+                                                            }
+                                                        )
+                                                    }
+                                                    loading="lazy"
+                                                />
+                                                <div>
+                                                    <div className="flex items-center space-x-2">
+                                                        <div
+                                                            onClick={() =>
+                                                                navigate(
+                                                                    `/channel?u=${comment.creator.username}`,
+                                                                    {
+                                                                        viewTransition:
+                                                                            true,
+                                                                    }
+                                                                )
+                                                            }
+                                                            className="text-sm font-medium cursor-pointer"
+                                                        >
+                                                            {`@${comment.creator.username} `}
+                                                        </div>
+                                                        <div className="text-gray-500 dark:text-zinc-400 text-[12px]">
+                                                            {formatDistanceToNowStrict(
+                                                                new Date(
+                                                                    comment.createdAt
+                                                                ),
+                                                                {
+                                                                    addSuffix:
+                                                                        true,
+                                                                }
+                                                            )}
+                                                        </div>
+                                                        <div
+                                                            className={`flex ${
+                                                                sentiment ===
+                                                                    "positive" &&
+                                                                "bg-green-500"
+                                                            } ${
+                                                                sentiment ===
+                                                                    "negative" &&
+                                                                "bg-red-500"
+                                                            } ${
+                                                                sentiment ===
+                                                                    "neutral" &&
+                                                                "bg-yellow-500"
+                                                            } rounded-full items-center justify-center pl-1 pr-2`}
+                                                        >
+                                                            {sentiment ===
+                                                            "positive" ? (
+                                                                <FaPlus className="text-white text-xs mr-1 dark:text-black" />
+                                                            ) : sentiment ===
+                                                              "negative" ? (
+                                                                <FiMinus className="text-white mr-1 dark:text-black" />
+                                                            ) : (
+                                                                <GoDot className="text-white dark:text-black text-xl" />
+                                                            )}
+                                                            <span className="text-white dark:text-black text-sm">
+                                                                {sentiment}
+                                                            </span>
+                                                        </div>
+                                                    </div>
+                                                    <div className="break-words whitespace-pre-wrap">
+                                                        {processComment(
+                                                            comment.content,
+                                                            onTimestampClick
+                                                        )}
+                                                    </div>
+                                                    {userData && (
+                                                        <div className="flex items-center">
+                                                            <Button
+                                                                onClick={() =>
+                                                                    toggleCommentLike(
+                                                                        comment._id
+                                                                    )
+                                                                }
+                                                                variant="ghost"
+                                                                className="rounded-full p-2"
+                                                            >
+                                                                <ThumbsUp
+                                                                    fill={
+                                                                        isLikedOfComments[
+                                                                            comment
+                                                                                ._id
+                                                                        ]
+                                                                            ?.status
+                                                                            ? theme ==
+                                                                              "dark"
+                                                                                ? "white"
+                                                                                : "black"
+                                                                            : theme ==
+                                                                              "dark"
+                                                                            ? "black"
+                                                                            : "white"
+                                                                    }
+                                                                />{" "}
+                                                                {
+                                                                    isLikedOfComments[
+                                                                        comment
+                                                                            ._id
+                                                                    ]?.count
+                                                                }
+                                                            </Button>
+                                                            <Button
+                                                                className="text-sm rounded-full"
+                                                                variant="ghost"
+                                                                onClick={() =>
+                                                                    setReplyingToCommentId(
+                                                                        comment._id
+                                                                    )
+                                                                }
+                                                            >
+                                                                reply
+                                                            </Button>
+                                                        </div>
+                                                    )}
+                                                </div>
                                             </div>
-                                            <div
-                                                className={`flex ${
-                                                    sentiment === "positive" &&
-                                                    "bg-green-500"
-                                                } ${
-                                                    sentiment === "negative" &&
-                                                    "bg-red-500"
-                                                } ${
-                                                    sentiment === "neutral" &&
-                                                    "bg-yellow-500"
-                                                } rounded-full items-center justify-center pl-1 pr-2`}
-                                            >
-                                                {sentiment === "positive" ? (
-                                                    <FaPlus className="text-white text-xs mr-1 dark:text-black" />
-                                                ) : sentiment === "negative" ? (
-                                                    <FiMinus className="text-white mr-1 dark:text-black" />
-                                                ) : (
-                                                    <GoDot className="text-white dark:text-black text-xl" />
-                                                )}
-                                                <span className="text-white dark:text-black text-sm">
-                                                    {sentiment}
-                                                </span>
-                                            </div>
-                                        </div>
-                                        <div className="break-words whitespace-pre-wrap">
-                                            {processComment(
-                                                comment.content,
-                                                onTimestampClick
+                                            {userData?._id ===
+                                                comment.creator._id && (
+                                                <DropdownMenu>
+                                                    <DropdownMenuTrigger
+                                                        asChild
+                                                    >
+                                                        <EllipsisVertical className="cursor-pointer h-5 mt-2" />
+                                                    </DropdownMenuTrigger>
+                                                    <DropdownMenuContent className="bg-white dark:bg-[#212121] p-0 py-2">
+                                                        <DropdownMenuItem
+                                                            className="rounded-none dark:hover:bg-[#535353] hover:bg-[#E5E5E5] px-2"
+                                                            onClick={() =>
+                                                                setEditingCommentId(
+                                                                    comment._id
+                                                                )
+                                                            }
+                                                        >
+                                                            <Edit className="h-5 w-5 mr-2" />
+                                                            Edit
+                                                        </DropdownMenuItem>
+                                                        <DropdownMenuItem
+                                                            className="rounded-none dark:hover:bg-[#535353] hover:bg-[#E5E5E5]"
+                                                            onClick={() =>
+                                                                deleteComment(
+                                                                    comment._id
+                                                                )
+                                                            }
+                                                        >
+                                                            <Trash className="h-5 w-5 mr-2" />
+                                                            Delete
+                                                        </DropdownMenuItem>
+                                                    </DropdownMenuContent>
+                                                </DropdownMenu>
                                             )}
                                         </div>
-                                        {userData && (
-                                            <div className="flex items-center space-x-2">
-                                                <Button
-                                                onClick={() =>
-                                                    toggleCommentLike({
-                                                        commentId: comment._id,
-                                                    })
-                                                }
-                                                variant="ghost"
-                                                className={`rounded-full text-lg p-2 dark:hover:bg-zinc-800 dark:hover:text-white ${
-                                                    isLikedOfComments &&
-                                                    isLikedOfComments[
-                                                        comment._id
-                                                    ] &&
-                                                    "text-blue-500 dark:hover:text-blue-500"
-                                                }`}
-                                            >
-                                                <ThumbsUp size={18} />
-                                            </Button>
-                                            <button className="text-sm rounded-full p-2 dark:hover:bg-zinc-800 dark:hover:text-white">
-                                                reply
-                                            </button>
-                                            </div>
-                                        )}
-                                        <Collapsible
-                                            onOpenChange={(open) => {
-                                                const updatedRepliesOpen = [...isRepliesOpen];
-                                                updatedRepliesOpen[index] = open; 
-                                                setIsRepliesOpen(updatedRepliesOpen);
-                                            }}
-                                        >
-                                            <CollapsibleTrigger asChild>
-                                                <button className="flex space-x-1 text-indigo-500">
-                                                    {isRepliesOpen[index] ? (
-                                                        <ChevronUp />
-                                                    ) : (
-                                                        <ChevronDown />
-                                                    )}{" "}
-                                                    <span>replies</span>
-                                                </button>
-                                            </CollapsibleTrigger>
-                                            <CollapsibleContent>
-                                                <Replies
-                                                    commentId={comment._id}
+                                        <div className="ml-12">
+                                            {replyingToCommentId ===
+                                                comment._id && (
+                                                <TextArea
+                                                    userAvatar={
+                                                        userData?.avatar
+                                                    }
+                                                    placeholder="Add a reply..."
+                                                    onSubmit={(content) => {
+                                                        addReply(content);
+                                                        comment.repliesCount+=1;
+                                                    }}
+                                                    onCancel={() =>
+                                                        setReplyingToCommentId(
+                                                            null
+                                                        )
+                                                    }
+                                                    submitLabel="Reply"
                                                 />
-                                            </CollapsibleContent>
-                                        </Collapsible>
+                                            )}
+                                            {comment.repliesCount > 0 && (
+                                                <Collapsible
+                                                    onOpenChange={(open) => {
+                                                        const updatedRepliesOpen =
+                                                            [...isRepliesOpen];
+                                                        updatedRepliesOpen[
+                                                            index
+                                                        ] = open;
+                                                        setIsRepliesOpen(
+                                                            updatedRepliesOpen
+                                                        );
+                                                    }}
+                                                >
+                                                    <CollapsibleTrigger asChild>
+                                                        <Button
+                                                            className="rounded-full flex space-x-1 text-indigo-500 hover:bg-indigo-500/30"
+                                                            variant="ghost"
+                                                        >
+                                                            {isRepliesOpen[
+                                                                index
+                                                            ] ? (
+                                                                <ChevronUp />
+                                                            ) : (
+                                                                <ChevronDown />
+                                                            )}
+                                                            <span>{`${
+                                                                comment.repliesCount
+                                                            } ${
+                                                                comment.repliesCount ==
+                                                                1
+                                                                    ? "reply"
+                                                                    : "replies"
+                                                            }`}</span>
+                                                        </Button>
+                                                    </CollapsibleTrigger>
+                                                    <CollapsibleContent>
+                                                        <Replies
+                                                            onTimestampClick={
+                                                                onTimestampClick
+                                                            }
+                                                            commentId={
+                                                                comment._id
+                                                            }
+                                                        />
+                                                    </CollapsibleContent>
+                                                </Collapsible>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
-                                {userData?._id === comment.creator._id && (
-                                    <DropdownMenu>
-                                        <DropdownMenuTrigger asChild>
-                                            <EllipsisVertical className="cursor-pointer h-5 mt-2" />
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent className="bg-white dark:bg-[#212121] p-0 py-2">
-                                            <DropdownMenuItem
-                                                className="rounded-none dark:hover:bg-[#535353] hover:bg-[#E5E5E5] px-2"
-                                                onClick={() => {
-                                                    setTargetCommentId(
-                                                        comment._id
-                                                    );
-                                                    setContent(comment.content);
-                                                    setIsInputFocused(true);
-                                                }}
-                                            >
-                                                <Edit className="h-5 w-5 mr-2" />
-                                                Edit
-                                            </DropdownMenuItem>
-                                            <DropdownMenuItem
-                                                className="rounded-none dark:hover:bg-[#535353] hover:bg-[#E5E5E5]"
-                                                onClick={() =>
-                                                    deleteComment({
-                                                        commentId: comment._id,
-                                                    })
-                                                }
-                                            >
-                                                <Trash className="h-5 w-5 mr-2" />
-                                                Delete
-                                            </DropdownMenuItem>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
                                 )}
                             </div>
                         );
                     })}
+
                     <div
-                        className="h-10 flex items-center justify-center"
+                        className="flex items-center justify-center"
                         ref={getRef}
                     >
                         {isFetchingNextPage && (

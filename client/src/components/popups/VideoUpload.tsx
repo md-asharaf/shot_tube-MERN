@@ -225,7 +225,7 @@ const VideoUpload = () => {
             open={isVideoModalOpen}
             onOpenChange={() => dispatch(toggleVideoModal())}
         >
-            <DialogContent className="max-w-[500px]">
+            <DialogContent className="max-w-[500px] max-h-[calc(100vh-4rem)] overflow-y-auto rounded-lg">
                 <DialogHeader>
                     <DialogTitle>Upload Video</DialogTitle>
                     <DialogDescription>

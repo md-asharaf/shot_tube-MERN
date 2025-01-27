@@ -169,6 +169,7 @@ const BigDrawer = () => {
     ];
 
     const handleSidebarToggle = () => {
+        if(isSmallScreen || isVideoPage)
         dispatch(toggleMenu(false));
     };
 
@@ -178,7 +179,7 @@ const BigDrawer = () => {
     }));
 
     const isSmallScreen = windowWidth < 1315;
-    const isVideoPage = location.pathname.startsWith("/videos/");
+    const isVideoPage = location.pathname.startsWith("/video");
 
     return (
         <div
@@ -186,7 +187,7 @@ const BigDrawer = () => {
                 (isSmallScreen || isVideoPage) &&
                 "fixed inset-0  dark:bg-black/50 bg-black/50 z-40"
             } w-full`}
-            onClick={handleSidebarToggle}
+             onClick={handleSidebarToggle}
         >
             <div
                 className={`pl-6 w-60 overflow-y-auto h-full ${

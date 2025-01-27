@@ -2,7 +2,7 @@ import { Reply } from "../models/reply.js";
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/handler.js";
-
+import mongoose from "mongoose"
 class ReplyController {
     createReply = asyncHandler(async (req, res) => {
         const { commentId } = req.params;
@@ -50,17 +50,40 @@ class ReplyController {
         return res.status(200).json(new ApiResponse(200, null, "Reply deleted successfully"));
     });
 
-    // Get replies for a comment
     getReplies = asyncHandler(async (req, res) => {
         const { commentId } = req.params;
-
-        if (!commentId) {
-            throw new ApiError(400, "Comment ID is required to fetch replies");
-        }
-
-        const replies = await Reply.find({ commentId }).populate("userId", "username avatar");
-
-        return res.status(200).json(new ApiResponse(200, {replies}, "Replies fetched successfully"));
+        const { page = 1, limit = 10 } = req.query;
+        const aggregate = Reply.aggregate([
+            {
+                $match: {
+                    commentId: new mongoose.Types.ObjectId(commentId)
+                }
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "userId",
+                    foreignField: "_id",
+                    as: "creator"
+                }
+            },
+            {
+                $addFields: {
+                    creator: {
+                        $first: "$creator"
+                    }
+                }
+            },
+            {
+                $project: {
+                    content: 1,
+                    sentiment: 1,
+                    createdAt: 1,
+                    creator: 1
+                }
+            }])
+        const replies = await Reply.aggregatePaginate(aggregate, { page, limit });
+        return res.status(200).json(new ApiResponse(200, { replies }, "Replies fetched successfully"));
     });
 }
 

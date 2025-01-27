@@ -32,9 +32,15 @@ export function getVideoMetadata(
     });
 }
 export function formatDuration(duration: string) {
-    const durationNumber = parseInt(duration);
-    const minutes = Math.floor(durationNumber / 60);
+    const durationNumber = parseInt(duration, 10);
+    const hours = Math.floor(durationNumber / 3600);
+    const minutes = Math.floor((durationNumber % 3600) / 60);
     const seconds = durationNumber % 60;
+    if (hours > 0) {
+        return `${hours}:${minutes < 10 ? "0" : ""}${minutes}:${
+            seconds < 10 ? "0" : ""
+        }${seconds}`;
+    }
     return `${minutes}:${seconds < 10 ? "0" : ""}${seconds}`;
 }
 
@@ -47,6 +53,3 @@ export function formatViews(count: number) {
     if (count >= 1000) return `${(count / 1000).toFixed(1)}K views`;
     return `${count} views`;
 }
-
-
-

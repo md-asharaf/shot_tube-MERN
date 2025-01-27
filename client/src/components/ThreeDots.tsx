@@ -5,8 +5,9 @@ import { useMutation, useQuery } from "@tanstack/react-query";
 import userServices from "@/services/User";
 import { toast } from "sonner";
 import { queryClient } from "@/main";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store/store";
+import { setShareModal} from "@/store/reducers/ui";
 interface IThreeDots {
     task?: {
         title: string;
@@ -15,10 +16,11 @@ interface IThreeDots {
     videoId: string;
 }
 export default function ThreeDots({ videoId, task = null }: IThreeDots) {
+    const dispatch = useDispatch();
     const userId = useSelector((state: RootState) => state.auth.userData?._id);
     const { data: isSavedToWatchLater, refetch } = useQuery({
         queryKey: ["is-video-saved", videoId],
-        queryFn: async ():Promise<boolean> => {
+        queryFn: async (): Promise<boolean> => {
             const data = await userServices.isSavedToWatchLater(videoId);
             return data.isSaved;
         },
@@ -39,6 +41,7 @@ export default function ThreeDots({ videoId, task = null }: IThreeDots) {
             });
         },
     });
+
     const { mutate: removeFromWatchLater } = useMutation({
         mutationFn: async () => {
             await userServices.removeFromWatchLater(videoId);
@@ -122,7 +125,12 @@ export default function ThreeDots({ videoId, task = null }: IThreeDots) {
                                 <span>Save to playlist</span>
                             </SaveToPlaylist>
                         </li>
-                        <li className="flex items-center space-x-2 cursor-pointer py-2 px-4 dark:hover:bg-[#535353] hover:bg-[#E5E5E5] rounded-md">
+                        <li
+                            className="flex items-center space-x-2 cursor-pointer py-2 px-4 dark:hover:bg-[#535353] hover:bg-[#E5E5E5] rounded-md"
+                            onClick={() =>
+                                dispatch(setShareModal({ open: true, videoId }))
+                            }
+                        >
                             <Share2 className="w-5 h-5" />
                             <span>Share</span>
                         </li>

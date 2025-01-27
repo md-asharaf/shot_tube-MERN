@@ -22,6 +22,8 @@ export interface ILoginForm {
     password: string;
 }
 export interface IUiData {
+    isShareModalOpen: boolean;
+    videoId: string;
     isMenuOpen: boolean;
     isVideoModalOpen: boolean;
     isLoginPopoverVisible: boolean;
@@ -51,6 +53,14 @@ export interface IVideoData {
     updatedAt?: Date;
 }
 export interface IComment {
+    _id: string;
+    content: string;
+    sentiment: string;
+    creator: IUser;
+    createdAt?: Date;
+    repliesCount: number;
+}
+export interface IReply {
     _id: string;
     content: string;
     sentiment: string;

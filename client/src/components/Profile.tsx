@@ -42,7 +42,7 @@ const Profile = () => {
                     </AvatarFallback>
                 </Avatar>
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="mr-2">
+            <DropdownMenuContent className="mr-2 min-w-[200px]">
                 <Link to={`/channel?u=${userData.username}`}>
                     <DropdownMenuItem>
                         <div className="flex flex-col gap-4">

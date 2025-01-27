@@ -68,11 +68,11 @@ const PlaylistNhistory = () => {
 
   return (
     <div className="w-full overflow-auto space-y-6">
-      <div className="hidden sm:flex items-center space-x-6">
+      <div className="hidden sm:flex items-center justify-center space-x-6">
         <img
           src={userData?.avatar || DefaultAvatarImage}
           alt="User Avatar"
-          className="rounded-full h-32 w-32"
+          className="rounded-full h-28 w-28"
           loading="lazy"
         />
         <div className="space-y-2">

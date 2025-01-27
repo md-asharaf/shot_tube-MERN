@@ -228,7 +228,7 @@ const Notifications = () => {
                             </DropdownMenuItem>
                         ))}
                         <div
-                            className="flex items-center justify-center h-10"
+                            className="flex items-center justify-center"
                             ref={getRef}
                         >
                             {isFetchingNextPage ? (

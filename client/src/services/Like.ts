@@ -5,8 +5,10 @@ class LikeService {
         await Axios.post(`/likes/toggle-${type}-like/${id}`);
     isLiked = async (id: string, type: string) =>
         await Axios.get(`/likes/is-${type}-liked/${id}`);
-    getIsLikedOfVideoComments = async (id: string) =>
-        await Axios.get(`/likes/is-video-comment-liked/${id}`);
+    getVideoCommentsLike = async (id: string) =>
+        await Axios.get(`/likes/video-comments-like/${id}`);
+    getCommentRepliesLike = async (id: string) =>
+        await Axios.get(`/likes/comment-replies-like/${id}`);
 }
 
 export default new LikeService();

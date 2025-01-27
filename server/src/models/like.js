@@ -12,6 +12,10 @@ const likeSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: "Tweet",
     },
+    replyId: {
+        type: Schema.Types.ObjectId,
+        ref: "Reply",
+    },
     userId: {
         type: Schema.Types.ObjectId,
         ref: "User",

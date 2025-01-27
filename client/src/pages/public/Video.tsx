@@ -13,14 +13,15 @@ import Comments from "@/components/Comments";
 import { useQuery, useMutation } from "@tanstack/react-query";
 import videoServices from "@/services/Video";
 import VideoPlayer from "@/components/VideoPlayer";
-import { Bookmark, ThumbsUp } from "lucide-react";
+import { Bookmark, Share2, ThumbsUp } from "lucide-react";
 import userServices from "@/services/User";
 import ThreeDots from "@/components/ThreeDots";
 import { formatViews } from "@/lib/utils";
 import { useWindowSize } from "@/hooks/use-window";
 import { RootState } from "@/store/store";
-import { toggleMenu } from "@/store/reducers/ui";
+import { setShareModal, toggleMenu } from "@/store/reducers/ui";
 const Video = () => {
+    const theme = useSelector((state: RootState) => state.theme.mode);
     const dispatch = useDispatch();
     const playerRef = useRef(null);
     const [searchParams] = useSearchParams();
@@ -46,12 +47,10 @@ const Video = () => {
         enabled: !!videoId,
     });
 
-    const { data: isLiked, refetch: refetchIsLiked } = useQuery({
+    const { data: likeData, refetch: refetchIsLiked } = useQuery({
         queryKey: ["isLiked", videoId],
-        queryFn: async (): Promise<boolean> => {
-            const data = await likeService.isLiked(videoId, "video");
-            return data.isLiked;
-        },
+        queryFn: async (): Promise<{ isLiked: boolean; likesCount: number }> =>
+            await likeService.isLiked(videoId, "video"),
         enabled: !!userId && !!videoId,
     });
 
@@ -186,9 +185,31 @@ const Video = () => {
                                     className="rounded-full"
                                 >
                                     <ThumbsUp
-                                        fill={isLiked ? "black" : "white"}
-                                    />{" "}
-                                    2.2k
+                                        fill={
+                                            likeData?.isLiked
+                                                ? theme == "dark"
+                                                    ? "white"
+                                                    : "black"
+                                                : theme == "dark"
+                                                ? "black"
+                                                : "white"
+                                        }
+                                    />
+                                    {likeData?.likesCount}
+                                </Button>
+                                <Button
+                                    className="rounded-full"
+                                    variant="secondary"
+                                    onClick={() =>
+                                        dispatch(
+                                            setShareModal({
+                                                open: true,
+                                                videoId,
+                                            })
+                                        )
+                                    }
+                                >
+                                    <Share2 />
                                 </Button>
                                 <SaveToPlaylist videoId={videoId}>
                                     <Button
@@ -201,7 +222,7 @@ const Video = () => {
                             </div>
                         )}
                         {isMobile && (
-                            <div className="w-full p-2 shadow-md rounded-xl bg-[#F2F2F2] dark:bg-[#28292A]">
+                            <div className="w-full p-1 shadow-md rounded-xl bg-[#F2F2F2] dark:bg-[#28292A]">
                                 <div className="flex items-center justify-between">
                                     <div className="flex items-center space-x-2 font-bold">
                                         <div>{formatViews(video.views)}</div>
@@ -221,25 +242,45 @@ const Video = () => {
                                             </Button>
                                         )}
                                     </div>
-                                    <div className="flex items-center space-x-2">
+                                    <div className="flex space-x-2 items-center">
                                         <Button
-                                            variant="outline"
+                                            variant="ghost"
                                             onClick={() => toggleVideoLike()}
-                                            className="rounded-full hover:bg-black"
+                                            className="rounded-full p-0"
                                         >
                                             <ThumbsUp
                                                 fill={
-                                                    isLiked ? "black" : "white"
+                                                    likeData?.isLiked
+                                                        ? theme == "dark"
+                                                            ? "white"
+                                                            : "black"
+                                                        : theme == "dark"
+                                                        ? "black"
+                                                        : "white"
                                                 }
-                                            />{" "}
-                                            2.2k
+                                            />
+                                            {likeData?.likesCount}
+                                        </Button>
+                                        <Button
+                                            className="rounded-full"
+                                            variant="secondary"
+                                            onClick={() =>
+                                                dispatch(
+                                                    setShareModal({
+                                                        open: true,
+                                                        videoId,
+                                                    })
+                                                )
+                                            }
+                                        >
+                                            <Share2 />
                                         </Button>
                                         <SaveToPlaylist videoId={videoId}>
                                             <Button
-                                                variant="outline"   
-                                                className="rounded-full hover:bg-black"
+                                                variant="ghost"
+                                                className="rounded-full p-0"
                                             >
-                                                <Bookmark /> Save
+                                                <Bookmark />
                                             </Button>
                                         </SaveToPlaylist>
                                     </div>

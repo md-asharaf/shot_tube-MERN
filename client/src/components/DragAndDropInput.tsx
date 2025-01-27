@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import {
     FormControl,
     FormField,
@@ -7,55 +7,103 @@ import {
     FormMessage,
 } from "./ui/form";
 import { Input } from "./ui/input";
-import { UploadCloud } from "lucide-react";
+import { UploadCloud, Info } from "lucide-react"; 
 
-const DragDropInput = ({ label, accept, name, form }) => {
+interface DragDropInputProps {
+    label: string;
+    accept: string;
+    name: string;
+    form: any; 
+}
+
+const MAX_FILE_SIZE = 500 * 1024 * 1024; 
+
+const DragDropInput: React.FC<DragDropInputProps> = ({
+    label,
+    accept,
+    name,
+    form,
+}) => {
     const [dragging, setDragging] = useState(false);
     const [file, setFile] = useState<File | null>(null);
     const [filePreviewUrl, setFilePreviewUrl] = useState<string | null>(null);
 
-    const handleDragEnter = (e) => {
+    useEffect(() => {
+        
+        return () => {
+            if (filePreviewUrl) {
+                URL.revokeObjectURL(filePreviewUrl);
+            }
+        };
+    }, [filePreviewUrl]);
+
+    const handleDragEnter = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
         e.stopPropagation();
         setDragging(true);
     };
 
-    const handleDragLeave = (e) => {
+    const handleDragLeave = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
         e.stopPropagation();
         setDragging(false);
     };
 
-    const handleDragOver = (e) => {
+    const handleDragOver = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
         e.stopPropagation();
     };
 
-    const handleDrop = (e) => {
+    const handleDrop = (e: React.DragEvent<HTMLDivElement>) => {
         e.preventDefault();
         e.stopPropagation();
         setDragging(false);
 
         const droppedFile = e.dataTransfer.files[0];
-        if (droppedFile && droppedFile.type.includes(accept.split("/")[0])) {
-            updateFile(droppedFile);
-        }
+        validateAndSetFile(droppedFile);
     };
 
-    const handleFileChange = (e) => {
-        const selectedFile = e.target.files[0];
-        if (selectedFile && selectedFile.type.includes(accept.split("/")[0])) {
-            updateFile(selectedFile);
+    const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const selectedFile = e.target.files?.[0];
+        validateAndSetFile(selectedFile);
+    };
+
+    const validateAndSetFile = (selectedFile: File | undefined) => {
+        if (!selectedFile) return;
+
+        if (!selectedFile.type.includes(accept.split("/")[0])) {
+            form.setError(name, {
+                type: "manual",
+                message: "Invalid file type",
+            });
+            return;
         }
+
+        if (selectedFile.size > MAX_FILE_SIZE) {
+            form.setError(name, {
+                type: "manual",
+                message: "File size exceeds the 500 MB limit",
+            });
+            return;
+        }
+
+        updateFile(selectedFile);
     };
 
     const updateFile = (newFile: File) => {
+        if (filePreviewUrl) {
+            URL.revokeObjectURL(filePreviewUrl);
+        }
         setFile(newFile);
         setFilePreviewUrl(URL.createObjectURL(newFile));
         form.setValue(name, newFile);
+        form.clearErrors(name);
     };
 
     const removeFile = () => {
+        if (filePreviewUrl) {
+            URL.revokeObjectURL(filePreviewUrl);
+        }
         setFile(null);
         setFilePreviewUrl(null);
         form.setValue(name, null);
@@ -67,7 +115,18 @@ const DragDropInput = ({ label, accept, name, form }) => {
             name={name}
             render={() => (
                 <FormItem>
-                    <FormLabel htmlFor={name}>{label}</FormLabel>
+                    <div className="flex items-center space-x-2">
+                        <FormLabel htmlFor={name}>{label}</FormLabel>
+                        {label == "Video:" && (
+                            <div className="relative group">
+                                <Info className="w-4 h-4 text-gray-500 cursor-pointer" />
+                                <div className="absolute left-6 top-0 bg-black text-white text-xs rounded-md py-1 px-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 z-50 w-40">
+                                    Video size should be less than or equal to
+                                    500 MB.
+                                </div>
+                            </div>
+                        )}
+                    </div>
                     <FormControl>
                         <div
                             onDragEnter={handleDragEnter}
@@ -75,16 +134,21 @@ const DragDropInput = ({ label, accept, name, form }) => {
                             onDragOver={handleDragOver}
                             onDrop={handleDrop}
                             className={`border-2 border-dashed rounded-md p-3 cursor-pointer ${
-                                dragging ? "border-blue-500" : "border-gray-300 dark:border-zinc-700"
+                                dragging
+                                    ? "border-blue-500"
+                                    : "border-gray-300 dark:border-zinc-700"
                             }`}
+                            role="button"
+                            aria-label={`Drop your ${label.toLowerCase()} here`}
                         >
                             {file ? (
-                                <div className="flex items-center justify-center space-x-4">
-                                    <div className="relative">{accept.includes("image") &&
+                                <div className="relative">
+                                    {accept.includes("image") &&
                                         filePreviewUrl && (
                                             <img
                                                 src={filePreviewUrl}
                                                 className="max-h-32 max-w-60 mx-auto"
+                                                alt="Preview"
                                             />
                                         )}
                                     {accept.includes("video") &&
@@ -99,9 +163,14 @@ const DragDropInput = ({ label, accept, name, form }) => {
                                                 />
                                             </video>
                                         )}
-                                    <button type="button" onClick={removeFile} className="text-red-500 font-bold text-2xl absolute top-0 right-2 z-50">
+                                    <button
+                                        type="button"
+                                        onClick={removeFile}
+                                        className="text-red-500 font-bold text-2xl absolute top-0 right-2 z-50"
+                                        aria-label="Remove file"
+                                    >
                                         X
-                                    </button></div>
+                                    </button>
                                 </div>
                             ) : (
                                 <div className="flex flex-col items-center justify-center text-gray-500">

@@ -1,5 +1,5 @@
 import { model, Schema } from "mongoose";
-
+import MAP from "mongoose-aggregate-paginate-v2"
 const replySchema = new Schema({
     content: {
         type: String,
@@ -16,5 +16,5 @@ const replySchema = new Schema({
         required: true
     }
 }, { timestamps: true });
-
+replySchema.plugin(MAP);
 export const Reply = model("Reply", replySchema);

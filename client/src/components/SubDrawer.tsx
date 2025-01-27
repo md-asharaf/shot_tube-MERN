@@ -11,9 +11,9 @@ const SubDrawer: React.FC<{ options: IOption[] }> = ({ options }) => {
                 <NavLink
                     to={option.route}
                     key={index}
-                    className={({ isActive }) =>
+                    className={
                         `flex items-center gap-x-4 rounded-xl p-2 ${
-                            isActive && "bg-zinc-200 dark:bg-zinc-800"
+                            location.pathname==option.route && "bg-zinc-200 dark:bg-zinc-800"
                         }  hover:bg-zinc-200 dark:hover:bg-zinc-800`
                     }
                 >

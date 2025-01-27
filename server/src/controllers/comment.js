@@ -23,8 +23,15 @@ class CommentController {
                 $match: {
                     videoId: new mongoose.Types.ObjectId(videoId)
                 }
-            }
-            ,
+            },
+            {
+                $lookup:{
+                    from:"replies",
+                    localField:"_id",
+                    foreignField:"commentId",
+                    as:"replies"
+                }
+            },
             {
                 $lookup: {
                     from: "users",
@@ -37,6 +44,9 @@ class CommentController {
                 $addFields: {
                     creator: {
                         $first: "$creator"
+                    },
+                    repliesCount: {
+                        $size: "$replies"
                     }
                 }
             },
@@ -45,7 +55,8 @@ class CommentController {
                     content: 1,
                     sentiment: 1,
                     createdAt: 1,
-                    creator: 1
+                    creator: 1,
+                    repliesCount: 1
                 }
 
             }, {
@@ -55,6 +66,7 @@ class CommentController {
             }
         ]);
         const comments = await Comment.aggregatePaginate(aggregate, { page, limit });
+        //get repliesCount for each comment
         return res.status(200).json(new ApiResponse(200, { comments }, "Comments fetched successfully"))
     })
     addComment = asyncHandler(async (req, res) => {
@@ -127,7 +139,7 @@ class CommentController {
         if (!commentId || !content) {
             throw new ApiError(400, "comment ID and content are required")
         }
-
+        console.log("commentId", commentId)
         const comment = await Comment.findOne({ _id: new mongoose.Types.ObjectId(commentId), userId });
         if (!comment) {
             throw new ApiError(404, "Comment not found or you are not authorized to update it")
@@ -138,7 +150,7 @@ class CommentController {
         if (!updatedComment) {
             throw new ApiError(500, "comment could not be updated")
         }
-        return res.status(200).json(new ApiResponse(200, { commentId:updatedComment._id }, "Comment updated successfully"))
+        return res.status(200).json(new ApiResponse(200, { commentId: updatedComment._id }, "Comment updated successfully"))
     })
 }
 
