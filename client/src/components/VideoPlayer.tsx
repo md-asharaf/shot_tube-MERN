@@ -3,6 +3,7 @@ import Plyr from "plyr";
 import Hls from "hls.js";
 import { Card } from "@/components/ui/card";
 import "plyr/dist/plyr.css";
+import { useWindowSize } from "@/hooks/use-window";
 
 const PlyrPlayer = ({
     source,
@@ -10,8 +11,9 @@ const PlyrPlayer = ({
     className = "",
     playerRef,
     onViewTracked,
-    minWatchTime
+    minWatchTime,
 }) => {
+    const { isMobile } = useWindowSize();
     const videoRef = useRef(null);
     const hlsRef = useRef(null);
     const [watchTime, setWatchTime] = useState(0);
@@ -26,21 +28,37 @@ const PlyrPlayer = ({
     useEffect(() => {
         const initializePlayer = () => {
             const video = videoRef.current;
-            const defaultOptions: Plyr.Options = {
-                hideControls: true,
-                controls: [
-                    "play",
-                    "restart",
-                    "progress",
-                    "current-time",
-                    "mute",
-                    "captions",
-                    "settings",
-                    "fullscreen",
-                    "pip",
-                ],
-                settings: ["quality", "speed"],
-            };
+            const defaultOptions: Plyr.Options = isMobile
+                ? {
+                      hideControls: true,
+                      controls: [
+                          "play",
+                          "restart",
+                          "progress",
+                          "current-time",
+                          "mute",
+                          "captions",
+                          "settings",
+                          "fullscreen",
+                      ],
+                      settings: ["quality", "speed"],
+                  }
+                : {
+                      hideControls: true,
+                      controls: [
+                          "play",
+                          "restart",
+                          "progress",
+                          "current-time",
+                          "mute",
+                          "volume",
+                          "captions",
+                          "settings",
+                          "fullscreen",
+                          "pip",
+                      ],
+                      settings: ["quality", "speed"],
+                  };
 
             if (!Hls.isSupported()) {
                 video.src = source;
@@ -118,28 +136,30 @@ const PlyrPlayer = ({
                 hlsRef.current.destroy();
             }
         };
-    }, [source]);
+    }, [source,isMobile]);
 
     useEffect(() => {
         const video = videoRef.current;
 
         const onTimeUpdate = () => {
-            if (video.paused || video.ended) return; 
+            if (video.paused || video.ended) return;
             const currentTime = video.currentTime;
-            setWatchTime((prevTime) => prevTime + (currentTime - lastUpdateTime));
+            setWatchTime(
+                (prevTime) => prevTime + (currentTime - lastUpdateTime)
+            );
             setLastUpdateTime(currentTime);
         };
 
         const onPlay = () => {
-            setLastUpdateTime(video.currentTime); 
+            setLastUpdateTime(video.currentTime);
         };
 
         const onPause = () => {
-            setLastUpdateTime(video.currentTime); 
+            setLastUpdateTime(video.currentTime);
         };
 
         const onSeeking = () => {
-            setLastUpdateTime(video.currentTime); 
+            setLastUpdateTime(video.currentTime);
         };
 
         const onSeeked = () => {
@@ -164,7 +184,7 @@ const PlyrPlayer = ({
             video.removeEventListener("seeking", onSeeking);
             video.removeEventListener("seeked", onSeeked);
         };
-    }, [watchTime, lastUpdateTime, hasWatched, onViewTracked,minWatchTime]);
+    }, [watchTime, lastUpdateTime, hasWatched, onViewTracked, minWatchTime]);
 
     return (
         <Card className={`${className}`}>

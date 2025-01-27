@@ -20,6 +20,7 @@ import {
 import ThreeDots from "@/components/ThreeDots";
 import { toast } from "sonner";
 import { RootState } from "@/store/store";
+import { AlertDialogDescription } from "@radix-ui/react-alert-dialog";
 
 const WatchHistory = () => {
     const userId = useSelector((state: RootState) => state.auth.userData?._id);
@@ -94,6 +95,10 @@ const WatchHistory = () => {
                             <AlertDialogTitle>
                                 Are you absolutely sure?
                             </AlertDialogTitle>
+                            <AlertDialogDescription className="text-red-500 text-sm te">
+                                This will
+                                permanently delete all your watch history.
+                            </AlertDialogDescription>
                         </AlertDialogHeader>
                         <AlertDialogFooter>
                             <AlertDialogCancel>Cancel</AlertDialogCancel>
