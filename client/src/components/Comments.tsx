@@ -456,6 +456,7 @@ const Comments = ({ videoId, playerRef }) => {
                                             {replyingToCommentId ===
                                                 comment._id && (
                                                 <TextArea
+                                                fullname="userData?.fullname"
                                                     userAvatar={
                                                         userData?.avatar
                                                     }
