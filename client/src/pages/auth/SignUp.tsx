@@ -31,7 +31,7 @@ const SignUp = () => {
         try {
             await authService.register(values);
             toast.success("account created successfully");
-            navigate("/login",{viewTransition:true});
+            navigate("/login");
         } catch (error) {
             console.error(error);
         }

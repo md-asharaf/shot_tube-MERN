@@ -8,7 +8,7 @@ const SearchBar = () => {
     const [input, setInput] = useState<string>("");
 
     const handleSearch = () => {
-        if (input.trim()) navigate("/results?q=" + input,{viewTransition:true});
+        if (input.trim()) navigate("/results?q=" + input);
     };
 
     return (
@@ -38,7 +38,7 @@ const SearchBar = () => {
                 dark:border-[#3C3C3C] border-[#F0F0F0] rounded-r-full"
                 aria-label="Search"
             >
-                <Search size={18}/>
+                <Search size={18} />
             </button>
         </div>
     );

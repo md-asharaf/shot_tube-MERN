@@ -18,7 +18,7 @@ const ResetPassword = () => {
         setLoading(true);
         try {
             await userServices.resetPassword(resetToken, password);
-            navigate("/login",{viewTransition:true});
+            navigate("/login");
         } catch (error) {
             toast.error(error.message);
         } finally {

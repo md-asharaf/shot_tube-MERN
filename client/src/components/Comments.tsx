@@ -286,11 +286,7 @@ const Comments = ({ videoId, playerRef }) => {
                                                     className="rounded-full h-10 w-10 cursor-pointer"
                                                     onClick={() =>
                                                         navigate(
-                                                            `/channel?u=${comment.creator.username}`,
-                                                            {
-                                                                viewTransition:
-                                                                    true,
-                                                            }
+                                                            `/channel?u=${comment.creator.username}`
                                                         )
                                                     }
                                                 >
@@ -310,11 +306,7 @@ const Comments = ({ videoId, playerRef }) => {
                                                         <div
                                                             onClick={() =>
                                                                 navigate(
-                                                                    `/channel?u=${comment.creator.username}`,
-                                                                    {
-                                                                        viewTransition:
-                                                                            true,
-                                                                    }
+                                                                    `/channel?u=${comment.creator.username}`
                                                                 )
                                                             }
                                                             className="text-sm font-medium cursor-pointer"
@@ -456,7 +448,7 @@ const Comments = ({ videoId, playerRef }) => {
                                             {replyingToCommentId ===
                                                 comment._id && (
                                                 <TextArea
-                                                fullname="userData?.fullname"
+                                                    fullname="userData?.fullname"
                                                     userAvatar={
                                                         userData?.avatar
                                                     }

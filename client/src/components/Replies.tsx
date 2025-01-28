@@ -204,10 +204,7 @@ const Replies = ({
                                             className="rounded-full h-8 w-8 cursor-pointer"
                                             onClick={() =>
                                                 navigate(
-                                                    `/${reply.creator.username}/channel`,
-                                                    {
-                                                        viewTransition: true,
-                                                    }
+                                                    `/channel?u=${reply.creator.username}`
                                                 )
                                             }
                                         >
@@ -223,11 +220,7 @@ const Replies = ({
                                                 <div
                                                     onClick={() =>
                                                         navigate(
-                                                            `/${reply.creator.username}/channel`,
-                                                            {
-                                                                viewTransition:
-                                                                    true,
-                                                            }
+                                                            `/channel?u=${reply.creator.username}`
                                                         )
                                                     }
                                                     className="text-sm font-medium cursor-pointer"
