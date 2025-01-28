@@ -55,8 +55,7 @@ class AuthController {
             email,
             password,
             fullname,
-            username: username.toLowerCase(),
-            avatar: "https://shot-tube-videos.s3.ap-south-1.amazonaws.com/profile.png"
+            username: username.toLowerCase()
         })
         const createdUser = await User.findById(user._id)?.select("-password -refreshToken");
         if (!createdUser) {

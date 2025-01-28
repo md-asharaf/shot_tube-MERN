@@ -25,11 +25,11 @@ class CommentController {
                 }
             },
             {
-                $lookup:{
-                    from:"replies",
-                    localField:"_id",
-                    foreignField:"commentId",
-                    as:"replies"
+                $lookup: {
+                    from: "replies",
+                    localField: "_id",
+                    foreignField: "commentId",
+                    as: "replies"
                 }
             },
             {
@@ -72,49 +72,42 @@ class CommentController {
     addComment = asyncHandler(async (req, res) => {
         const { content, sentiment } = req.body;
         const { videoId } = req.params;
-        const userId = req.user?._id;
+        const user = req.user;
 
         if (!content || !videoId || !sentiment) {
             throw new ApiError(400, "Content, video ID, and sentiment are required");
         }
-
-        const video = await Video.findById(videoId);
-        if (!video) {
-            throw new ApiError(404, "Invalid video ID provided");
-        }
-
         const comment = await Comment.create({
             content,
             videoId,
-            userId,
+            userId: user._id,
             sentiment,
         });
         if (!comment) {
             throw new ApiError(500, "Comment could not be created");
         }
+        //publishing notification
+        const video = await Video.findById(videoId);
+        if (!video.userId.equals(user._id)) {
+            const message = `@${user.username} commented: "${content}"`;
+            publishNotification({
+                userId: video.userId,
+                message,
+                video: {
+                    _id: video._id,
+                    thumbnail: video.thumbnail,
+                },
+                creator: {
+                    _id: user._id,
+                    avatar: user.avatar,
+                    fullname: user.fullname
+                },
+                read: false,
+                createdAt: new Date(Date.now()),
+            });
+        }
+        //end
 
-        const [user, videoCreator] = await Promise.all([
-            User.findById(userId),
-            User.findById(video.userId),
-        ]);
-        if (!user) {
-            throw new ApiError(404, "User not found");
-        }
-        if (!videoCreator) {
-            throw new ApiError(404, "Video creator not found");
-        }
-        const message = `@${user.username} commented: "${content}"`;
-        publishNotification({
-            userId: videoCreator._id,
-            message,
-            video: {
-                _id: video._id,
-                thumbnail: video.thumbnail,
-                creatorImage: videoCreator.avatar,
-            },
-            read: false,
-            createdAt: new Date(Date.now()),
-        });
         return res
             .status(201)
             .json(new ApiResponse(201, { comment }, "Comment created successfully"));

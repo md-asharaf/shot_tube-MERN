@@ -12,31 +12,6 @@ class NotificationController {
                 $match: {
                     userId
                 }
-            },
-            {
-                $lookup: {
-                    from: "users",
-                    localField: "userId",
-                    foreignField: "_id",
-                    as: "user"
-                }
-            },
-            {
-                $addFields: {
-                    user: {
-                        $first: "$user"
-                    }
-                }
-            },
-            // {
-            //     $sort: {
-            //         createdAt: -1
-            //     }
-            // },
-            {
-                $project: {
-                    userId: 0
-                }
             }
         ]), { page, limit });
         return res.status(200).json(new ApiResponse(200, { notifications }, "Notifications fetched successfully"))

@@ -91,12 +91,15 @@ export interface INotification {
     video?: {
         _id: string;
         thumbnail: string;
-        creatorImage: string;
+    };
+    creator: {
+        _id: string;
+        fullname: string;
+        avatar: string;
     };
     tweet?: {
         _id: string;
-        thumbnail: string;
-        creatorImage: string;
+        image: string;
     };
     message: string;
     read: boolean;

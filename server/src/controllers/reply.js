@@ -1,23 +1,51 @@
 import { Reply } from "../models/reply.js";
+import { Comment } from "../models/comment.js"
+import { Video } from "../models/video.js"
+import { User } from "../models/user.js"
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/handler.js";
+import { publishNotification } from "../lib/kafka/producer.js";
 import mongoose from "mongoose"
 class ReplyController {
     createReply = asyncHandler(async (req, res) => {
         const { commentId } = req.params;
         const { content } = req.body;
-        const userId = req.user?._id;
+        const user = req.user;
         if (!commentId || !content) {
             throw new ApiError(400, "Both Comment ID and Content are required");
         }
 
         const reply = await Reply.create({
             content,
-            userId,
+            userId: user._id,
             commentId
         });
-
+        if(!reply){
+            throw new ApiError(400,"Reply could not be created")
+        }
+        //publishing notification
+        const comment = await Comment.findById(commentId);
+        if (!comment.userId.equals(user._id)) {
+            const video = await Video.findById(comment.videoId)
+            const message = `@${user.username} replied: "${content}"`;
+            publishNotification({
+                userId: comment.userId,
+                message,
+                video: {
+                    _id: video._id,
+                    thumbnail: video.thumbnail,
+                },
+                creator: {
+                    _id: user._id,
+                    avatar: user.avatar,
+                    fullname: user.fullname
+                },
+                read: false,
+                createdAt: new Date(Date.now()),
+            });
+        }
+        //end
         return res.status(201).json(new ApiResponse(201, reply, "Reply added successfully"));
     });
 

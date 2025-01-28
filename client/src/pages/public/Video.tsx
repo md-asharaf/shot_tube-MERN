@@ -20,6 +20,7 @@ import { formatViews } from "@/lib/utils";
 import { useWindowSize } from "@/hooks/use-window";
 import { RootState } from "@/store/store";
 import { setShareModal, toggleMenu } from "@/store/reducers/ui";
+import AvatarImg from "@/components/AvatarImg";
 const Video = () => {
     const theme = useSelector((state: RootState) => state.theme.mode);
     const dispatch = useDispatch();
@@ -138,9 +139,9 @@ const Video = () => {
                         playerRef={playerRef}
                         onViewTracked={onViewTracked}
                         minWatchTime={
-                            parseInt(video.duration) < 30
+                            parseInt(video.duration) < 15
                                 ? parseInt(video.duration)
-                                : 30
+                                : 15
                         }
                         className="w-full h-full object-cover aspect-video rounded-xl"
                     />
@@ -151,14 +152,10 @@ const Video = () => {
                                 to={`/channel?u=${video.creator.username}`}
                                 className="flex gap-x-4 items-center"
                             >
-                                <img
-                                    src={
-                                        video.creator.avatar ||
-                                        DefaultProfileImage
-                                    }
-                                    className="rounded-full object-cover h-12 w-12"
-                                    loading="lazy"
-                                />
+                                <div className="h-12 w-12"><AvatarImg
+                                    fullname={video.creator.fullname}
+                                    avatar={video.creator.avatar}
+                                /></div>
                                 <div className="flex flex-col gap-y-1 items-start">
                                     <div className="font-bold">
                                         {video.creator.fullname}

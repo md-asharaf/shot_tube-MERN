@@ -1,4 +1,4 @@
-import { useCallback} from "react";
+import { useCallback } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import {
@@ -19,6 +19,7 @@ import { IoNotificationsOutline } from "react-icons/io5";
 import { formatDistanceToNowStrict } from "date-fns";
 import { CheckCheck, EllipsisVertical, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
+import AvatarImg from "./AvatarImg";
 const Notifications = () => {
     const dispatch = useDispatch();
     const { notifications, newNotificationCount } = useSelector(
@@ -128,105 +129,110 @@ const Notifications = () => {
                     </div>
                 ) : (
                     <div className="space-y-2 max-h-[550px] overflow-y-auto">
-                        {notifications.slice().reverse().map((notification, index) => (
-                            <DropdownMenuItem
-                                onClick={() =>
-                                    markAsRead(notification.createdAt)
-                                }
-                                key={index}
-                                className="flex items-start hover:dark:bg-[#3E3E3E] space-x-2"
-                            >
-                                <div className="flex space-x-2 w-3/4 items-start overflow-hidden">
-                                    <div className="flex items-center">
-                                        <div className="h-1.5 w-1.5 mr-2">
-                                            {!notification.read && (
-                                                <div className="h-full w-full bg-blue-500 rounded-full" />
-                                            )}
-                                        </div>
-                                        <img
-                                            src={
-                                                notification.video
-                                                    ?.creatorImage ||
-                                                notification.tweet
-                                                    ?.creatorImage ||
-                                                "/default-avatar.png"
-                                            }
-                                            className="min-w-[52px] h-[52px] rounded-full"
-                                            alt="creator"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <div className="text-sm">
-                                            {notification.message}
-                                        </div>
-                                        <div className="text-muted-foreground text-xs">
-                                            {formatDistanceToNowStrict(
-                                                new Date(
-                                                    notification.createdAt
-                                                ),
-                                                { addSuffix: true }
-                                            )}
-                                        </div>
-                                    </div>
-                                </div>
-                                <div className="flex space-x-1 w-1/4">
-                                    <div className="min-w-[80px]">
-                                        <img
-                                            src={
-                                                notification.video?.thumbnail ||
-                                                notification.tweet?.thumbnail ||
-                                                "/default-thumbnail.png"
-                                            }
-                                            alt="notification thumbnail"
-                                            className="h-full w-full aspect-video object-cover rounded-sm"
-                                        />
-                                    </div>
-                                    <DropdownMenu
-                                    >
-                                        <DropdownMenuTrigger className="p-0">
-                                            <div className="p-1 rounded-full hover:bg-muted">
-                                                <EllipsisVertical className="text-sm" />
+                        {notifications
+                            .slice()
+                            .reverse()
+                            .map((notification, index) => (
+                                <DropdownMenuItem
+                                    onClick={() =>
+                                        markAsRead(notification.createdAt)
+                                    }
+                                    key={index}
+                                    className="flex items-start hover:dark:bg-[#3E3E3E] space-x-2"
+                                >
+                                    <div className="flex space-x-2 w-3/4 items-start overflow-hidden">
+                                        <div className="flex items-center">
+                                            <div className="h-1.5 w-1.5 mr-2">
+                                                {!notification.read && (
+                                                    <div className="h-full w-full bg-blue-500 rounded-full" />
+                                                )}
                                             </div>
-                                        </DropdownMenuTrigger>
-                                        <DropdownMenuContent
-                                        key={index}
-                                            onClick={(e) => e.stopPropagation()}
-                                            collisionPadding={120}
-                                            className="dark:bg-[#282828] p-0 rounded-lg shadow-lg space-y-2"
-                                        >
-                                            <button
-                                                className="flex space-x-2 hover:bg-muted-foreground w-full p-2"
-                                                onClick={() =>
-                                                    deleteNotification(
+                                            <div className="min-w-[52px] h-[52px] rounded-full">
+                                                <AvatarImg
+                                                    avatar={
+                                                        notification.creator
+                                                            .avatar
+                                                    }
+                                                    fullname={
+                                                        notification.creator
+                                                            .fullname
+                                                    }
+                                                />
+                                            </div>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <div className="text-sm">
+                                                {notification.message}
+                                            </div>
+                                            <div className="text-muted-foreground text-xs">
+                                                {formatDistanceToNowStrict(
+                                                    new Date(
                                                         notification.createdAt
-                                                    )
+                                                    ),
+                                                    { addSuffix: true }
+                                                )}
+                                            </div>
+                                        </div>
+                                    </div>
+                                    <div className="flex space-x-1 w-1/4">
+                                        <div className="min-w-[80px]">
+                                            <img
+                                                src={
+                                                    notification.video
+                                                        ?.thumbnail ||
+                                                    notification.tweet?.image
                                                 }
-                                            >
-                                                <div>
-                                                    <EyeOff className="h-5 w-5" />
+                                                alt="notification thumbnail"
+                                                className="h-full w-full aspect-video object-cover rounded-sm"
+                                            />
+                                        </div>
+                                        <DropdownMenu>
+                                            <DropdownMenuTrigger className="p-0">
+                                                <div className="p-1 rounded-full hover:bg-muted">
+                                                    <EllipsisVertical className="text-sm" />
                                                 </div>
-                                                <div>
-                                                    Hide this notification
-                                                </div>
-                                            </button>
-                                            <button
-                                                onClick={() =>
-                                                    markAsRead(
-                                                        notification.createdAt
-                                                    )
+                                            </DropdownMenuTrigger>
+                                            <DropdownMenuContent
+                                                key={index}
+                                                onClick={(e) =>
+                                                    e.stopPropagation()
                                                 }
-                                                className="flex space-x-2 hover:bg-muted-foreground w-full p-2"
+                                                collisionPadding={120}
+                                                className="dark:bg-[#282828] p-0 rounded-lg shadow-lg space-y-2"
                                             >
-                                                <div>
-                                                    <CheckCheck className="h-5 w-5" />
-                                                </div>
-                                                <div>Mark as read</div>
-                                            </button>
-                                        </DropdownMenuContent>
-                                    </DropdownMenu>
-                                </div>
-                            </DropdownMenuItem>
-                        ))}
+                                                <button
+                                                    className="flex space-x-2 hover:bg-muted-foreground w-full p-2"
+                                                    onClick={() =>
+                                                        deleteNotification(
+                                                            notification.createdAt
+                                                        )
+                                                    }
+                                                >
+                                                    <div>
+                                                        <EyeOff className="h-5 w-5" />
+                                                    </div>
+                                                    <div>
+                                                        Hide this notification
+                                                    </div>
+                                                </button>
+                                                <button
+                                                    onClick={() =>
+                                                        markAsRead(
+                                                            notification.createdAt
+                                                        )
+                                                    }
+                                                    className="flex space-x-2 hover:bg-muted-foreground w-full p-2"
+                                                >
+                                                    <div>
+                                                        <CheckCheck className="h-5 w-5" />
+                                                    </div>
+                                                    <div>Mark as read</div>
+                                                </button>
+                                            </DropdownMenuContent>
+                                        </DropdownMenu>
+                                    </div>
+                                </DropdownMenuItem>
+                            ))}
                         <div
                             className="flex items-center justify-center"
                             ref={getRef}

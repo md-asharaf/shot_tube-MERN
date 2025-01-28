@@ -23,7 +23,7 @@ class SubscriptionController {
         return res.status(201).json(new ApiResponse(201, null, `${!subscription ? "Unsubscribed" : "Subscribed"} successfully`));
     })
 
-    getUserChannelSubscribers = asyncHandler(async (req, res) => {
+    getSubscribers = asyncHandler(async (req, res) => {
         const { channelId } = req.params;
         if (!channelId) {
             throw new ApiError(400, "Channel Id is required");

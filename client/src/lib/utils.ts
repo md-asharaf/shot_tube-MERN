@@ -53,3 +53,19 @@ export function formatViews(count: number) {
     if (count >= 1000) return `${(count / 1000).toFixed(1)}K views`;
     return `${count} views`;
 }
+export function generateColor(fullname:string) {
+    const colors = [
+        "bg-red-500/30",
+        "bg-blue-500/30",
+        "bg-green-500/30",
+        "bg-yellow-500/30",
+        "bg-purple-500/30",
+        "bg-pink-500/30",
+        "bg-orange-500/30",
+    ];
+    let hash = 0;
+    for (let i = 0; i < fullname.length; i++) {
+        hash = fullname.charCodeAt(i) + ((hash << 5) - hash);
+    }
+    return colors[Math.abs(hash) % colors.length];
+}

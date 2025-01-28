@@ -16,7 +16,7 @@ RUN pacman -Syu --noconfirm && \
     pacman -U --noconfirm 'https://cdn-mirror.chaotic.cx/chaotic-aur/chaotic-keyring.pkg.tar.zst' && \
     echo -e "\n[chaotic-aur]\nSigLevel = Never\nServer = https://cdn-mirror.chaotic.cx/\$repo/\$arch" >> /etc/pacman.conf && \
     pacman -Sy && \
-    pacman -S --noconfirm whisper && \
+    pacman -S --noconfirm python-openai-whisper && \
     pacman -Scc --noconfirm && \
     rm -rf /var/cache/pacman/pkg/* /tmp/* /var/tmp/*
 

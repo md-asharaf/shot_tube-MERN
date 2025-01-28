@@ -5,9 +5,10 @@ import { Video } from "../models/video.js";
 import mongoose from "mongoose";
 import { User } from "../models/user.js";
 import { Like } from "../models/like.js";
+import { publishNotification } from "../lib/kafka/producer.js";
 class VideoController {
     publishVideo = asyncHandler(async (req, res) => {
-        const userId = req.user?._id;
+        const user = req.user;
         const { title, description, video, thumbnail, duration, subtitle } = req.body;
         if (!title || !description || !video || !thumbnail || !duration) throw new ApiError(400, "Please provide All required fields")
         const newVideo = await Video.create({
@@ -17,11 +18,58 @@ class VideoController {
             title,
             description,
             subtitle,
-            userId
+            userId:user._id
         })
         if (!newVideo) {
             throw new ApiError(500, "Failed to publish video")
         }
+        //publishing notification
+        const subscribers = await Subscription.aggregate([
+            {
+                $match: {
+                    channelId: user._id
+                }
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "subscriberId",
+                    foreignField: "_id",
+                    as: "subscriber"
+                }
+            },
+            {
+                $addFields: {
+                    subscriberId: {
+                        $first: "$subscriber._id"
+                    }
+                }
+            },
+            {
+                $project: {
+                    subscriberId:1,
+                }
+            }
+        ]);
+        const message = `@${user.username} uploaded : "${title}"`;
+        subscribers.forEach((s)=>{
+            publishNotification({
+                userId: s.subscriberId,
+                message,
+                video: {
+                    _id: newVideo._id,
+                    thumbnail,
+                },
+                creator: {
+                    _id: user._id,
+                    avatar: user.avatar,
+                    fullname: user.fullname
+                },
+                read: false,
+                createdAt: new Date(Date.now()),
+            });
+        })
+        //end
         return res.status(200).json(new ApiResponse(200, null, "Video published successfully"))
     })
 

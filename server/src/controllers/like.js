@@ -5,35 +5,84 @@ import { Like } from "../models/like.js";
 import mongoose from "mongoose";
 import { Comment } from "../models/comment.js";
 import { Reply } from "../models/reply.js";
+import { Video } from "../models/video.js";
+import { User } from "../models/user.js"
+import { Tweet } from "../models/tweet.js"
+import { publishNotification } from "../lib/kafka/producer.js";
 class LikeController {
     toggleCommentLike = asyncHandler(async (req, res) => {
         const { commentId } = req.params;
-        const userId = req.user?._id;
+        const user = req.user;
         if (!commentId) {
             throw new ApiError(400, "Comment id is required")
         }
-        const dbLike = await Like.findOne({ commentId: new mongoose.Types.ObjectId(commentId), userId })
+        const dbLike = await Like.findOne({ commentId: new mongoose.Types.ObjectId(commentId), userId: user._id })
         if (!dbLike) {
-            await Like.create({
+            const like = await Like.create({
                 commentId,
-                userId
+                userId: user._id
             })
+            // publishing notification
+            const comment = await Comment.findById(commentId);
+            if (like && !comment.userId.equals(user._id)) {
+                const video = await Video.findById(comment.videoId)
+                const message = `@${user.username} liked your comment: "${comment.content}"`;
+                publishNotification({
+                    userId: comment.userId,
+                    message,
+                    video: {
+                        _id: video._id,
+                        thumbnail: video.thumbnail,
+                    },
+                    creator: {
+                        _id: user._id,
+                        avatar: user.avatar,
+                        fullname: user.fullname
+                    },
+                    read: false,
+                    createdAt: new Date(Date.now()),
+                });
+            }
+            //end
         }
         else {
             await Like.findByIdAndDelete(dbLike._id)
         }
+
         return res.status(200).json(new ApiResponse(200, null, `${dbLike ? "unliked" : "liked"} comment`))
     })
     toggleVideoLike = asyncHandler(async (req, res) => {
         const { videoId } = req.params;
-        const userId = req.user?._id;
+        const user = req.user;
         if (!videoId) throw new ApiError(400, "Video id is required");
-        const dbLike = await Like.findOne({ videoId: new mongoose.Types.ObjectId(videoId), userId });
+        const dbLike = await Like.findOne({ videoId: new mongoose.Types.ObjectId(videoId), userId: user._id });
         if (!dbLike) {
-            await Like.create({
+            const like = await Like.create({
                 videoId,
-                userId
+                userId: user._id
             })
+            // publishing notification
+            const video = await Video.findById(videoId)
+            if (like && !video.userId.equals(user._id)) {
+                console.log(video.userId, user._id)
+                const message = `@${user.username} liked your video: "${video.title}"`;
+                publishNotification({
+                    userId: video.userId,
+                    message,
+                    video: {
+                        _id: video._id,
+                        thumbnail: video.thumbnail,
+                    },
+                    creator: {
+                        _id: user._id,
+                        avatar: user.avatar,
+                        fullname: user.fullname
+                    },
+                    read: false,
+                    createdAt: new Date(Date.now()),
+                });
+            }
+            //end
         }
         else {
             await Like.findByIdAndDelete(dbLike._id)
@@ -42,14 +91,35 @@ class LikeController {
     })
     toggleTweetLike = asyncHandler(async (req, res) => {
         const { tweetId } = req.params;
-        const userId = req.user?._id;
+        const user = req.user;
         if (!tweetId) throw new ApiError(400, "Tweet id is required");
-        const dbLike = await Like.findOne({ tweetId: new mongoose.Types.ObjectId(tweetId), userId })
+        const dbLike = await Like.findOne({ tweetId: new mongoose.Types.ObjectId(tweetId), userId: user._id })
         if (!dbLike) {
-            await Like.create({
-                userId,
+            const like = await Like.create({
+                userId: user._id,
                 tweetId,
             })
+            // publishing notification
+            const tweet = await Tweet.findById(tweetId)
+            if (like && !tweet.userId.equals(user._id)) {
+                const message = `@${user.username} liked your post: "${tweet.content}"`;
+                publishNotification({
+                    userId: tweet.userId,
+                    message,
+                    tweet: {
+                        _id: tweet._id,
+                        image: tweet.image,
+                    },
+                    creator: {
+                        _id: user._id,
+                        avatar: user.avatar,
+                        fullname: user.fullname
+                    },
+                    read: false,
+                    createdAt: new Date(Date.now()),
+                });
+            }
+            //end
         } else {
             await Like.findByIdAndDelete(dbLike._id)
         }
@@ -57,14 +127,37 @@ class LikeController {
     })
     toggleReplyLike = asyncHandler(async (req, res) => {
         const { replyId } = req.params;
-        const userId = req.user?._id;
+        const user = req.user;
         if (!replyId) throw new ApiError(400, "Reply id is required");
-        const dbLike = await Like.findOne({ replyId: new mongoose.Types.ObjectId(replyId), userId });
+        const dbLike = await Like.findOne({ replyId: new mongoose.Types.ObjectId(replyId), userId: user._id });
         if (!dbLike) {
-            await Like.create({
-                userId,
+            const like = await Like.create({
+                userId: user._id,
                 replyId,
             })
+            // publishing notification
+            const reply = await Reply.findById(replyId)
+            if (like && !reply.userId.equals(user._id)) {
+                const comment = await Comment.findById(reply.commentId)
+                const video = await Video.findById(comment.videoId)
+                const message = `@${user.username} liked your reply: "${reply.content}"`;
+                publishNotification({
+                    userId: reply.userId,
+                    message,
+                    video: {
+                        _id: video._id,
+                        thumbnail: video.tumbnail,
+                    },
+                    creator: {
+                        _id: user._id,
+                        avatar: user.avatar,
+                        fullname: user.fullname
+                    },
+                    read: false,
+                    createdAt: new Date(Date.now()),
+                });
+            }
+            //end
         } else {
             await Like.findByIdAndDelete(dbLike._id)
         }
@@ -76,7 +169,7 @@ class LikeController {
         if (!videoId) throw new ApiError(400, "video id is required");
         const dbLike = await Like.findOne({ videoId: new mongoose.Types.ObjectId(videoId), userId });
         const likesCount = await Like.countDocuments({ videoId: new mongoose.Types.ObjectId(videoId) });
-        return res.status(200).json(new ApiResponse(200, { isLiked: !!dbLike,likesCount }, `user has${!!dbLike ? "" : " not"} liked this video`))
+        return res.status(200).json(new ApiResponse(200, { isLiked: !!dbLike, likesCount }, `user has${!!dbLike ? "" : " not"} liked this video`))
     })
     videoCommentsLike = asyncHandler(async (req, res) => {
         const { videoId } = req.params;

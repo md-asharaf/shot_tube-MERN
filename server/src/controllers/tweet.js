@@ -2,22 +2,70 @@ import { asyncHandler } from "../utils/handler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 import { Tweet } from "../models/tweet.js";
-import mongoose from "mongoose";
-
+import { Subscription } from "../models/subscription.js";
+import { publishNotification } from "../lib/kafka/producer.js";
 class TweetController {
     createTweet = asyncHandler(async (req, res) => {
-        const { content } = req.body;
-        const userId = req.user?._id;
-        if (!content) {
+        const { content,image } = req.body;
+        const user = req.user;
+        if (!content || !image) {
             throw new ApiError(400, "Content is required")
         }
         const tweet = await Tweet.create({
             content,
-            userId
+            image,
+            userId:user._id
         })
         if (!tweet) {
             throw new ApiError(500, "Tweet could not be created")
         }
+        //publishing notification
+        const subscribers = await Subscription.aggregate([
+            {
+                $match: {
+                    channelId: user._id
+                }
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "subscriberId",
+                    foreignField: "_id",
+                    as: "subscriber"
+                }
+            },
+            {
+                $addFields: {
+                    subscriberId: {
+                        $first: "$subscriber._id"
+                    }
+                }
+            },
+            {
+                $project: {
+                    subscriberId:1,
+                }
+            }
+        ]);
+        const message = `@${user.username} posted: "${content}"`;
+        subscribers.forEach((s)=>{
+            publishNotification({
+                userId: s.subscriberId,
+                message,
+                tweet: {
+                    _id: tweet._id,
+                    image: tweet.image,
+                },
+                creator: {
+                    _id: user._id,
+                    avatar: user.avatar,
+                    fullname: user.fullname
+                },
+                read: false,
+                createdAt: new Date(Date.now()),
+            });
+        })
+        //end
         return res.status(201).json(new ApiResponse(201, tweet, "Tweet created successfully"))
 
     })

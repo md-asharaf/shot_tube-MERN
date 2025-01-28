@@ -4,7 +4,6 @@ import replyService from "@/services/Reply";
 import { Button } from "@/components/ui/button";
 import { Edit, EllipsisVertical, Loader2, ThumbsUp, Trash } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import DefaultProfileImage from "@/assets/images/profile.png";
 import { formatDistanceToNowStrict, set } from "date-fns";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
@@ -20,6 +19,7 @@ import TextArea from "./ReusableTextArea";
 import { IReply } from "@/interfaces";
 import { toast } from "sonner";
 import { queryClient } from "@/main";
+import AvatarImg from "./AvatarImg";
 
 const Replies = ({
     commentId,
@@ -188,6 +188,7 @@ const Replies = ({
                                 </div>
                             ) : (
                                 <TextArea
+                                    fullname={userData?.fullname}
                                     userAvatar={userData?.avatar}
                                     initialValue={reply.content}
                                     onSubmit={(content) => updateReply(content)}
@@ -199,11 +200,7 @@ const Replies = ({
                             <div>
                                 <div className="flex justify-between">
                                     <div className="flex space-x-2 items-start">
-                                        <img
-                                            src={
-                                                reply.creator.avatar ||
-                                                DefaultProfileImage
-                                            }
+                                        <div
                                             className="rounded-full h-8 w-8 cursor-pointer"
                                             onClick={() =>
                                                 navigate(
@@ -213,8 +210,14 @@ const Replies = ({
                                                     }
                                                 )
                                             }
-                                            loading="lazy"
-                                        />
+                                        >
+                                            <AvatarImg
+                                                fullname={
+                                                    reply.creator.fullname
+                                                }
+                                                avatar={reply.creator.avatar}
+                                            />
+                                        </div>
                                         <div>
                                             <div className="flex items-center space-x-2">
                                                 <div
@@ -333,6 +336,7 @@ const Replies = ({
                                     ) : (
                                         replyingToReplyId === reply._id && (
                                             <TextArea
+                                            fullname={userData?.fullname}
                                                 initialValue={
                                                     "@" + reply.creator.username
                                                 }

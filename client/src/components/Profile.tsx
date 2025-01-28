@@ -3,7 +3,7 @@ import { shortName } from "@/lib/utils";
 import { RootState } from "@/store/store";
 import { useDispatch, useSelector } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
-import authService from "@/services/Auth"
+import authService from "@/services/Auth";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -16,11 +16,11 @@ import { FaSignOutAlt } from "react-icons/fa";
 import { logoutFromGoogle } from "@/lib/firebase";
 import { toast } from "sonner";
 import { logout } from "@/store/reducers/auth";
+import AvatarImg from "./AvatarImg";
 const Profile = () => {
     const dispatch = useDispatch();
     const navigate = useNavigate();
-    const userData = useSelector((state: RootState) => state.auth.userData);
-    const { username, fullname, avatar } = userData;
+    const { username, fullname, avatar } = useSelector((state: RootState) => state.auth.userData);
     const onLogout = async () => {
         try {
             await logoutFromGoogle();
@@ -34,25 +34,18 @@ const Profile = () => {
     };
     return (
         <DropdownMenu>
-            <DropdownMenuTrigger>
-                <Avatar>
-                    <AvatarImage src={userData?.avatar} />
-                    <AvatarFallback>
-                        {shortName(userData?.fullname)}
-                    </AvatarFallback>
-                </Avatar>
+            <DropdownMenuTrigger className="h-10 w-10">
+                <AvatarImg fullname={fullname} avatar={avatar} />
             </DropdownMenuTrigger>
             <DropdownMenuContent className="mr-2 min-w-[200px]">
-                <Link to={`/channel?u=${userData.username}`}>
+                <Link to={`/channel?u=${username}`}>
                     <DropdownMenuItem>
                         <div className="flex flex-col gap-4">
                             <div className="flex gap-4">
-                                <Avatar>
-                                    <AvatarImage src={avatar} />
-                                    <AvatarFallback>
-                                        {shortName(fullname)}
-                                    </AvatarFallback>
-                                </Avatar>
+                                <div className="h-10 w-10"><AvatarImg
+                                    fullname={fullname}
+                                    avatar={avatar}
+                                /></div>
                                 <div id="right">
                                     <div className="font-semibold">
                                         {fullname}

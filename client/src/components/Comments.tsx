@@ -36,6 +36,7 @@ import {
 import Replies from "./Replies";
 import TextArea from "./ReusableTextArea";
 import { queryClient } from "@/main";
+import AvatarImg from "./AvatarImg";
 
 const Comments = ({ videoId, playerRef }) => {
     const theme = useSelector((state: RootState) => state.theme.mode);
@@ -251,6 +252,7 @@ const Comments = ({ videoId, playerRef }) => {
                     </div>
                 ) : (
                     <TextArea
+                        fullname={userData?.fullname}
                         userAvatar={userData?.avatar}
                         placeholder="Add a public comment..."
                         onSubmit={(content) => addComment({ videoId, content })}
@@ -265,6 +267,7 @@ const Comments = ({ videoId, playerRef }) => {
                             <div key={comment._id}>
                                 {editingCommentId === comment._id ? (
                                     <TextArea
+                                        fullname="userData?.fullname"
                                         userAvatar={userData?.avatar}
                                         initialValue={comment.content}
                                         onSubmit={(content) =>
@@ -279,12 +282,7 @@ const Comments = ({ videoId, playerRef }) => {
                                     <div>
                                         <div className="flex justify-between">
                                             <div className="flex space-x-2 items-start">
-                                                <img
-                                                    src={
-                                                        comment.creator
-                                                            .avatar ||
-                                                        DefaultProfileImage
-                                                    }
+                                                <div
                                                     className="rounded-full h-10 w-10 cursor-pointer"
                                                     onClick={() =>
                                                         navigate(
@@ -295,8 +293,18 @@ const Comments = ({ videoId, playerRef }) => {
                                                             }
                                                         )
                                                     }
-                                                    loading="lazy"
-                                                />
+                                                >
+                                                    <AvatarImg
+                                                        fullname={
+                                                            comment.creator
+                                                                .fullname
+                                                        }
+                                                        avatar={
+                                                            comment.creator
+                                                                .avatar
+                                                        }
+                                                    />
+                                                </div>
                                                 <div>
                                                     <div className="flex items-center space-x-2">
                                                         <div
@@ -454,7 +462,7 @@ const Comments = ({ videoId, playerRef }) => {
                                                     placeholder="Add a reply..."
                                                     onSubmit={(content) => {
                                                         addReply(content);
-                                                        comment.repliesCount+=1;
+                                                        comment.repliesCount += 1;
                                                     }}
                                                     onCancel={() =>
                                                         setReplyingToCommentId(

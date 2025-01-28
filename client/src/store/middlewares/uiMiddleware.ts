@@ -11,7 +11,7 @@ export const uiMiddleware: Middleware<{}, RootState> =
             toggleMenu.match(action)
         ) {
             const uiState = {isMenuOpen:store.getState().ui.isMenuOpen};
-            localStorage.setItem("ui_state", JSON.stringify(uiState));
+            localStorage.setItem("ui_data", JSON.stringify(uiState));
         }
         return result;
     };

@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
 import { Button } from "./ui/button";
-import DefaultProfileImage from "@/assets/images/profile.png";
 import {
     DropdownMenu,
     DropdownMenuContent,
@@ -10,9 +9,11 @@ import EmojiPicker, { EmojiClickData, Theme } from "emoji-picker-react";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import { Laugh } from "lucide-react";
+import AvatarImg from "./AvatarImg";
 
 interface TextAreaProps {
     userAvatar: string;
+    fullname: string;
     initialValue?: string;
     placeholder?: string;
     onSubmit: (content: string) => void;
@@ -22,6 +23,7 @@ interface TextAreaProps {
 
 const TextArea: React.FC<TextAreaProps> = ({
     userAvatar,
+    fullname,
     initialValue = "",
     placeholder = "",
     onSubmit,
@@ -65,12 +67,13 @@ const TextArea: React.FC<TextAreaProps> = ({
     return (
         <div className="flex gap-y-1 flex-col justify-start">
             <div className="flex items-center gap-2">
-                <img
-                    src={userAvatar || DefaultProfileImage}
+                <div
                     className={`${
                         submitLabel === "Comment" ? "h-10 w-10" : "h-8 w-8"
                     } rounded-full`}
-                />
+                >
+                    <AvatarImg fullname={fullname} avatar={userAvatar} />
+                </div>
                 <textarea
                     ref={textareaRef}
                     value={content}

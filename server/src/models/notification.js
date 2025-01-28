@@ -9,16 +9,19 @@ const notificationSchema = new mongoose.Schema({
     video: {
         _id: String,
         thumbnail: String,
-        creatorImage: String,
     },
     tweet: {
         _id: String,
         image: String,
-        creatorImage: String,
     },
     message: {
         type: String,
         required: true
+    },
+    creator:{
+        _id: String,
+        fullname: String,
+        avatar: String,
     },
     read: {
         type: Boolean,

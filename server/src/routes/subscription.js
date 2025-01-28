@@ -4,7 +4,7 @@ import Router from "express";
 const router = Router();
 
 
-router.get("/subscribers/:channelId", subscriptionControllers.getUserChannelSubscribers);
+router.get("/subscribers/:channelId", subscriptionControllers.getSubscribers);
 router.get("/subscribed-channels/:subscriberId", subscriptionControllers.getSubscribedChannels);
 router.get("/is-subscribed/:channelId", verifyJWT, subscriptionControllers.isSubscribed);
 router.get("/subscribers-count/:channelId", subscriptionControllers.getSubscribersCount);

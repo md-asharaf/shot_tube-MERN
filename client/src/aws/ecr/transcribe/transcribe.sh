@@ -84,7 +84,7 @@ else
     
     # Transcribe the audio to generate subtitles using Whisper
     echo "Transcribing audio to generate subtitles..."
-    time whisper "${TEMP_DIR}/subtitle.mp3" --language auto --task transcribe --output_format vtt --model medium --output_dir "${TEMP_DIR}"
+    time whisper "${TEMP_DIR}/subtitle.mp3" --language en --task transcribe --output_format vtt --model medium --output_dir "${TEMP_DIR}"
     # Copy the generated subtitles to S3
     aws s3 cp "${TEMP_DIR}/subtitle.vtt" "$SUBTITLE_FILE" || { echo "Error uploading subtitle.vtt"; exit 1; }
 fi

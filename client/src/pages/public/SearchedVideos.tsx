@@ -5,7 +5,7 @@ import { formatDistanceToNowStrict } from "date-fns";
 import { Link, useSearchParams } from "react-router-dom";
 import { Loader2 } from "lucide-react";
 import { formatDuration, formatViews } from "@/lib/utils";
-import DefaultAvatarImage from "@/assets/images/profile.png";
+import AvatarImg from "@/components/AvatarImg";
 const SearchedVideos = () => {
     const [searchParams] = useSearchParams();
     const query = searchParams.get("q");
@@ -59,14 +59,12 @@ const SearchedVideos = () => {
                                 </p>
                             </div>
                             <div className="flex items-center gap-2 sm:mt-2">
-                                <img
-                                    src={
-                                        video.creator.avatar ||
-                                        DefaultAvatarImage
-                                    }
-                                    className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-full object-cover"
-                                    loading="lazy"
-                                />
+                                <div className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-full object-cover">
+                                    <AvatarImg
+                                        avatar={video.creator.avatar}
+                                        fullname={video.creator.avatar}
+                                    />{" "}
+                                </div>
                                 <p className="font-medium">
                                     {video.creator.fullname}
                                 </p>

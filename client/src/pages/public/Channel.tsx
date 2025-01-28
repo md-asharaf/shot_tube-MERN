@@ -13,6 +13,7 @@ import subscriptionServices from "@/services/Subscription";
 import { Loader2 } from "lucide-react";
 import { RootState } from "@/store/store";
 import { toggleMenu } from "@/store/reducers/ui";
+import AvatarImg from "@/components/AvatarImg";
 
 const Channel = () => {
     const dispatch = useDispatch();
@@ -77,11 +78,12 @@ const Channel = () => {
                 />
             )}
             <div className="flex space-x-6 justify-center">
-                <img
-                    src={userDetails?.user?.avatar || DefaultAvatarImage}
-                    className="rounded-full h-24 w-24"
-                    alt="Avatar"
-                />
+                <div className="rounded-full h-24 w-24">
+                    <AvatarImg
+                        avatar={userDetails?.user?.avatar}
+                        fullname={userDetails?.user?.fullname}
+                    />
+                </div>
                 <div className="space-y-2">
                     <h2 className="text-2xl font-bold">
                         {userDetails?.user?.fullname}
