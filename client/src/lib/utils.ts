@@ -54,6 +54,7 @@ export function formatViews(count: number) {
     return `${count} views`;
 }
 export function generateColor(fullname:string) {
+    if(!fullname) return ;
     const colors = [
         "bg-red-500/30",
         "bg-blue-500/30",

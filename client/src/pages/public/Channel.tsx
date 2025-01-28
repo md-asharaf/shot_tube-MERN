@@ -71,24 +71,24 @@ const Channel = () => {
         <div className="space-y-4 w-full">
             {userData?.username === username && (
                 <img
-                    className="w-full h-32 rounded-lg"
+                    className="w-full h-20 sm:h-32 rounded-lg"
                     src={userDetails?.user?.coverImage || DefaultCoverImage}
                     loading="lazy"
                     alt="Cover"
                 />
             )}
-            <div className="flex space-x-6 justify-center">
-                <div className="rounded-full h-24 w-24">
+            <div className="flex space-x-2 sm:space-x-6 justify-center">
+                <div className="rounded-full h-16 sm:h-24 w-16 sm:w-24">
                     <AvatarImg
                         avatar={userDetails?.user?.avatar}
                         fullname={userDetails?.user?.fullname}
                     />
                 </div>
                 <div className="space-y-2">
-                    <h2 className="text-2xl font-bold">
+                    <h2 className="text-xl sm:text-2xl font-bold">
                         {userDetails?.user?.fullname}
                     </h2>
-                    <p className="text-muted-foreground">{`@${
+                    <p className="text-muted-foreground text-sm sm:text-base">{`@${
                         userDetails?.user?.username
                     } • ${userDetails?.subscribersCount} subscribers • ${
                         userVideos?.length || 0
@@ -106,7 +106,7 @@ const Channel = () => {
             </div>
             <h3 className="text-xl font-semibold">Videos</h3>
             <hr />
-            <div className="grid grid-cols-2 gap-2 sm:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+            <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
                 {videosLoading ? (
                     <div className="flex justify-center w-full">
                         <Loader2 className="h-10 w-10 animate-spin" />

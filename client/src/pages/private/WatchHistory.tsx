@@ -69,7 +69,7 @@ const WatchHistory = () => {
         return <div>ERROR: {error.message}</div>;
     }
     return (
-        <div className="w-full dark:text-white">
+        <div className="w-full">
             <div className="flex justify-between items-center px-2 sm:px-4 mb-2">
                 <div className="text-2xl sm:text-3xl">
                     {videos?.length > 0 ? "Watch History" : "No History"}
@@ -78,7 +78,7 @@ const WatchHistory = () => {
                 <AlertDialog>
                     <AlertDialogTrigger disabled={videos?.length === 0}>
                         <div className="flex justify-center items-center h-10">
-                            <span className="text-gray-500 dark:text-zinc-300">
+                            <span className="text-muted-foreground">
                                 clear history
                             </span>
                             <Button
@@ -90,7 +90,7 @@ const WatchHistory = () => {
                             </Button>
                         </div>
                     </AlertDialogTrigger>
-                    <AlertDialogContent>
+                    <AlertDialogContent className="max-w-[90%] rounded-lg sm:max-w-md">
                         <AlertDialogHeader>
                             <AlertDialogTitle>
                                 Are you absolutely sure?
@@ -120,7 +120,7 @@ const WatchHistory = () => {
                     >
                         <Link
                             to={`/video?v=${video._id}`}
-                            className="w-full sm:w-3/4 flex flex-col gap-4 p-2 sm:flex-row hover:bg-zinc-200 hover:dark:bg-zinc-800 rounded-lg overflow-hidden"
+                            className="w-full sm:w-3/4 flex flex-col gap-4 p-2 sm:flex-row rounded-lg overflow-hidden"
                         >
                             <div className="relative w-64 min-w-64">
                                 <img
@@ -142,7 +142,7 @@ const WatchHistory = () => {
                                 </p>
                             </div>
                         </Link>
-                        <div className="mr-8 sm:mr-16 md:mr-32 mt-4">
+                        <div className="mr-8 md:mr-16 lg:mr-32 mt-4">
                             <ThreeDots videoId={video._id} 
                             task={{
                                 title: "Remove from Watch history",

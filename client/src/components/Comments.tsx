@@ -387,12 +387,9 @@ const Comments = ({ videoId, playerRef }) => {
                                                                             : "white"
                                                                     }
                                                                 />{" "}
-                                                                {
-                                                                    isLikedOfComments[
-                                                                        comment
-                                                                            ._id
-                                                                    ]?.count
-                                                                }
+                                                                {isLikedOfComments[
+                                                                    comment._id
+                                                                ]?.count ?? ""}
                                                             </Button>
                                                             <Button
                                                                 className="text-sm rounded-full"

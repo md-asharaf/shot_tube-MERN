@@ -33,10 +33,10 @@ const NavBar = () => {
                 </button>
             </div>
             <div className="items-center gap-x-2 flex">
-                <div className="hidden md:flex gap-x-2">
+                <div className="hidden sm:block">
                     <SearchBar />
                 </div>
-                <div className="p-1 rounded-full hover:bg-muted md:hidden block text-3xl ">
+                <div className="p-1 rounded-full hover:bg-muted sm:hidden block text-2xl ">
                     <Search />
                 </div>
             </div>

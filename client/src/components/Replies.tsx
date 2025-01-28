@@ -270,11 +270,11 @@ const Replies = ({
                                                                     : "white"
                                                             }
                                                         />{" "}
-                                                        {
+                                                        {Number(
                                                             isLikedOfReplies[
                                                                 reply._id
                                                             ]?.count
-                                                        }
+                                                        ) ?? ""}
                                                     </Button>
                                                     <Button
                                                         className="text-sm rounded-full"
@@ -329,7 +329,7 @@ const Replies = ({
                                     ) : (
                                         replyingToReplyId === reply._id && (
                                             <TextArea
-                                            fullname={userData?.fullname}
+                                                fullname={userData?.fullname}
                                                 initialValue={
                                                     "@" + reply.creator.username
                                                 }

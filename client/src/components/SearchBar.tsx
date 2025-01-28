@@ -19,7 +19,7 @@ const SearchBar = () => {
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={(e) => e.key === "Enter" && handleSearch()}
                     placeholder="Search"
-                    className="w-full h-10 pl-4 pr-12 rounded-l-full border focus:outline-none"
+                    className="w-full h-8 sm:h-10 pl-4 pr-12 rounded-l-full border"
                 />
                 {input && (
                     <button
@@ -34,7 +34,7 @@ const SearchBar = () => {
             <button
                 onClick={handleSearch}
                 disabled={!input.trim()}
-                className="flex items-center justify-center w-16 h-10 dark:bg-[#3C3C3C] bg-[#F0F0F0] border
+                className="flex items-center justify-center w-8 sm:w-16  h-8 sm:h-10 dark:bg-[#3C3C3C] bg-[#F0F0F0] border
                 dark:border-[#3C3C3C] border-[#F0F0F0] rounded-r-full"
                 aria-label="Search"
             >

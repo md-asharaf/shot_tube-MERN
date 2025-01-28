@@ -62,7 +62,7 @@ const SearchedVideos = () => {
                                 <div className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-full object-cover">
                                     <AvatarImg
                                         avatar={video.creator.avatar}
-                                        fullname={video.creator.avatar}
+                                        fullname={video.creator.fullname}
                                     />{" "}
                                 </div>
                                 <p className="font-medium">

@@ -8,16 +8,15 @@ export default {
     './app/**/*.{ts,tsx}',
     './src/**/*.{ts,tsx}',
   ],
-  theme: {
-    screens: {
-      'mobile': '585px', // Example custom breakpoint for tablets
-      'tablet': '872px', // Example custom breakpoint for laptops
-      'desktop': '1160px', // Example custom breakpoint for desktops
-      // Add more custom breakpoints as needed
-    },
-  },
   prefix: "",
   theme: {
+    screens: {
+      'sm': '576px',
+      'md': '768px',
+      'lg': '992px',
+      'xl': '1200px',
+      '2xl': '1400px'
+    },
     container: {
       center: true,
       padding: "2rem",
