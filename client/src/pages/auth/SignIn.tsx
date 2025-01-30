@@ -18,8 +18,12 @@ import { toast } from "sonner";
 import PasswordInput from "@/components/PasswordInput";
 import { useDispatch } from "react-redux";
 import { login, logout } from "@/store/reducers/auth";
+import { useState } from "react";
+import { Loader2 } from "lucide-react";
 
 const SignIn = () => {
+    const [loading, setLoading] = useState(false);
+    const [googleLoading, setGoogleLoading] = useState(false);
     const dispatch = useDispatch();
     const [searchParams] = useSearchParams();
     const redirect = searchParams.get("r");
@@ -32,6 +36,7 @@ const SignIn = () => {
         },
     });
     const onSubmit = async (values: ILoginForm) => {
+        setLoading(true);
         try {
             const data = await authService.login(values);
             toast.success("Logged in successfully");
@@ -41,9 +46,12 @@ const SignIn = () => {
             dispatch(logout());
             toast.error(error.message);
             console.error(error);
+        } finally {
+            setLoading(false);
         }
     };
     const googleSignIn = async () => {
+        setGoogleLoading(true);
         try {
             const userGoogleData = await loginWithGoogle();
             const data = await authService.googleLogin(userGoogleData);
@@ -54,6 +62,8 @@ const SignIn = () => {
             dispatch(logout());
             toast.error(error.message);
             console.error(error);
+        } finally {
+            setGoogleLoading(false);
         }
     };
     return (
@@ -118,7 +128,11 @@ const SignIn = () => {
                             type="submit"
                             className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2 px-4 rounded-lg"
                         >
-                            Log in
+                            {loading ? (
+                                <Loader2 className="h-6 w-6 animate-spin mx-auto" />
+                            ) : (
+                                "Log In"
+                            )}
                         </button>
                     </form>
                 </Form>
@@ -131,9 +145,9 @@ const SignIn = () => {
                     >
                         <img
                             src="https://cdn-teams-slug.flaticon.com/google.jpg"
-                            className="w-8 h-8 mr-3"
+                            className={`w-8 h-8 mr-3 ${googleLoading && "animate-spin"}`}
                         />
-                        <span className="text-lg">Continue with Google</span>
+                        {!googleLoading && <span className="text-lg">Continue with Google</span>}
                     </button>
                 </div>
 

@@ -15,7 +15,10 @@ import {
 } from "@/components/ui/form";
 import PasswordInput from "../../components/PasswordInput";
 import { toast } from "sonner";
+import { Loader2 } from "lucide-react";
+import { useState } from "react";
 const SignUp = () => {
+    const [loading, setLoading] = useState(false);
     const navigate = useNavigate();
     const form = useForm<IRegisterForm>({
         resolver: zodResolver(signUpFormValidation),
@@ -28,12 +31,15 @@ const SignUp = () => {
     });
 
     const onSubmit = async (values: IRegisterForm) => {
+        setLoading(true);
         try {
             await authService.register(values);
             toast.success("account created successfully");
             navigate("/login");
         } catch (error) {
             console.error(error);
+        }finally{
+            setLoading(false);
         }
     };
 
@@ -122,7 +128,7 @@ const SignUp = () => {
                             type="submit"
                             className="w-full bg-blue-600 hover:bg-blue-700 px-32 text-white font-medium py-2 rounded-lg"
                         >
-                            Sign up
+                            {loading ? <Loader2 className="h-6 w-6 animate-spin mx-auto"/> : "Sign Up"}
                         </button>
                     </form>
                 </Form>
