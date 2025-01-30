@@ -1,9 +1,6 @@
 import uploadController from '../controllers/upload.js';
-import { verifyJWT } from '../middlewares/auth.js';
 import Router from 'express';
 const router = Router();
-
-router.use(verifyJWT)
 
 router.post('/start-multipart-upload', uploadController.startMultipartUpload);
 
