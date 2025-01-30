@@ -3,7 +3,6 @@ import Plyr from "plyr";
 import Hls from "hls.js";
 import { Card } from "@/components/ui/card";
 import "plyr/dist/plyr.css";
-import { useWindowSize } from "@/hooks/use-window";
 
 const PlyrPlayer = ({
     source,
@@ -13,7 +12,6 @@ const PlyrPlayer = ({
     onViewTracked,
     minWatchTime,
 }) => {
-    const { isMobile } = useWindowSize();
     const videoRef = useRef(null);
     const hlsRef = useRef(null);
     const [watchTime, setWatchTime] = useState(0);
@@ -28,37 +26,19 @@ const PlyrPlayer = ({
     useEffect(() => {
         const initializePlayer = () => {
             const video = videoRef.current;
-            const defaultOptions: Plyr.Options = isMobile
-                ? {
-                      hideControls: true,
-                      controls: [
-                          "play",
-                          "restart",
-                          "progress",
-                          "current-time",
-                          "mute",
-                          "captions",
-                          "settings",
-                          "fullscreen",
-                      ],
-                      settings: ["quality", "speed"],
-                  }
-                : {
-                      hideControls: true,
-                      controls: [
-                          "play",
-                          "restart",
-                          "progress",
-                          "current-time",
-                          "mute",
-                          "volume",
-                          "captions",
-                          "settings",
-                          "fullscreen",
-                          "pip",
-                      ],
-                      settings: ["quality", "speed"],
-                  };
+            const defaultOptions: Plyr.Options = {
+                hideControls: true,
+                controls: [
+                    "play",
+                    "progress",
+                    "current-time",
+                    "mute",
+                    "volume",
+                    "settings",
+                    "fullscreen",
+                ],
+                settings: ["quality","captions","speed"],
+            };
 
             if (!Hls.isSupported()) {
                 video.src = source;
@@ -136,7 +116,7 @@ const PlyrPlayer = ({
                 hlsRef.current.destroy();
             }
         };
-    }, [source,isMobile]);
+    }, [source]);
 
     useEffect(() => {
         const video = videoRef.current;
