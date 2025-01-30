@@ -10,7 +10,7 @@ export const useWindowSize = () => {
     }, []);
 
     useEffect(() => {
-        setIsMobile(windowWidth <= 640);
+        setIsMobile(windowWidth < 576);
     }, [windowWidth]);
 
     return { windowWidth, isMobile };
