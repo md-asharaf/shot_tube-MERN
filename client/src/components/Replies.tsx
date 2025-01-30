@@ -64,6 +64,7 @@ const Replies = ({
             const data = await likeServices.getCommentRepliesLike(commentId);
             return data.isLiked;
         },
+        enabled: !!replies && !!userData,
     });
     const { mutate: toggleReplyLike } = useMutation({
         mutationFn: async (replyId: string) =>
