@@ -7,7 +7,7 @@ import subscriptionServices from "@/services/Subscription";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { GoHome } from "react-icons/go";
-import { NavLink, useLocation } from "react-router-dom";
+import { NavLink } from "react-router-dom";
 import { ImYoutube } from "react-icons/im";
 import { useWindowSize } from "@/hooks/use-window";
 import { toast } from "sonner";

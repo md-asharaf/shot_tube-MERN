@@ -38,7 +38,8 @@ const LoginPopover: React.FC = () => {
             open={loginPopoverVisible}
             onOpenChange={(open) => dispatch(toggleLoginPopover(open))}
         >
-            <DialogContent className="max-w-sm w-full mx-4 p-6 rounded-xl shadow-xl border bg-background transform transition-transform scale-100">
+            <DialogContent className="w-[90%]
+            sm:max-w-sm mx-4 p-6 rounded-xl shadow-xl border bg-background transform transition-transform scale-100 m-0">
                 <DialogHeader className="flex flex-col items-center">
                     <Lock
                         className="h-12 w-12 text-primary mb-4 animate-bounce"

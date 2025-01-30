@@ -4,7 +4,6 @@ import { Link, useSearchParams } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
 import { IVideoData } from "@/interfaces";
 import { formatDistanceToNowStrict } from "date-fns";
-import DefaultProfileImage from "@/assets/images/profile.png";
 import videoService from "@/services/Video";
 import subscriptionServices from "@/services/Subscription";
 import likeService from "@/services/Like";

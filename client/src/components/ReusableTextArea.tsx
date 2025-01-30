@@ -69,8 +69,8 @@ const TextArea: React.FC<TextAreaProps> = ({
             <div className="flex items-center gap-2">
                 <div
                     className={`${
-                        submitLabel === "Comment" ? "h-10 w-10" : "h-8 w-8"
-                    } rounded-full`}
+                        submitLabel == "Comment" ? "h-10 min-w-10" : "h-8 min-w-8"
+                    }`}
                 >
                     <AvatarImg fullname={fullname} avatar={userAvatar} />
                 </div>

@@ -10,7 +10,6 @@ import { useCallback, useState } from "react";
 import { FaPlus } from "react-icons/fa";
 import { FiMinus } from "react-icons/fi";
 import { GoDot } from "react-icons/go";
-import DefaultProfileImage from "@/assets/images/profile.png";
 import replyServices from "@/services/Reply";
 import {
     ChevronDown,

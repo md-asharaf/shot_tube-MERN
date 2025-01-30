@@ -1,10 +1,10 @@
-import { Card, CardContent, CardFooter, CardHeader } from "../../components/ui/card";
-import { Button } from "../../components/ui/button";
+import { Card, CardContent, CardFooter, CardHeader } from "@/components/ui/card";
+import { Button } from "@/components/ui/button";
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import userServices from "@/services/User";
-import { Label } from "../../components/ui/label";
-import PasswordInput from "../../components/PasswordInput";
+import { Label } from "@/components/ui/label";
+import PasswordInput from "@/components/PasswordInput";
 import { toast } from "sonner";
 
 const ResetPassword = () => {

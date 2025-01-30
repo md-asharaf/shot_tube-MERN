@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader } from "../../components/ui/card";
 import userServices from "@/services/User";
 import authServices from "@/services/Auth";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
-import { Avatar, AvatarImage, AvatarFallback } from "@/components/ui/avatar";
+import AvatarImg from "@/components/AvatarImg";
 import { toast } from "sonner";
 
 const ForgotPassword = () => {
@@ -87,26 +87,21 @@ const ForgotPassword = () => {
                     </button>
                 </form>
 
-                {users.length > 0 && (
+                {users?.length > 0 && (
                     <RadioGroup
                         value={selectedUserId}
                         onValueChange={(value) => setSelectedUserId(value)}
                         className="mt-4"
                     >
-                        {users.map((user) => (
+                        {users?.map((user) => (
                             <div
                                 key={user._id}
                                 className="flex items-center justify-between border space-x-3 p-1 pr-4 rounded-lg hover:bg-gray-400"
                             >
                                 <div className="flex items-center space-x-4">
-                                    <Avatar>
-                                        <AvatarImage
-                                            src={user.avatar}
-                                        />
-                                        <AvatarFallback className="bg-orange-300">
-                                            {user.fullname[0]}
-                                        </AvatarFallback>
-                                    </Avatar>
+                                    <div className="bg-orange-500">
+                                        <AvatarImg fullname={user?.fullname} avatar={user?.avatar} />
+                                    </div>
                                     <span className="cursor-pointer text-blue-600 hover:text-blue-800">
                                         {user.fullname}
                                     </span>

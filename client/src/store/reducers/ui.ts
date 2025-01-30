@@ -10,7 +10,7 @@ try {
 }
 
 const initialState: IUiData = {
-    isMenuOpen: uiData?.isMenuOpen ?? true, 
+    isMenuOpen: uiData?.isMenuOpen ?? false, 
     isVideoModalOpen: false, 
     isLoginPopoverVisible: false,
     isShareModalOpen: false,

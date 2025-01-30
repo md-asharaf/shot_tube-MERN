@@ -69,7 +69,7 @@ const VideoUpload = () => {
             );
             const { duration, height, width } = await getVideoMetadata(video);
             const videoSplits = video.name.split(".");
-            const videoKey = `${uuid()}_${sanitizeFileName(
+            const videoKey = `uploads/user-uploads/${uuid()}_${sanitizeFileName(
                 videoSplits[0]
             )}_${width}_${height}.${videoSplits[1]}`;
             const thumbnailKey = `uploads/user-uploads/${uuid()}_${sanitizeFileName(

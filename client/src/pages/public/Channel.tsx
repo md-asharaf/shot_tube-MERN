@@ -3,7 +3,6 @@ import { IUser, IVideoData } from "@/interfaces";
 import userServices from "@/services/User";
 import VideoCard from "@/components/VideoCard";
 import { useDispatch, useSelector } from "react-redux";
-import DefaultAvatarImage from "@/assets/images/profile.png";
 import DefaultCoverImage from "@/assets/images/coverImage.jpg";
 import VideoTitle from "@/components/VideoTitle";
 import videoServices from "@/services/Video";
