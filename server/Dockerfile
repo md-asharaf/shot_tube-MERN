@@ -18,6 +18,7 @@ ENV NODE_OPTIONS="--max-old-space-size=4048"
 
 # Expose the port for the application
 EXPOSE 8000
+EXPOSE 8001
 
 # Start the server using Yarn
 CMD ["yarn", "start"]

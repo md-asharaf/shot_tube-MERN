@@ -2,6 +2,7 @@ import { Router } from "express";
 import { verifyJWT } from "../middlewares/auth.js";
 import authControllers from "../controllers/auth.js";
 import userControllers from "../controllers/user.js";
+import { limiter } from "../utils/rate-limiter.js";
 const router = Router();
 
 router.get("/logout", authControllers.logoutUser);
@@ -14,7 +15,7 @@ router.get("/watch-later", verifyJWT, userControllers.getWatchLater)
 router.get("/is-saved-to-watch-later/:videoId", verifyJWT, userControllers.isSavedToWatchLater)
 router.get("/refresh-tokens", authControllers.refreshTokens);
 router.post("/login", authControllers.loginUser);
-router.post("/register", authControllers.registerUser);
+router.post("/register", limiter(2),authControllers.registerUser);
 router.post("/google-login", authControllers.googleSignIn);
 router.post("/forget-password", userControllers.forgetPassword);
 router.post("/save-to-watch-later/:videoId", verifyJWT, userControllers.saveVideoToWatchLater)

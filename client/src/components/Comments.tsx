@@ -36,8 +36,10 @@ import Replies from "./Replies";
 import TextArea from "./ReusableTextArea";
 import { queryClient } from "@/main";
 import AvatarImg from "./AvatarImg";
+import CommentFilter from "./CommentFilter";
 
-const Comments = ({ videoId, playerRef }) => {
+const Comments = ({ videoId, playerRef, videoCreatorId }) => {
+    const [filter,setFilter] = useState("All");
     const theme = useSelector((state: RootState) => state.theme.mode);
     const navigate = useNavigate();
     const userData = useSelector((state: RootState) => state.auth.userData);
@@ -55,7 +57,7 @@ const Comments = ({ videoId, playerRef }) => {
         fetchNextPage,
         hasNextPage,
     } = useInfiniteQuery({
-        queryKey: ["comments", videoId],
+        queryKey: [`comments/${filter}`, videoId],
         queryFn: async ({
             pageParam,
         }): Promise<{
@@ -63,13 +65,13 @@ const Comments = ({ videoId, playerRef }) => {
             hasNextPage: boolean;
             totalDocs: number;
         }> => {
-            const data = await commentServices.getComments(videoId, pageParam);
+            const data = await commentServices.getComments(videoId, pageParam,filter);
             return data.comments;
         },
         initialPageParam: 1,
         getNextPageParam: (lastPage, allPages) =>
             lastPage.hasNextPage ? allPages.length + 1 : undefined,
-        enabled: !!videoId,
+        enabled: !!filter && !!videoId,
     });
     const comments = commentsPages?.pages.flatMap((page) => page.docs);
     const totalComments = commentsPages?.pages[0].totalDocs;
@@ -101,6 +103,9 @@ const Comments = ({ videoId, playerRef }) => {
                 creator: userData,
             });
         },
+        onError: (error) => {
+            toast.error(error.message);
+        }
     });
 
     const { mutate: toggleCommentLike } = useMutation({
@@ -131,6 +136,9 @@ const Comments = ({ videoId, playerRef }) => {
                 );
             });
         },
+        onError: (error) => {
+            toast.error(error.message);
+        }
     });
     const { mutate: updateComment } = useMutation({
         mutationFn: async (content: string) => {
@@ -148,6 +156,9 @@ const Comments = ({ videoId, playerRef }) => {
         onSettled: () => {
             setEditingCommentId(null);
         },
+        onError: (error) => {
+            toast.error(error.message);
+        }
     });
     const { mutate: addReply } = useMutation({
         mutationFn: async (content: string) => {
@@ -167,6 +178,9 @@ const Comments = ({ videoId, playerRef }) => {
             });
             setReplyingToCommentId(null);
         },
+        onError: (error) => {
+            toast.error(error.message);
+        }
     });
     const observerCallback = useCallback(
         (entries: IntersectionObserverEntry[]) => {
@@ -233,6 +247,9 @@ const Comments = ({ videoId, playerRef }) => {
             }
         }
     };
+    const onFilterChange = (value:string) => {
+        setFilter(value);
+    };
     if (commentsLoading || likesLoading)
         return (
             <div className="w-full flex justify-center">
@@ -240,9 +257,14 @@ const Comments = ({ videoId, playerRef }) => {
             </div>
         );
     return (
-        <div className="px-2">
-            <div className="font-bold text-2xl text-zinc-600 dark:text-zinc-300 mb-2">
-                {`${totalComments} Comments`}
+        <div className="px-2 space-y-2">
+            <div className="flex sm:space-x-16 items-center justify-between sm:justify-normal">
+                <div className="font-bold text-2xl text-zinc-600 dark:text-zinc-300 mb-2">
+                    {`${totalComments} Comments`}
+                </div>
+                <div>
+                    <CommentFilter onFilterChange={onFilterChange} />
+                </div>
             </div>
             <div className="flex flex-col">
                 {userData && isPending ? (
@@ -282,7 +304,7 @@ const Comments = ({ videoId, playerRef }) => {
                                         <div className="flex justify-between">
                                             <div className="flex space-x-2 items-start">
                                                 <div
-                                                    className="rounded-full h-10 w-10 cursor-pointer"
+                                                    className="rounded-full h-10 min-w-10 cursor-pointer"
                                                     onClick={() =>
                                                         navigate(
                                                             `/channel?u=${comment.creator.username}`
@@ -323,34 +345,37 @@ const Comments = ({ videoId, playerRef }) => {
                                                                 }
                                                             )}
                                                         </div>
-                                                        <div
-                                                            className={`flex ${
-                                                                sentiment ===
-                                                                    "positive" &&
-                                                                "bg-green-500"
-                                                            } ${
-                                                                sentiment ===
-                                                                    "negative" &&
-                                                                "bg-red-500"
-                                                            } ${
-                                                                sentiment ===
-                                                                    "neutral" &&
-                                                                "bg-yellow-500"
-                                                            } rounded-full items-center justify-center pl-1 pr-2`}
-                                                        >
-                                                            {sentiment ===
-                                                            "positive" ? (
-                                                                <FaPlus className="text-white text-xs mr-1 dark:text-black" />
-                                                            ) : sentiment ===
-                                                              "negative" ? (
-                                                                <FiMinus className="text-white mr-1 dark:text-black" />
-                                                            ) : (
-                                                                <GoDot className="text-white dark:text-black text-xl" />
-                                                            )}
-                                                            <span className="text-white dark:text-black text-sm">
-                                                                {sentiment}
-                                                            </span>
-                                                        </div>
+                                                        {userData._id ===
+                                                            videoCreatorId && (
+                                                            <div
+                                                                className={`flex ${
+                                                                    sentiment ===
+                                                                        "positive" &&
+                                                                    "bg-green-500"
+                                                                } ${
+                                                                    sentiment ===
+                                                                        "negative" &&
+                                                                    "bg-red-500"
+                                                                } ${
+                                                                    sentiment ===
+                                                                        "neutral" &&
+                                                                    "bg-yellow-500"
+                                                                } rounded-full items-center justify-center pl-1 pr-2`}
+                                                            >
+                                                                {sentiment ===
+                                                                "positive" ? (
+                                                                    <FaPlus className="text-white text-xs mr-1 dark:text-black" />
+                                                                ) : sentiment ===
+                                                                  "negative" ? (
+                                                                    <FiMinus className="text-white mr-1 dark:text-black" />
+                                                                ) : (
+                                                                    <GoDot className="text-white dark:text-black text-xl" />
+                                                                )}
+                                                                <span className="text-white dark:text-black text-sm">
+                                                                    {sentiment}
+                                                                </span>
+                                                            </div>
+                                                        )}
                                                     </div>
                                                     <div className="break-words whitespace-pre-wrap">
                                                         {processComment(

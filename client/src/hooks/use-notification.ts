@@ -9,9 +9,6 @@ export default function useNotification() {
     useEffect(() => {
         const socket = io(SOCKET_URL, {
             withCredentials: true,
-            extraHeaders: {
-                Cookie: document.cookie,
-            },
         });
 
         socket.on("notification", (notification) => {

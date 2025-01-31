@@ -21,7 +21,7 @@ class UserController {
             throw new ApiError(400, "User not found")
         }
         const resetToken = await user.generatePasswordResetToken();
-        const resetLink = `https://${process.env.RESEND_DOMAIN}/reset-password/${resetToken}`;
+        const resetLink = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
         const { error } = await resend.emails.send({
             to: email,
             from: `noreply@${process.env.RESEND_DOMAIN}`,

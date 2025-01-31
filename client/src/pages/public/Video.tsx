@@ -329,7 +329,7 @@ const Video = () => {
                     )}
                 </div>
                 <div className="hidden xl:block">
-                    <Comments videoId={videoId} playerRef={playerRef} />
+                    <Comments videoId={videoId} playerRef={playerRef} videoCreatorId={video.creator._id} />
                 </div>
             </div>
             <div className="w-full xl:w-1/3 2xl:w-[30%]">
@@ -367,7 +367,7 @@ const Video = () => {
                 ))}
             </div>
             <div className="xl:hidden">
-                <Comments videoId={videoId} playerRef={playerRef} />
+                <Comments videoId={videoId} playerRef={playerRef} videoCreatorId={video.creator._id} />
             </div>
         </div>
     );

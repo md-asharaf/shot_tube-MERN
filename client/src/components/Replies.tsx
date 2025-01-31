@@ -86,6 +86,9 @@ const Replies = ({
             });
             toast.success("Reply deleted");
         },
+        onError: (error) => {
+            toast.error(error.message);
+        }
     });
 
     const { mutate: updateReply, isPending: isUpdationPending } = useMutation({
@@ -101,6 +104,9 @@ const Replies = ({
         onSettled: () => {
             setEditingReplyId(null);
         },
+        onError: (error) => {
+            toast.error(error.message);
+        }
     });
     const observerCallback = useCallback(
         (entries: IntersectionObserverEntry[]) => {
@@ -124,6 +130,9 @@ const Replies = ({
             });
             toast.success("Reply added");
         },
+        onError: (error) => {
+            toast.error(error.message);
+        }
     });
     const getRef = useCallback(
         (node: HTMLDivElement | null) => {

@@ -14,25 +14,30 @@ import notificationRoutes from "./routes/notification.js";
 import uploadRoutes from "./routes/upload.js";
 import replyRoutes from "./routes/reply.js"
 import bodyParser from "body-parser"
-const app = express();
 const ORIGIN = process.env.CLIENT_URL
+
+const app = express();
+
 app.use(cors({
     origin: [ORIGIN],
     credentials: true
 }))
+
 app.use(bodyParser.json({
     limit: "30mb"
 }))
+
 app.use(bodyParser.urlencoded({
     limit: "30mb",
     extended: true
 }))
+
 app.use(express.json());
+
 app.use(express.static("public"))
+
 app.use(cookieParser())
-app.use('/test', (req, res) => {
-    res.send('Hello World!')
-})
+
 app.use("/api/v1/users", userRoutes)
 
 app.use("/api/v1/tweets", tweetRoutes)

@@ -10,7 +10,7 @@ import { User } from "../models/user.js";
 class CommentController {
     getAllVideoComments = asyncHandler(async (req, res) => {
         const { videoId } = req.params;
-        const { page = 1, limit = 10 } = req.query;
+        const { page = 1, limit = 10, sentiment='All' } = req.query;
         if (!videoId) {
             throw new ApiError(400, "Video ID is required")
         }
@@ -21,7 +21,8 @@ class CommentController {
         const aggregate = Comment.aggregate([
             {
                 $match: {
-                    videoId: new mongoose.Types.ObjectId(videoId)
+                    videoId: new mongoose.Types.ObjectId(videoId),
+                    sentiment: sentiment === 'All' ? { $exists: true } : sentiment
                 }
             },
             {

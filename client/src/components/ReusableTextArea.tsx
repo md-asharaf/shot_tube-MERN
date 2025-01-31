@@ -83,6 +83,7 @@ const TextArea: React.FC<TextAreaProps> = ({
                     rows={1}
                     style={{ lineHeight: "1.2", padding: "0.3rem" }}
                     onFocus={() => setIsInputFocused(true)}
+                    maxLength={500}
                 />
             </div>
             {(isInputFocused || content) && (
