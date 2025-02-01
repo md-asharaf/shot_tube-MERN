@@ -9,6 +9,8 @@ export default function useNotification() {
     useEffect(() => {
         const socket = io(SOCKET_URL, {
             withCredentials: true,
+            transports: ["websocket"],
+            path: "/socket.io/",
         });
 
         socket.on("notification", (notification) => {

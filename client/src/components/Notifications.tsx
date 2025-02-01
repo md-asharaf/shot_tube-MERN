@@ -41,39 +41,51 @@ const Notifications = () => {
             await notificationService.deleteNotification(date);
         },
         onSuccess: (_, deletedDate) => {
-            dispatch(setNotifications(notifications.filter((n) => n.createdAt !== deletedDate)));
+            dispatch(
+                setNotifications(
+                    notifications.filter((n) => n.createdAt !== deletedDate)
+                )
+            );
             toast.success("Notification deleted!");
         },
     });
 
     const { mutate: markAsRead } = useMutation({
-        mutationFn: async (id:string) => {
+        mutationFn: async (id: string) => {
             await notificationService.markAsRead(id);
         },
         onSuccess: (_, id) => {
-            dispatch(setNotifications(
-                notifications.map((n) =>
-                    n._id === id ? { ...n, read: true } : n
+            dispatch(
+                setNotifications(
+                    notifications.map((n) =>
+                        n._id === id ? { ...n, read: true } : n
+                    )
                 )
-            ));
+            );
         },
     });
 
-    const { fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } = useInfiniteQuery({
-        queryKey: ["notifications", userId],
-        queryFn: async ({ pageParam }) => {
-            const data = await notificationService.getNotifications(pageParam);
-            dispatch(setNotifications(
-                pageParam === 1
-                    ? data.notifications.docs
-                    : [...notifications, ...data.notifications.docs]
-            ));
-            return data.notifications;
-        },
-        initialPageParam: 0,
-        getNextPageParam: (lastPage, allPages) => lastPage.hasNextPage ? allPages.length + 1 : undefined,
-        enabled: !!userId,
-    });
+    const { fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
+        useInfiniteQuery({
+            queryKey: ["notifications", userId],
+            queryFn: async ({ pageParam }) => {
+                const data = await notificationService.getNotifications(
+                    pageParam
+                );
+                dispatch(
+                    setNotifications(
+                        pageParam === 1
+                            ? data.notifications.docs
+                            : [...notifications, ...data.notifications.docs]
+                    )
+                );
+                return data.notifications;
+            },
+            initialPageParam: 0,
+            getNextPageParam: (lastPage, allPages) =>
+                lastPage.hasNextPage ? allPages.length + 1 : undefined,
+            enabled: !!userId,
+        });
 
     const onDropDownOpenChange = (open: boolean) => {
         if (open && newNotificationCount > 0) {
@@ -81,18 +93,26 @@ const Notifications = () => {
         }
     };
 
-    const observerCallback = useCallback((entries: IntersectionObserverEntry[]) => {
-        const [entry] = entries;
-        if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
-            fetchNextPage();
-        }
-    }, [fetchNextPage, hasNextPage, isFetchingNextPage]);
+    const observerCallback = useCallback(
+        (entries: IntersectionObserverEntry[]) => {
+            const [entry] = entries;
+            if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
+                fetchNextPage();
+            }
+        },
+        [fetchNextPage, hasNextPage, isFetchingNextPage]
+    );
 
-    const getRef = useCallback((node: HTMLDivElement | null) => {
-        if (!node) return;
-        const observer = new IntersectionObserver(observerCallback, { threshold: 0.5 });
-        observer.observe(node);
-    }, [observerCallback]);
+    const getRef = useCallback(
+        (node: HTMLDivElement | null) => {
+            if (!node) return;
+            const observer = new IntersectionObserver(observerCallback, {
+                threshold: 0.5,
+            });
+            observer.observe(node);
+        },
+        [observerCallback]
+    );
 
     return (
         <DropdownMenu onOpenChange={onDropDownOpenChange}>
@@ -108,10 +128,12 @@ const Notifications = () => {
             </DropdownMenuTrigger>
             <DropdownMenuContent
                 collisionPadding={100}
-                className="w-[455px] dark:bg-[#282828] p-0"
+                className="w-[480px] dark:bg-[#282828] p-0 rounded-xl"
             >
                 <div className="sticky top-0 z-10">
-                    <DropdownMenuLabel>Notifications</DropdownMenuLabel>
+                    <DropdownMenuLabel className="text-lg m-2">
+                        Notifications
+                    </DropdownMenuLabel>
                     <DropdownMenuSeparator className="bg-muted-foreground opacity-40" />
                 </div>
                 {isLoading ? (
@@ -119,20 +141,26 @@ const Notifications = () => {
                         <Loader2 className="h-10 w-10 animate-spin" />
                     </div>
                 ) : (
-                    <div className="space-y-2 max-h-[550px] overflow-y-auto">
+                    <div className="max-h-[550px] overflow-y-auto">
                         {notifications
                             .slice()
                             .reverse()
                             .map((notification, index) => {
-                                const isExpanded = expandedMessages[notification._id] || false;
+                                const isExpanded =
+                                    expandedMessages[notification._id] || false;
                                 const message = notification.message;
-                                const shortMessage = message.length > 100 ? message.slice(0, 100) + "..." : message;
+                                const shortMessage =
+                                    message.length > 100
+                                        ? message.slice(0, 100) + "..."
+                                        : message;
 
                                 return (
                                     <DropdownMenuItem
-                                        onClick={() => markAsRead(notification._id)}
+                                        onClick={() =>
+                                            markAsRead(notification._id)
+                                        }
                                         key={index}
-                                        className="flex items-start hover:dark:bg-[#3E3E3E] space-x-2"
+                                        className="flex items-start hover:dark:bg-[#3E3E3E] space-x-2 rounded-none py-3"
                                     >
                                         <div className="flex space-x-2 w-3/4 items-start overflow-hidden">
                                             <div className="flex items-center">
@@ -143,29 +171,43 @@ const Notifications = () => {
                                                 </div>
                                                 <div className="min-w-[52px] h-[52px] rounded-full">
                                                     <AvatarImg
-                                                        avatar={notification.creator.avatar}
-                                                        fullname={notification.creator.fullname}
+                                                        avatar={
+                                                            notification.creator
+                                                                .avatar
+                                                        }
+                                                        fullname={
+                                                            notification.creator
+                                                                .fullname
+                                                        }
                                                     />
                                                 </div>
                                             </div>
                                             <div className="space-y-2">
-                                                <div className="text-sm">
-                                                    {isExpanded ? message : shortMessage}
+                                                <div className="break-all whitespace-pre-wrap">
+                                                    {isExpanded
+                                                        ? message
+                                                        : shortMessage}
                                                     {message.length > 100 && (
                                                         <button
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
-                                                                toggleExpand(notification._id);
+                                                                toggleExpand(
+                                                                    notification._id
+                                                                );
                                                             }}
-                                                            className="text-blue-500 text-xs ml-1"
+                                                            className="text-blue-500 ml-1"
                                                         >
-                                                            {isExpanded ? "See less" : "See more"}
+                                                            {isExpanded
+                                                                ? "See less"
+                                                                : "See more"}
                                                         </button>
                                                     )}
                                                 </div>
                                                 <div className="text-muted-foreground text-xs">
                                                     {formatDistanceToNowStrict(
-                                                        new Date(notification.createdAt),
+                                                        new Date(
+                                                            notification.createdAt
+                                                        ),
                                                         { addSuffix: true }
                                                     )}
                                                 </div>
@@ -174,7 +216,12 @@ const Notifications = () => {
                                         <div className="flex space-x-1 w-1/4">
                                             <div className="min-w-[80px]">
                                                 <img
-                                                    src={notification.video?.thumbnail || notification.tweet?.image}
+                                                    src={
+                                                        notification.video
+                                                            ?.thumbnail ||
+                                                        notification.tweet
+                                                            ?.image
+                                                    }
                                                     alt="notification thumbnail"
                                                     className="h-full w-full aspect-video object-cover rounded-sm"
                                                 />
@@ -187,23 +234,38 @@ const Notifications = () => {
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent
                                                     key={index}
-                                                    onClick={(e) => e.stopPropagation()}
+                                                    onClick={(e) =>
+                                                        e.stopPropagation()
+                                                    }
                                                     collisionPadding={120}
                                                     className="dark:bg-[#282828] p-0 rounded-lg shadow-lg space-y-2"
                                                 >
                                                     <button
                                                         className="flex space-x-2 hover:bg-muted-foreground w-full p-2"
-                                                        onClick={() => deleteNotification(notification.createdAt)}
+                                                        onClick={() =>
+                                                            deleteNotification(
+                                                                notification.createdAt
+                                                            )
+                                                        }
                                                     >
                                                         <EyeOff className="h-5 w-5" />
-                                                        <span>Hide this notification</span>
+                                                        <span>
+                                                            Hide this
+                                                            notification
+                                                        </span>
                                                     </button>
                                                     <button
-                                                        onClick={() => markAsRead(notification._id)}
+                                                        onClick={() =>
+                                                            markAsRead(
+                                                                notification._id
+                                                            )
+                                                        }
                                                         className="flex space-x-2 hover:bg-muted-foreground w-full p-2"
                                                     >
                                                         <CheckCheck className="h-5 w-5" />
-                                                        <span>Mark as read</span>
+                                                        <span>
+                                                            Mark as read
+                                                        </span>
                                                     </button>
                                                 </DropdownMenuContent>
                                             </DropdownMenu>
@@ -211,8 +273,13 @@ const Notifications = () => {
                                     </DropdownMenuItem>
                                 );
                             })}
-                        <div className="flex items-center justify-center" ref={getRef}>
-                            {isFetchingNextPage ? <Loader2 className="h-10 w-10 animate-spin" /> : "No more notifications"}
+                        <div
+                            className="flex items-center justify-center"
+                            ref={getRef}
+                        >
+                            {isFetchingNextPage && (
+                                <Loader2 className="h-10 w-10 animate-spin" />
+                            )}
                         </div>
                     </div>
                 )}

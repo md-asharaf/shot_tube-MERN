@@ -18,7 +18,7 @@ class NotificationController {
     })
     markAsRead = asyncHandler(async (req, res) => {
         const { id } = req.query;
-        if (!createdAt) {
+        if (!id) {
             throw new ApiError(400, "createdAt is required")
         }
         const userId = req.user?._id;

@@ -1,7 +1,6 @@
 import uploadController from '../controllers/upload.js';
 import Router from 'express';
 const router = Router();
-
 router.post('/start-multipart-upload', uploadController.startMultipartUpload);
 
 router.post('/complete-multipart-upload', uploadController.completeMultipartUpload);

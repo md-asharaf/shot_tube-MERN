@@ -10,16 +10,17 @@ const io = new Server(webSocketServer, {
     methods: ["GET", "POST"],
     credentials: true,
   },
+  transports: ['websocket']
 });
 
 const userSocketMap = {};
 io.use(async (socket, next) => {
   const { accessToken, idToken } = cookie.parse(socket.handshake.headers.cookie);
   try {
-    let user=null;
-    if(idToken){
-      user  = await validateIdToken(idToken);
-    }else if(accessToken){
+    let user = null;
+    if (idToken) {
+      user = await validateIdToken(idToken);
+    } else if (accessToken) {
       user = await validateAccessToken(accessToken);
     }
     socket.user = user;
@@ -36,7 +37,7 @@ io.on('connection', (socket) => {
     userSocketMap[userId] = [];
   }
   userSocketMap[userId].push(socket.id);
-  
+
   socket.on('disconnect', () => {
     console.log('User disconnected', socket.id);
 
@@ -49,7 +50,7 @@ io.on('connection', (socket) => {
 });
 
 export const sendNotificationToUser = (userId, notification) => {
-  console.log("notification",notification)
+  console.log("notification", notification)
   const socketIds = userSocketMap[userId];
   if (socketIds) {
     socketIds.forEach(socketId => {

@@ -2,11 +2,11 @@ import commentServices from "@/services/Comment";
 import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
 import { useSelector } from "react-redux";
 import { Button } from "./ui/button";
-import { formatDistanceToNowStrict, set } from "date-fns";
+import { formatDistanceToNowStrict } from "date-fns";
 import likeServices from "@/services/Like";
 import { IComment } from "@/interfaces";
 import { useNavigate } from "react-router-dom";
-import { useCallback, useState } from "react";
+import { memo, useCallback, useState } from "react";
 import { FaPlus } from "react-icons/fa";
 import { FiMinus } from "react-icons/fi";
 import { GoDot } from "react-icons/go";
@@ -39,7 +39,7 @@ import AvatarImg from "./AvatarImg";
 import CommentFilter from "./CommentFilter";
 
 const Comments = ({ videoId, playerRef, videoCreatorId }) => {
-    const [filter,setFilter] = useState("All");
+    const [filter, setFilter] = useState("All");
     const theme = useSelector((state: RootState) => state.theme.mode);
     const navigate = useNavigate();
     const userData = useSelector((state: RootState) => state.auth.userData);
@@ -65,13 +65,17 @@ const Comments = ({ videoId, playerRef, videoCreatorId }) => {
             hasNextPage: boolean;
             totalDocs: number;
         }> => {
-            const data = await commentServices.getComments(videoId, pageParam,filter);
+            const data = await commentServices.getComments(
+                videoId,
+                pageParam,
+                filter
+            );
             return data.comments;
         },
         initialPageParam: 1,
         getNextPageParam: (lastPage, allPages) =>
             lastPage.hasNextPage ? allPages.length + 1 : undefined,
-        enabled: !!filter && !!videoId,
+        enabled: !!videoId,
     });
     const comments = commentsPages?.pages.flatMap((page) => page.docs);
     const totalComments = commentsPages?.pages[0].totalDocs;
@@ -105,7 +109,7 @@ const Comments = ({ videoId, playerRef, videoCreatorId }) => {
         },
         onError: (error) => {
             toast.error(error.message);
-        }
+        },
     });
 
     const { mutate: toggleCommentLike } = useMutation({
@@ -138,7 +142,7 @@ const Comments = ({ videoId, playerRef, videoCreatorId }) => {
         },
         onError: (error) => {
             toast.error(error.message);
-        }
+        },
     });
     const { mutate: updateComment } = useMutation({
         mutationFn: async (content: string) => {
@@ -158,7 +162,7 @@ const Comments = ({ videoId, playerRef, videoCreatorId }) => {
         },
         onError: (error) => {
             toast.error(error.message);
-        }
+        },
     });
     const { mutate: addReply } = useMutation({
         mutationFn: async (content: string) => {
@@ -180,7 +184,7 @@ const Comments = ({ videoId, playerRef, videoCreatorId }) => {
         },
         onError: (error) => {
             toast.error(error.message);
-        }
+        },
     });
     const observerCallback = useCallback(
         (entries: IntersectionObserverEntry[]) => {
@@ -231,10 +235,13 @@ const Comments = ({ videoId, playerRef, videoCreatorId }) => {
                 );
             }
 
-            return <span key={index}>{part}</span>;
+            return (
+                <span key={index}>
+                    {part}
+                </span>
+            );
         });
     };
-
     const onTimestampClick = (seconds: number) => {
         if (playerRef.current) {
             playerRef.current.currentTime = seconds;
@@ -246,9 +253,6 @@ const Comments = ({ videoId, playerRef, videoCreatorId }) => {
                 playerRef.current.play();
             }
         }
-    };
-    const onFilterChange = (value:string) => {
-        setFilter(value);
     };
     if (commentsLoading || likesLoading)
         return (
@@ -263,7 +267,7 @@ const Comments = ({ videoId, playerRef, videoCreatorId }) => {
                     {`${totalComments} Comments`}
                 </div>
                 <div>
-                    <CommentFilter onFilterChange={onFilterChange} />
+                    <CommentFilter onFilterChange={setFilter} filter={filter} />
                 </div>
             </div>
             <div className="flex flex-col">
@@ -281,7 +285,7 @@ const Comments = ({ videoId, playerRef, videoCreatorId }) => {
                     />
                 )}
 
-                <div className="flex flex-col mt-4 space-y-2 overflow-y-auto overflow-x-hidden">
+                <div className="flex flex-col mt-4 space-y-2 overflow-y-auto">
                     {comments?.map((comment, index) => {
                         const sentiment = comment.sentiment?.toLowerCase();
                         return (
@@ -307,14 +311,13 @@ const Comments = ({ videoId, playerRef, videoCreatorId }) => {
                                                     className="rounded-full h-10 min-w-10 cursor-pointer"
                                                     onClick={() =>
                                                         navigate(
-                                                            `/channel?u=${comment.creator.username}`
+                                                            `/channel?u=${comment.creator?.username}`
                                                         )
                                                     }
                                                 >
                                                     <AvatarImg
                                                         fullname={
-                                                            comment.creator
-                                                                .fullname
+                                                            comment.creator.fullname
                                                         }
                                                         avatar={
                                                             comment.creator
@@ -377,7 +380,7 @@ const Comments = ({ videoId, playerRef, videoCreatorId }) => {
                                                             </div>
                                                         )}
                                                     </div>
-                                                    <div className="break-words whitespace-pre-wrap">
+                                                    <div className="break-all whitespace-pre-wrap">
                                                         {processComment(
                                                             comment.content,
                                                             onTimestampClick
@@ -438,9 +441,9 @@ const Comments = ({ videoId, playerRef, videoCreatorId }) => {
                                                     >
                                                         <EllipsisVertical className="cursor-pointer h-5 mt-2" />
                                                     </DropdownMenuTrigger>
-                                                    <DropdownMenuContent className="bg-white dark:bg-[#212121] p-0 py-2">
+                                                    <DropdownMenuContent className="bg-white dark:bg-[#212121] p-0">
                                                         <DropdownMenuItem
-                                                            className="rounded-none dark:hover:bg-[#535353] hover:bg-[#E5E5E5] px-2"
+                                                            className="rounded-none dark:hover:bg-[#535353] hover:bg-[#E5E5E5] px-4 py-3"
                                                             onClick={() =>
                                                                 setEditingCommentId(
                                                                     comment._id
@@ -451,7 +454,7 @@ const Comments = ({ videoId, playerRef, videoCreatorId }) => {
                                                             Edit
                                                         </DropdownMenuItem>
                                                         <DropdownMenuItem
-                                                            className="rounded-none dark:hover:bg-[#535353] hover:bg-[#E5E5E5]"
+                                                            className="rounded-none dark:hover:bg-[#535353] hover:bg-[#E5E5E5] px-4 py-3"
                                                             onClick={() =>
                                                                 deleteComment(
                                                                     comment._id
