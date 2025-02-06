@@ -17,8 +17,8 @@ export default function SharePopup() {
     const isModalOpen = useSelector(
         (state: RootState) => state.ui.isShareModalOpen
     );
-    const videoId = useSelector((state: RootState) => state.ui.videoId);
-    const videoLink = `https://shot-tube.live/video?v=${videoId}`;
+    const data = useSelector((state: RootState) => state.ui.shareData);
+    const videoLink = `https://shot-tube.live/${data.type}?${data.type[0]}=${data.id}`;
     const inputRef = useRef(null);
     const handleCopyToClipboard = () => {
         navigator.clipboard.writeText(videoLink);
@@ -28,12 +28,15 @@ export default function SharePopup() {
         <Dialog
             open={isModalOpen}
             onOpenChange={(open) =>
-                dispatch(setShareModal({ open, videoId: null }))
+                dispatch(setShareModal({ open,shareData:{
+                    id: "",
+                    type: "",
+                } }))
             }
         >
             <DialogContent className="max-w-[90%] sm:max-w-lg rounded-lg">
                 <DialogHeader>
-                    <DialogTitle>Share Video</DialogTitle>
+                    <DialogTitle>{`Share ${data.type}`}</DialogTitle>
                 </DialogHeader>
                 <div className="flex space-x-2 p-2 items-center rounded-lg border border-gray-300 dark:border-gray-600">
                     <Input

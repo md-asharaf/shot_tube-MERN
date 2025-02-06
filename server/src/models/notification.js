@@ -14,11 +14,15 @@ const notificationSchema = new mongoose.Schema({
         _id: String,
         image: String,
     },
+    short: {
+        _id: String,
+        thumbnail: String,
+    },
     message: {
         type: String,
         required: true
     },
-    creator:{
+    creator: {
         _id: String,
         fullname: String,
         avatar: String,

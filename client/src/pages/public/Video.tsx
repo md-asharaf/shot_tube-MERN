@@ -5,12 +5,11 @@ import { useDispatch, useSelector } from "react-redux";
 import { IVideoData } from "@/interfaces";
 import { formatDistanceToNowStrict } from "date-fns";
 import videoService from "@/services/Video";
-import subscriptionServices from "@/services/Subscription";
+import subscriptionService from "@/services/Subscription";
 import likeService from "@/services/Like";
 import SaveToPlaylist from "@/components/popups/SaveToPlaylist";
 import Comments from "@/components/Comments";
-import { useQuery, useMutation } from "@tanstack/react-query";
-import videoServices from "@/services/Video";
+import { useQuery, useMutation, useInfiniteQuery } from "@tanstack/react-query";
 import VideoPlayer from "@/components/VideoPlayer";
 import { Bookmark, Share2, ThumbsUp } from "lucide-react";
 import userServices from "@/services/User";
@@ -47,17 +46,26 @@ const Video = () => {
         enabled: !!videoId,
     });
 
-    const { data: likeData, refetch: refetchIsLiked } = useQuery({
+    const { data: isLiked, refetch: refetchIsLiked } = useQuery({
         queryKey: ["isLiked", videoId],
-        queryFn: async (): Promise<{ isLiked: boolean; likesCount: number }> =>
-            await likeService.isLiked(videoId, "video"),
+        queryFn: async (): Promise<boolean> => {
+            const data = await likeService.isLiked(videoId, "video");
+            return data.isLiked;
+        },
         enabled: !!userId && !!videoId,
     });
-
+    const { data: likesCount } = useQuery({
+        queryKey: ["likes-count", videoId],
+        queryFn: async (): Promise<number> => {
+            const data = await likeService.likesCount(videoId, "video");
+            return data.likesCount;
+        },
+        enabled: !!videoId,
+    });
     const { data: isSubscribed, refetch: refetchIsSubscribed } = useQuery({
         queryKey: ["subscribe", video?.creator?._id, userId],
         queryFn: async (): Promise<boolean> => {
-            const data = await subscriptionServices.isChannelSubscribed(
+            const data = await subscriptionService.isChannelSubscribed(
                 video.creator._id
             );
             return data.isSubscribed;
@@ -69,7 +77,7 @@ const Video = () => {
         useQuery({
             queryKey: ["subscribersCount", video?.creator?._id],
             queryFn: async (): Promise<number> => {
-                const data = await subscriptionServices.getSubscribersCount(
+                const data = await subscriptionService.getSubscribersCount(
                     video.creator._id
                 );
                 return data.subscribersCount;
@@ -77,18 +85,25 @@ const Video = () => {
             enabled: !!video,
         });
 
-    const { data: recommendedVideos } = useQuery({
-        queryKey: ["recommendedVideos", videoId],
-        queryFn: async (): Promise<IVideoData[]> => {
-            const data = await videoService.recommendedVideos(videoId, userId);
+    const { data: videoPages } = useInfiniteQuery({
+        queryKey: ["recommended-videos", userId, videoId],
+        queryFn: async ({ pageParam = 1 }) => {
+            const data = await videoService.recommendedVideos(
+                pageParam,
+                videoId,
+                userId
+            );
             return data.recommendations;
         },
+        initialPageParam: 1,
+        getNextPageParam: (lastPage, allPages) =>
+            lastPage.length == 12 ? allPages.length + 1 : null,
         enabled: !!videoId,
     });
-
+    const recommendedVideos = videoPages?.pages.flatMap((page) => page);
     const { mutate: incrementViews } = useMutation({
         mutationFn: async ({ videoId }: { videoId: string }) =>
-            await videoServices.incrementViews(videoId),
+            await videoService.incrementViews(videoId),
     });
 
     const { mutate: toggleVideoLike } = useMutation({
@@ -100,7 +115,7 @@ const Video = () => {
 
     const { mutate: toggleSubscription } = useMutation({
         mutationFn: async () => {
-            await subscriptionServices.toggleSubscription(video.creator._id);
+            await subscriptionService.toggleSubscription(video.creator._id);
             refetchIsSubscribed();
             refetchSubscribersCount();
         },
@@ -108,7 +123,7 @@ const Video = () => {
 
     const { mutate: addToWatchHistory } = useMutation({
         mutationFn: async ({ videoId }: { videoId: string }) => {
-            await userServices.addVideoToWatchHistory(videoId);
+            await userServices.addToWatchHistory(videoId, "video");
         },
     });
     const onViewTracked = () => {
@@ -119,6 +134,11 @@ const Video = () => {
     useEffect(() => {
         dispatch(toggleMenu(false));
     }, []);
+    useEffect(() => {
+        if (playerRef.current) {
+            playerRef.current.muted = true;
+        }
+    }, [playerRef]);
     if (isError) return <div>Error: {error?.message}</div>;
     if (isLoading) return null;
     return (
@@ -126,7 +146,8 @@ const Video = () => {
             <div className="space-y-4 w-full xl:w-2/3 2xl:w-[70%]">
                 <div className="flex flex-col space-y-2 px-2">
                     <VideoPlayer
-                        source={video.video}
+                        thumbnailPreviews={video.thumbnailPreviews}
+                        source={video.source}
                         subtitles={[
                             {
                                 kind: "subtitles",
@@ -135,6 +156,15 @@ const Video = () => {
                                 src: video.subtitle,
                             },
                         ]}
+                        controls={[
+                            "play",
+                            "progress",
+                            "current-time",
+                            "mute",
+                            "volume",
+                            "settings",
+                            "fullscreen",
+                        ]}
                         playerRef={playerRef}
                         onViewTracked={onViewTracked}
                         minWatchTime={
@@ -142,7 +172,7 @@ const Video = () => {
                                 ? parseInt(video.duration)
                                 : 15
                         }
-                        className="w-full h-full object-cover aspect-video rounded-xl"
+                        className="aspect-video"
                     />
                     <h1 className="font-bold text-xl">{video.title}</h1>
                     <div className="flex justify-between flex-col sm:flex-row gap-y-2 sm:gap-0">
@@ -151,10 +181,12 @@ const Video = () => {
                                 to={`/channel?u=${video.creator.username}`}
                                 className="flex gap-x-4 items-center"
                             >
-                                <div className="h-12 w-12"><AvatarImg
-                                    fullname={video.creator.fullname}
-                                    avatar={video.creator.avatar}
-                                /></div>
+                                <div className="h-12 w-12">
+                                    <AvatarImg
+                                        fullname={video.creator.fullname}
+                                        avatar={video.creator.avatar}
+                                    />
+                                </div>
                                 <div className="flex flex-col gap-y-1 items-start">
                                     <div className="font-bold">
                                         {video.creator.fullname}
@@ -182,7 +214,7 @@ const Video = () => {
                                 >
                                     <ThumbsUp
                                         fill={
-                                            likeData?.isLiked
+                                            isLiked
                                                 ? theme == "dark"
                                                     ? "white"
                                                     : "black"
@@ -191,7 +223,7 @@ const Video = () => {
                                                 : "white"
                                         }
                                     />
-                                    {likeData?.likesCount}
+                                    {likesCount}
                                 </Button>
                                 <Button
                                     className="rounded-full"
@@ -200,14 +232,17 @@ const Video = () => {
                                         dispatch(
                                             setShareModal({
                                                 open: true,
-                                                videoId,
+                                                shareData: {
+                                                    id: videoId,
+                                                    type: "video",
+                                                },
                                             })
                                         )
                                     }
                                 >
                                     <Share2 />
                                 </Button>
-                                <SaveToPlaylist videoId={videoId}>
+                                <SaveToPlaylist id={videoId}>
                                     <Button
                                         variant="secondary"
                                         className="rounded-full"
@@ -246,7 +281,7 @@ const Video = () => {
                                         >
                                             <ThumbsUp
                                                 fill={
-                                                    likeData?.isLiked
+                                                    isLiked
                                                         ? theme == "dark"
                                                             ? "white"
                                                             : "black"
@@ -255,7 +290,7 @@ const Video = () => {
                                                         : "white"
                                                 }
                                             />
-                                            {likeData?.likesCount}
+                                            {likesCount}
                                         </Button>
                                         <Button
                                             className="rounded-full"
@@ -264,14 +299,17 @@ const Video = () => {
                                                 dispatch(
                                                     setShareModal({
                                                         open: true,
-                                                        videoId,
+                                                        shareData: {
+                                                            id: videoId,
+                                                            type: "video",
+                                                        },
                                                     })
                                                 )
                                             }
                                         >
                                             <Share2 />
                                         </Button>
-                                        <SaveToPlaylist videoId={videoId}>
+                                        <SaveToPlaylist id={videoId}>
                                             <Button
                                                 variant="ghost"
                                                 className="rounded-full p-0"
@@ -329,7 +367,11 @@ const Video = () => {
                     )}
                 </div>
                 <div className="hidden xl:block">
-                    <Comments videoId={videoId} playerRef={playerRef} videoCreatorId={video.creator._id} />
+                    <Comments
+                        videoId={videoId}
+                        playerRef={playerRef}
+                        videoCreatorId={video.creator._id}
+                    />
                 </div>
             </div>
             <div className="w-full xl:w-1/3 2xl:w-[30%]">
@@ -367,7 +409,11 @@ const Video = () => {
                 ))}
             </div>
             <div className="xl:hidden">
-                <Comments videoId={videoId} playerRef={playerRef} videoCreatorId={video.creator._id} />
+                <Comments
+                    videoId={videoId}
+                    playerRef={playerRef}
+                    videoCreatorId={video.creator._id}
+                />
             </div>
         </div>
     );

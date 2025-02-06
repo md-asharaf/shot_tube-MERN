@@ -14,9 +14,10 @@ const SmallDrawer = () => {
     const username = useSelector(
         (state: RootState) => state.auth.userData?.username
     );
+    const shortId = useSelector((state:RootState)=>state.short.randomShortId)
     return (
         <div className="w-full pl-1 pt-1">
-            <div className={`flex-col cursor-pointer dark:text-white`}>
+            <div className={`flex-col cursor-pointer`}>
                 <NavLink to={"/"}>
                     {({ isActive }) => (
                         <div
@@ -31,7 +32,7 @@ const SmallDrawer = () => {
                         </div>
                     )}
                 </NavLink>
-                <NavLink to={"/shorts"}>
+                <NavLink to={`/short?s=${shortId}`}>
                     <div
                         className={`flex flex-col items-center rounded-xl py-2 px-1 hover:bg-zinc-200 dark:hover:bg-zinc-800`}
                     >

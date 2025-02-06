@@ -1,89 +1,102 @@
-import { useCallback } from "react";
+import { useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { useInfiniteQuery } from "@tanstack/react-query";
+import { useInfiniteQuery, useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import VideoCard from "@/components/VideoCard";
-import VideoTitle from "@/components/VideoTitle";
-import videoServices from "@/services/Video";
+import videoService from "@/services/Video";
+import shortService from "@/services/Short";
 import LoadingSkeleton from "@/components/LoadingSkeleton";
 import { IVideoData } from "@/interfaces";
+import { useDispatch, useSelector } from "react-redux";
+import { RootState } from "@/store/store";
+import { setRandomShortId, setShorts } from "@/store/reducers/short";
+import { SiYoutubeshorts } from "react-icons/si";
+import { useIntersection } from "@mantine/hooks";
+import ShortCard from "@/components/ShortCard";
 const Home = () => {
-    const { data, hasNextPage, fetchNextPage, isLoading, isFetchingNextPage } =
-        useInfiniteQuery({
-            queryKey: ["videos"],
-            queryFn: async ({ pageParam }): Promise<IVideoData[]> => {
-                const data = await videoServices.allVideos(12, pageParam);
-                return data.videos;
-            },
-            initialPageParam: 0,
-            getNextPageParam: (lastPage, allPages) => {
-                return lastPage.length === 12 ? allPages.length : undefined;
-            },
-        });
+    const dispatch = useDispatch();
+    const userId = useSelector((state: RootState) => state.auth.userData?._id);
+    const shorts = useSelector((state: RootState) => state.short.shorts);
+    const playerRef = useRef(null);
+    const lastVideoRef = useRef<HTMLElement>(null);
 
-    const observerCallback = useCallback(
-        (entries: IntersectionObserverEntry[]) => {
-            const [entry] = entries;
-            if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
-                fetchNextPage();
-            }
+    const {
+        data: videoPages,
+        hasNextPage,
+        fetchNextPage,
+        isLoading,
+        isFetchingNextPage,
+    } = useInfiniteQuery({
+        queryKey: ["recommended-videos", userId, null],
+        queryFn: async ({ pageParam }): Promise<IVideoData[]> => {
+            const data = await videoService.recommendedVideos(
+                pageParam,
+                null,
+                userId
+            );
+            return data.recommendations;
         },
-        [fetchNextPage, hasNextPage, isFetchingNextPage]
-    );
-    const getRef = (node: HTMLDivElement) => {
-        if (!node) return;
-        const observer = new IntersectionObserver(observerCallback, {
-            threshold: 0.5,
-        });
-        observer.observe(node);
-    };
+        initialPageParam: 1,
+        getNextPageParam: (lastPage, allPages) => {
+            return lastPage.length === 12 ? allPages.length + 1 : null;
+        },
+    });
+    useQuery({
+        queryKey: ["recommended-shorts", userId, null],
+        queryFn: async () => {
+            const data = await shortService.recommendedShorts(1, null, userId);
+            dispatch(setShorts(data.recommendations));
+            dispatch(setRandomShortId());
+            return true;
+        },
+    });
+    const videos = videoPages?.pages?.flatMap((page) => page);
+    const { ref, entry } = useIntersection({
+        root: lastVideoRef.current,
+        threshold: 1,
+    });
+    useEffect(() => {
+        if (entry?.isIntersecting && hasNextPage) {
+            fetchNextPage();
+        }
+    }, [entry]);
+    if (isLoading) {
+        return <LoadingSkeleton />;
+    }
     return (
         <>
-            {isLoading ? (
-                <LoadingSkeleton />
-            ) : (
-                <>
-                    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 sm:gap-y-2 w-full">
-                        {data?.pages?.map((group) =>
-                            group.map((video) => (
-                                <Link
-                                    to={`/video?v=${video._id}`}
-                                    key={video._id}
-                                    className="group flex flex-col gap-2 rounded-lg p-2 hover:bg-muted"
-                                >
-                                    <VideoCard
-                                        thumbnail={video.thumbnail}
-                                        duration={video.duration}
-                                        className="group-hover:rounded-none"
-                                    />
-                                    <VideoTitle
-                                        video={{
-                                            _id: video._id,
-                                            views: video.views,
-                                            createdAt: video.createdAt,
-                                            title: video.title,
-                                        }}
-                                        creator={{
-                                            username: video.creator.username,
-                                            fullname: video.creator.fullname,
-                                            avatar: video.creator.avatar,
-                                        }}
-                                    />
-                                </Link>
-                            ))
-                        )}
-                    </div>
-
-                    <div
-                        className="flex items-center justify-center h-10"
-                        ref={getRef}
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 sm:gap-y-2 w-full">
+                {videos.map((video, i) => (
+                    <Link
+                        to={`/video?v=${video._id}`}
+                        key={video._id}
+                        ref={i == videos.length ? ref : null}
                     >
-                        {isFetchingNextPage && (
-                            <Loader2 className="animate-spin h-10 w-10" />
-                        )}
-                    </div>
-                </>
-            )}
+                        <VideoCard
+                            playerRef={playerRef}
+                            video={video}
+                            isAvatar
+                            putExtraOptions
+                        />
+                    </Link>
+                ))}
+            </div>
+            <div className="flex items-center space-x-2 my-2">
+                <SiYoutubeshorts className="text-2xl" />
+                <div className="font-bold text-2xl">Shorts</div>
+            </div>
+            <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 xl:grid-cols-6 sm:gap-y-2 w-full">
+                {shorts.map((short) => (
+                    <Link to={`/short?s=${short._id}`} key={short._id}>
+                        <ShortCard short={short} playerRef={playerRef} />
+                    </Link>
+                ))}
+            </div>
+            <div className="flex items-center justify-center">
+                {isFetchingNextPage && (
+                    <Loader2 className="animate-spin h-10 w-10" />
+                )}
+            </div>
         </>
     );
 };

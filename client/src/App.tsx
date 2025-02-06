@@ -47,7 +47,7 @@ function App() {
                 <Route element={<RootLayOut />}>
                     <Route path="/" element={<Home />} />
                     <Route path="/video" element={<Video />} />
-                    <Route path="/shorts" element={<Shorts />} />
+                    <Route path="/short" element={<Shorts />} />
                     <Route path="/results" element={<SearchedVideos />} />
                     <Route path="/channel" element={<Channel />} />
                     <Route element={<PrivateLayout />}>

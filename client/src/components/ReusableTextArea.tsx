@@ -79,7 +79,7 @@ const TextArea: React.FC<TextAreaProps> = ({
                     value={content}
                     onChange={handleInputChange}
                     placeholder={placeholder}
-                    className="outline-none shadow-none dark:bg-black w-full resize-none overflow-hidden border-b border-gray-500 focus:border-gray-300 transition-all"
+                    className="outline-none shadow-none w-full bg-transparent resize-none overflow-hidden border-b border-gray-500 focus:border-gray-400 transition-all"
                     rows={1}
                     style={{ lineHeight: "1.2", padding: "0.3rem" }}
                     onFocus={() => setIsInputFocused(true)}

@@ -65,7 +65,7 @@ const Comments = ({ videoId, playerRef, videoCreatorId }) => {
             hasNextPage: boolean;
             totalDocs: number;
         }> => {
-            const data = await commentServices.getComments(
+            const data = await commentServices.getVideoComments(
                 videoId,
                 pageParam,
                 filter
@@ -96,7 +96,7 @@ const Comments = ({ videoId, playerRef, videoCreatorId }) => {
             videoId: string;
             content: string;
         }) => {
-            const data = await commentServices.comment(videoId, content);
+            const data = await commentServices.commentToVideo(videoId, content);
             return data.comment;
         },
         onSuccess: (comment) => {
@@ -348,7 +348,7 @@ const Comments = ({ videoId, playerRef, videoCreatorId }) => {
                                                                 }
                                                             )}
                                                         </div>
-                                                        {userData._id ===
+                                                        {userData?._id ===
                                                             videoCreatorId && (
                                                             <div
                                                                 className={`flex ${

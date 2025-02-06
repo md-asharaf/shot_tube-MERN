@@ -177,7 +177,7 @@ const BigDrawer = () => {
         ...channel,
         route: `/channel?u=${channel.username}`,
     }));
-
+    const shortId= useSelector((state: RootState) => state.short.randomShortId);
     const isSmallScreen = windowWidth < 1315;
     const isVideoPage = location.pathname.startsWith("/video");
 
@@ -213,10 +213,10 @@ const BigDrawer = () => {
                         </button>
                     </div>
                 )}
-                <div className="flex-col dark:text-white text-black pr-6 pt-3">
+                <div className="flex-col pr-6 pt-3">
                     <SidebarLink to="/" label="Home" icon={<GoHome />} />
                     <SidebarLink
-                        to="/shorts"
+                        to={`/short?s=${shortId}`}
                         label="Shorts"
                         icon={<SiYoutubeshorts />}
                     />

@@ -14,7 +14,10 @@ const initialState: IUiData = {
     isVideoModalOpen: false, 
     isLoginPopoverVisible: false,
     isShareModalOpen: false,
-    videoId: "",
+    shareData:{
+        id:"",
+        type:""
+    },
     loginPopoverMessage: "", 
 };
 
@@ -34,9 +37,12 @@ const uiSlice = createSlice({
         setLoginPopoverMessage: (state, action: PayloadAction<string>) => {
             state.loginPopoverMessage = action.payload;
         },
-        setShareModal: (state, action: PayloadAction<{open:boolean,videoId:string}>) => {
+        setShareModal: (state, action: PayloadAction<{open:boolean,shareData:{
+            id:string;
+            type:string;
+        }}>) => {
             state.isShareModalOpen = action.payload.open;
-            state.videoId = action.payload.videoId;
+            state.shareData = action.payload.shareData;
         }
     },
 });

@@ -7,9 +7,9 @@ import Drawer from "../Drawer";
 import useSocketNotifications from "@/hooks/use-notification";
 import SharePopup from "../popups/sharePopup";
 const RootLayOut = () => {
-    useSocketNotifications();
+    useSocketNotifications()
     return (
-        <div className="w-screen bg-white dark:bg-black h-screen flex flex-col">
+        <div className="w-screen bg-white dark:bg-[#0F0F0F] h-screen flex flex-col">
             <nav className="z-30 fixed top-0 left-0 h-12 sm:h-16 w-full">
                 <NavBar />
             </nav>

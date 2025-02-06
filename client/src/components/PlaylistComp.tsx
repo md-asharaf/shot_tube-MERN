@@ -1,5 +1,5 @@
 import { Link } from "react-router-dom";
-import { IVideoData } from "@/interfaces";
+import { IShortData, IVideoData } from "@/interfaces";
 import { formatDistanceToNowStrict } from "date-fns";
 import { Button } from "@/components/ui/button";
 import { formatDuration, formatViews } from "@/lib/utils";
@@ -18,6 +18,7 @@ interface Props {
         updatedAt: Date;
         totalViews: number;
         videos: Array<IVideoData>;
+        shorts: Array<IShortData>;
         description: string;
     };
     refetch?: () => void;
@@ -63,7 +64,7 @@ const PlaylistComp: React.FC<Props> = ({ playlist, refetch = () => {} }) => {
             videoId: string;
             playlistName: string;
         }) => {
-            await playlistServices.removeVideoFromPlaylist(videoId, playlistId);
+            await playlistServices.removeFromPlaylist(playlistId,videoId,"video");
         },
         onSuccess: (data,variables) => {
             toast.success(`Removed from ${variables.playlistName}`)

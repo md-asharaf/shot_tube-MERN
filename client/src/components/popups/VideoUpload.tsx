@@ -1,6 +1,7 @@
 import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "react-hook-form";
 import videoService from "@/services/Video";
+import shortService from "@/services/Short";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleVideoModal } from "@/store/reducers/ui";
 import { Input } from "@/components/ui/input";
@@ -14,7 +15,7 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { useState } from "react";
-import { getVideoMetadata, sanitizeFileName } from "@/lib/utils";
+import { getVideoMetadata } from "@/lib/utils";
 import { IVideoUploadForm } from "@/interfaces";
 import { toast } from "sonner";
 import {
@@ -24,7 +25,7 @@ import {
     DialogTitle,
     DialogDescription,
 } from "@/components/ui/dialog";
-import { resizeImageWithPica } from "@/lib/pica";
+import { resizeImage } from "@/lib/pica";
 import { RootState } from "@/store/store";
 import { VideoFormValidation } from "@/validations";
 import DragDropInput from "../DragAndDropInput";
@@ -58,23 +59,23 @@ const VideoUpload = () => {
             thumbnail: undefined,
         },
     });
+
     const handleSubmit = async (values: IVideoUploadForm) => {
         setIsUploading(true);
         try {
             const { title, description, video, thumbnail } = values;
-            const resizedThumbnail = await resizeImageWithPica(
-                thumbnail,
-                1280,
-                720
-            );
             const { duration, height, width } = await getVideoMetadata(video);
+            const isShort = duration <= 90 && height > width;
+            const resizedThumbnail = await resizeImage(
+                thumbnail,
+                isShort ? 720 : 1280,
+                isShort ? 1280 : 720
+            );
             const videoSplits = video.name.split(".");
-            const videoKey = `uploads/user-uploads/${uuid()}_${sanitizeFileName(
-                videoSplits[0]
-            )}_${width}_${height}.${videoSplits[1]}`;
-            const thumbnailKey = `uploads/user-uploads/${uuid()}_${sanitizeFileName(
-                resizedThumbnail.name
-            )}`;
+            const videoKey = `uploads/${
+                isShort ? "shorts" : "videos"
+            }/${uuid()}_${width}_${height}.${videoSplits[1]}`;
+            const thumbnailKey = `uploads/thumbnails//${uuid()}`;
             const contentType = video.type || "application/octet-stream";
             const videoUploadTask = async () => {
                 const toastId = toast.loading("Uploading video : 0%", {
@@ -183,20 +184,45 @@ const VideoUpload = () => {
                 resizedThumbnail.type
             );
             await uploadToPresignedUrl(url, resizedThumbnail);
-            await videoService.upload({
-                title,
-                description,
-                video: `https://${BUCKET01}.s3.ap-south-1.amazonaws.com/${videoKey
-                    .split(".")
-                    .slice(0, -1)
-                    .join(".")}/master.m3u8`,
-                thumbnail: `https://${BUCKET02}.s3.ap-south-1.amazonaws.com/${thumbnailKey}`,
-                duration,
-                subtitle: `https://${BUCKET01}.s3.ap-south-1.amazonaws.com/${videoKey
-                    .split(".")
-                    .slice(0, -1)
-                    .join(".")}/subtitle.vtt`,
-            });
+            if (isShort) {
+                await shortService.upload({
+                    title,
+                    description,
+                    source: `https://${BUCKET01}.s3.ap-south-1.amazonaws.com/${videoKey
+                        .split(".")
+                        .slice(0, -1)
+                        .join(".")}/${height}p.m3u8`,
+                    thumbnail: `https://${BUCKET02}.s3.ap-south-1.amazonaws.com/${thumbnailKey}`,
+                    subtitle: `https://${BUCKET01}.s3.ap-south-1.amazonaws.com/${videoKey
+                        .split(".")
+                        .slice(0, -1)
+                        .join(".")}/subtitle.vtt`,
+                    thumbnailPreviews: `https://${BUCKET01}.s3.ap-south-1.amazonaws.com/${videoKey
+                        .split(".")
+                        .slice(0, -1)
+                        .join(".")}/thumbnails.vtt`,
+                });
+            } else {
+                await videoService.upload({
+                    title,
+                    description,
+                    source: `https://${BUCKET01}.s3.ap-south-1.amazonaws.com/${videoKey
+                        .split(".")
+                        .slice(0, -1)
+                        .join(".")}/master.m3u8`,
+                    thumbnail: `https://${BUCKET02}.s3.ap-south-1.amazonaws.com/${thumbnailKey}`,
+                    duration,
+                    subtitle: `https://${BUCKET01}.s3.ap-south-1.amazonaws.com/${videoKey
+                        .split(".")
+                        .slice(0, -1)
+                        .join(".")}/subtitle.vtt`,
+                    thumbnailPreviews: `https://${BUCKET01}.s3.ap-south-1.amazonaws.com/${videoKey
+                        .split(".")
+                        .slice(0, -1)
+                        .join(".")}/thumbnails.vtt`,
+                });
+            }
+
             setTimeout(() => toast.success("Video post created!"), 1000);
         } catch (err) {
             console.log(err);

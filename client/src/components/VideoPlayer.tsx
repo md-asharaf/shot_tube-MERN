@@ -1,43 +1,47 @@
 import { useEffect, useRef, useState } from "react";
 import Plyr from "plyr";
 import Hls from "hls.js";
-import { Card } from "@/components/ui/card";
 import "plyr/dist/plyr.css";
 
 const PlyrPlayer = ({
     source,
     subtitles = [],
     className = "",
+    thumbnailPreviews = "",
     playerRef,
-    onViewTracked,
-    minWatchTime,
+    onViewTracked = () => {},
+    minWatchTime = 15,
+    controls,
+    ...props
 }) => {
-    const videoRef = useRef(null);
-    const hlsRef = useRef(null);
+    const videoRef = useRef<HTMLVideoElement>(null);
+    const hlsRef = useRef<Hls | null>(null);
     const [watchTime, setWatchTime] = useState(0);
     const [hasWatched, setHasWatched] = useState(false);
     const [lastUpdateTime, setLastUpdateTime] = useState(0);
+
     const bitrateToResolution = {
         "500000": 360,
         "1000000": 480,
         "2500000": 720,
         "5000000": 1080,
     };
+
     useEffect(() => {
         const initializePlayer = () => {
             const video = videoRef.current;
+            if (!video) return;
+
             const defaultOptions: Plyr.Options = {
                 hideControls: true,
-                controls: [
-                    "play",
-                    "progress",
-                    "current-time",
-                    "mute",
-                    "volume",
-                    "settings",
-                    "fullscreen",
-                ],
-                settings: ["quality","captions","speed"],
+                controls,
+                settings: ["quality", "captions", "speed"],
+                previewThumbnails: {
+                    enabled: !!thumbnailPreviews,
+                    src: thumbnailPreviews,
+                },
+                keyboard: { focused: true, global: true },
+                tooltips: { controls: true, seek: true },
             };
 
             if (!Hls.isSupported()) {
@@ -45,112 +49,80 @@ const PlyrPlayer = ({
                 playerRef.current = new Plyr(video, defaultOptions);
             } else {
                 const hls = new Hls();
+                hlsRef.current = hls;
                 hls.loadSource(source);
 
-                hls.on(Hls.Events.MANIFEST_PARSED, (event, data) => {
+                hls.on(Hls.Events.MANIFEST_PARSED, () => {
                     const availableQualities = hls.levels.map(
                         (l) => bitrateToResolution[l.bitrate]
                     );
                     availableQualities.unshift(0);
 
                     defaultOptions.quality = {
-                        default: 0,
+                        default: 1,
                         options: availableQualities,
                         forced: true,
-                        onChange: (newQuality) => updateQuality(newQuality),
-                    };
-
-                    defaultOptions.i18n = {
-                        qualityLabel: {
-                            0: "Auto",
+                        onChange: (newQuality: number) => {
+                            if (newQuality === 0) {
+                                hls.currentLevel = -1;
+                            } else {
+                                hls.levels.forEach((level, index) => {
+                                    if (
+                                        bitrateToResolution[level.bitrate] ===
+                                        newQuality
+                                    ) {
+                                        hls.currentLevel = index;
+                                    }
+                                });
+                            }
                         },
                     };
 
-                    hls.on(Hls.Events.LEVEL_SWITCHED, (event, data) => {
-                        const qualityLabelElement = document.querySelector(
-                            ".plyr__menu__container [data-plyr='quality'][value='0'] span"
-                        );
-                        if (hls.autoLevelEnabled) {
-                            qualityLabelElement.innerHTML = `Auto (${
-                                bitrateToResolution[
-                                    hls.levels[data.level].bitrate
-                                ]
-                            }p)`;
-                        } else {
-                            qualityLabelElement.innerHTML = "Auto";
-                        }
-                    });
+                    defaultOptions.i18n = {
+                        qualityLabel: { 0: "Auto" },
+                    };
 
                     playerRef.current = new Plyr(video, defaultOptions);
 
                     playerRef.current.on("ready", () => {
-                        playerRef.current.captions.active = true;
-                        playerRef.current.captions.language = "en";
+                        if (playerRef.current) {
+                            playerRef.current.captions.active = false;
+                            playerRef.current.muted=true;
+                        }
                     });
                 });
 
                 hls.attachMedia(video);
-                hlsRef.current = hls;
-            }
-        };
-
-        const updateQuality = (newQuality) => {
-            if (newQuality === 0) {
-                hlsRef.current.currentLevel = -1;
-            } else {
-                hlsRef.current.levels.forEach((level, levelIndex) => {
-                    if (bitrateToResolution[level.bitrate] === newQuality) {
-                        hlsRef.current.currentLevel = levelIndex;
-                    }
-                });
             }
         };
 
         initializePlayer();
 
         return () => {
-            if (playerRef.current) {
-                playerRef.current.destroy();
-            }
             if (hlsRef.current) {
                 hlsRef.current.destroy();
+            }
+            if (playerRef && playerRef.current) {
+                playerRef.current.destroy();
             }
         };
     }, [source]);
 
     useEffect(() => {
         const video = videoRef.current;
+        if (!video) return;
 
-        const onTimeUpdate = () => {
+        const handleTimeUpdate = () => {
             if (video.paused || video.ended) return;
             const currentTime = video.currentTime;
-            setWatchTime(
-                (prevTime) => prevTime + (currentTime - lastUpdateTime)
-            );
+            setWatchTime((prev) => prev + (currentTime - lastUpdateTime));
             setLastUpdateTime(currentTime);
         };
 
-        const onPlay = () => {
-            setLastUpdateTime(video.currentTime);
-        };
-
-        const onPause = () => {
-            setLastUpdateTime(video.currentTime);
-        };
-
-        const onSeeking = () => {
-            setLastUpdateTime(video.currentTime);
-        };
-
-        const onSeeked = () => {
-            setLastUpdateTime(video.currentTime);
-        };
-
-        video.addEventListener("timeupdate", onTimeUpdate);
-        video.addEventListener("play", onPlay);
-        video.addEventListener("pause", onPause);
-        video.addEventListener("seeking", onSeeking);
-        video.addEventListener("seeked", onSeeked);
+        const events = ["play", "pause", "seeking", "seeked", "timeupdate"];
+        events.forEach((event) =>
+            video.addEventListener(event, handleTimeUpdate)
+        );
 
         if (watchTime >= minWatchTime && !hasWatched) {
             setHasWatched(true);
@@ -158,20 +130,20 @@ const PlyrPlayer = ({
         }
 
         return () => {
-            video.removeEventListener("timeupdate", onTimeUpdate);
-            video.removeEventListener("play", onPlay);
-            video.removeEventListener("pause", onPause);
-            video.removeEventListener("seeking", onSeeking);
-            video.removeEventListener("seeked", onSeeked);
+            events.forEach((event) =>
+                video.removeEventListener(event, handleTimeUpdate)
+            );
         };
-    }, [watchTime, lastUpdateTime, hasWatched, onViewTracked, minWatchTime]);
+    }, [watchTime, hasWatched, lastUpdateTime]);
 
     return (
-        <Card className={`${className}`}>
+        <div className="rounded-md object-cover overflow-hidden">
             <video
                 ref={videoRef}
-                className="plyr-react plyr w-full aspect-video"
+                className={`plyr-react plyr ${className}`}
                 crossOrigin="anonymous"
+                preload="none"
+                // autoPlay
             >
                 {subtitles.map((subtitle, index) => (
                     <track
@@ -184,7 +156,7 @@ const PlyrPlayer = ({
                     />
                 ))}
             </video>
-        </Card>
+        </div>
     );
 };
 

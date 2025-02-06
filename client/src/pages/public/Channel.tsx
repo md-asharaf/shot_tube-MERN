@@ -4,7 +4,6 @@ import userServices from "@/services/User";
 import VideoCard from "@/components/VideoCard";
 import { useDispatch, useSelector } from "react-redux";
 import DefaultCoverImage from "@/assets/images/coverImage.jpg";
-import VideoTitle from "@/components/VideoTitle";
 import videoServices from "@/services/Video";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
@@ -116,19 +115,10 @@ const Channel = () => {
                             to={`/video?v=${video._id}`}
                             onClick={() => dispatch(toggleMenu())}
                             key={index}
-                            className="flex flex-col space-y-2 rounded-lg hover:bg-muted p-2"
+                            className="flex flex-col space-y-2 rounded-lg"
                         >
                             <VideoCard
-                                thumbnail={video.thumbnail}
-                                duration={video.duration}
-                            />
-                            <VideoTitle
-                                video={{
-                                    _id: video._id,
-                                    views: video.views,
-                                    title: video.title,
-                                    createdAt: video.createdAt,
-                                }}
+                                video={video}
                             />
                         </Link>
                     ))

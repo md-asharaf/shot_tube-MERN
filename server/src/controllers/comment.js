@@ -5,8 +5,7 @@ import { Comment } from "../models/comment.js";
 import { Video } from "../models/video.js";
 import mongoose from "mongoose";
 import { publishNotification } from "../lib/kafka/producer.js";
-import { User } from "../models/user.js";
-
+import { Short } from "../models/short.js";
 class CommentController {
     getAllVideoComments = asyncHandler(async (req, res) => {
         const { videoId } = req.params;
@@ -70,7 +69,7 @@ class CommentController {
         //get repliesCount for each comment
         return res.status(200).json(new ApiResponse(200, { comments }, "Comments fetched successfully"))
     })
-    addComment = asyncHandler(async (req, res) => {
+    addCommentToVideo = asyncHandler(async (req, res) => {
         const { content, sentiment } = req.body;
         const { videoId } = req.params;
         const user = req.user;
@@ -113,7 +112,125 @@ class CommentController {
             .status(201)
             .json(new ApiResponse(201, { comment }, "Comment created successfully"));
     });
+    getAllShortComments = asyncHandler(async (req, res) => {
+        const { shortId } = req.params;
+        const { page = 1, limit = 10, sentiment='All' } = req.query;
+        if (!shortId) {
+            throw new ApiError(400, "Short ID is required")
+        }
+        const short = await Short.findById(shortId);
+        if (!short) {
+            throw new ApiError(404, "Invalid short ID provided")
+        }
+        const aggregate = Comment.aggregate([
+            {
+                $match: {
+                    shortId: new mongoose.Types.ObjectId(shortId),
+                    sentiment: sentiment === 'All' ? { $exists: true } : sentiment
+                }
+            },
+            {
+                $lookup: {
+                    from: "replies",
+                    localField: "_id",
+                    foreignField: "commentId",
+                    as: "replies"
+                }
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "userId",
+                    foreignField: "_id",
+                    as: "creator"
+                }
+            },
+            {
+                $addFields: {
+                    creator: {
+                        $first: "$creator"
+                    },
+                    repliesCount: {
+                        $size: "$replies"
+                    }
+                }
+            },
+            {
+                $project: {
+                    content: 1,
+                    sentiment: 1,
+                    createdAt: 1,
+                    creator: 1,
+                    repliesCount: 1
+                }
 
+            }, {
+                $sort: {
+                    createdAt: -1
+                }
+            }
+        ]);
+        const comments = await Comment.aggregatePaginate(aggregate, { page, limit });
+        //get repliesCount for each comment
+        return res.status(200).json(new ApiResponse(200, { comments }, "Comments fetched successfully"))
+    })
+    addCommentToShort = asyncHandler(async (req, res) => {
+        const { content, sentiment } = req.body;
+        const { shortId } = req.params;
+        const user = req.user;
+
+        if (!content || !shortId || !sentiment) {
+            throw new ApiError(400, "Content, shortId, and sentiment are required");
+        }
+        const comment = await Comment.create({
+            content,
+            shortId,
+            userId: user._id,
+            sentiment,
+        });
+        if (!comment) {
+            throw new ApiError(500, "Comment could not be created");
+        }
+        //publishing notification
+        const short = await Short.findById(shortId);
+        if (!short.userId.equals(user._id)) {
+            const message = `@${user.username} commented: "${content}"`;
+            publishNotification({
+                userId: short.userId,
+                message,
+                short: {
+                    _id: short._id,
+                    thumbnail: short.thumbnail,
+                },
+                creator: {
+                    _id: user._id,
+                    avatar: user.avatar,
+                    fullname: user.fullname
+                },
+                read: false,
+                createdAt: new Date(Date.now()),
+            });
+        }
+        //end
+
+        return res
+            .status(201)
+            .json(new ApiResponse(201, { comment }, "Comment created successfully"));
+    });
+    commentsCount = asyncHandler( async (req,res)=>{
+        const {videoId,shortId} = req.query;
+        if(!videoId && !shortId){
+            throw new ApiError(400,"video id or short id is required")
+        }
+        let commentsCount=0;
+        if(videoId){
+            commentsCount= await Comment.countDocuments({videoId: new mongoose.Types.ObjectId(videoId)})
+        }else{
+            commentsCount = await Comment.countDocuments( {shortId:new mongoose.Types.ObjectId(shortId)})
+        }
+
+        return res.status(200).json(new ApiResponse(200,{commentsCount},"commments count fetched successfully"))
+    })
     deleteComment = asyncHandler(async (req, res) => {
         const { commentId } = req.params;
         const userId = req.user?._id;

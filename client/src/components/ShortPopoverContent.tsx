@@ -1,0 +1,52 @@
+import { AlignLeft, Captions } from "lucide-react";
+import SaveToPlaylist from "./popups/SaveToPlaylist";
+import { useDispatch } from "react-redux";
+import { setOpenCard } from "@/store/reducers/short";
+
+export default function ShortPopoverContent({ shortId }) {
+    const dispatch = useDispatch();
+    return (
+        <>
+            <ul className="space-y-2">
+                <li
+                    className="flex items-center space-x-2 cursor-pointer dark:hover:bg-[#535353] hover:bg-[#E5E5E5] py-2 px-4"
+                    onClick={() => {
+                        dispatch(setOpenCard("description"));
+                    }}
+                >
+                    <AlignLeft className="h-5 w-5" />
+                    <span>Description</span>
+                </li>
+                <li className="cursor-pointer dark:hover:bg-[#535353] hover:bg-[#E5E5E5]">
+                    <SaveToPlaylist
+                        id={shortId}
+                        className="flex items-center space-x-2 py-2 px-4"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            className="h-5 w-5"
+                            fill="none"
+                            viewBox="0 0 24 24"
+                            stroke="currentColor"
+                        >
+                            <path
+                                strokeLinecap="round"
+                                strokeLinejoin="round"
+                                strokeWidth="2"
+                                d="M5 3v16l7-3 7 3V3H5z"
+                            />
+                        </svg>
+                        <span>Save to playlist</span>
+                    </SaveToPlaylist>
+                </li>
+                <li
+                    className="flex items-center space-x-2 cursor-pointer py-2 px-4 dark:hover:bg-[#535353] hover:bg-[#E5E5E5]"
+                    // onClick={}
+                >
+                    <Captions className="w-5 h-5" />
+                    <span>Captions</span>
+                </li>
+            </ul>
+        </>
+    );
+}

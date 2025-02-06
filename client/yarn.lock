@@ -985,6 +985,11 @@
   resolved "https://registry.npmjs.org/@lokesh.dhakar/quantize/-/quantize-1.4.0.tgz"
   integrity sha512-+//cqVWKis//t0YH62EDtwaFSPG/CDtYNg4CZmzNmG2d5W17Iu3fuDAdpQXCDHUDrrU9q0veze4A7tPZXlR/mg==
 
+"@mantine/hooks@^7.16.2":
+  version "7.16.2"
+  resolved "https://registry.yarnpkg.com/@mantine/hooks/-/hooks-7.16.2.tgz#24163bcb7b7f862bdd984e26180dbda12bae1588"
+  integrity sha512-ZFHQhDi9T+r6VR5NEeE47gigPPIAHVIKDOCWsCsbCqHc3yz5l8kiO2RdfUmsTKV2KD/AiXnAw4b6pjQEP58GOg==
+
 "@nodelib/fs.scandir@2.1.5":
   version "2.1.5"
   resolved "https://registry.npmjs.org/@nodelib/fs.scandir/-/fs.scandir-2.1.5.tgz"

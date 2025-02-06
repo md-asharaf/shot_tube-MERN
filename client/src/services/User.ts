@@ -4,10 +4,10 @@ class UserService {
     getUserChannel = async (username: string) =>
         await Axios.get(`/users/channel/${username}`);
     getCurrentUser = async () => await Axios.get("/users/current-user");
-    addVideoToWatchHistory = async (videoId: string) =>
-        await Axios.post(`/users/add-to-watch-history/${videoId}`);
-    removeFromWatchHistory = async (videoId: string) =>
-        await Axios.delete(`/users/remove-from-watch-history/${videoId}`);
+    addToWatchHistory = async (id: string,type:string) =>
+        await Axios.post(`/users/add-to-watch-history?${type}Id=${id}`);
+    removeFromWatchHistory = async (id: string,type:string) =>
+        await Axios.delete(`/users/remove-from-watch-history?${type}Id=${id}`);
     getWatchHistory = async () => await Axios.get("/users/watch-history");
     getWatchLater = async () => await Axios.get("/users/watch-later");
     clearWatchHistory = async () =>
@@ -19,12 +19,12 @@ class UserService {
             resetToken,
             password,
         });
-    saveToWatchLater = async (videoId: string) =>
-        await Axios.post(`/users/save-to-watch-later/${videoId}`);
-    removeFromWatchLater = async (videoId: string) => 
-        await Axios.patch(`/users/remove-from-watch-later/${videoId}`);
-    isSavedToWatchLater = async (videoId: string) =>
-        await Axios.get(`/users/is-saved-to-watch-later/${videoId}`);
+    saveToWatchLater = async (id:string,type:string) =>
+        await Axios.post(`/users/save-to-watch-later?${type}Id=${id}`);
+    removeFromWatchLater = async (id: string,type:string) => 
+        await Axios.patch(`/users/remove-from-watch-later?${type}Id=${id}`);
+    isSavedToWatchLater = async (id: string,type:string) =>
+        await Axios.get(`/users/is-saved-to-watch-later?${type}Id=${id}`);
 }
 
 export default new UserService();

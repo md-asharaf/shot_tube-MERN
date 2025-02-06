@@ -15,7 +15,7 @@ const NavBar = () => {
     const theme = useSelector((state: RootState) => state.theme.mode);
     const userData = useSelector((state: RootState) => state.auth.userData);
     return (
-        <div className="flex items-center justify-between p-2 sm:p-8 h-12 gap-2 w-full bg-background text-foreground">
+        <div className="flex items-center justify-between p-2 sm:p-8 h-12 gap-2 w-full text-foreground">
             <div className="flex items-center gap-x-2 md:gap-x-4">
                 <Menu
                     strokeWidth={1.5}

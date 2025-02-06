@@ -1,5 +1,5 @@
 import { Button } from "@/components/ui/button";
-import { IVideoData } from "@/interfaces";
+import { IShortData, IVideoData } from "@/interfaces";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useSelector } from "react-redux";
@@ -10,14 +10,14 @@ import { RootState } from "@/store/store";
 const WatchLater = () => {
     const userData = useSelector((state: RootState) => state.auth.userData);
     const {
-        data: videos,
+        data: watchLater,
         isError,
         error,
         isLoading,
         isFetching,
     } = useQuery({
         queryKey: ["watch-later", userData?._id],
-        queryFn: async (): Promise<IVideoData[]> => {
+        queryFn: async (): Promise<{videos:IVideoData[];shorts:IShortData[]}> => {
             const data = await userServices.getWatchLater();
             return data.watchLater;
         },
@@ -46,11 +46,12 @@ const WatchLater = () => {
             </div>
         );
     }
-
-    if (!videos || videos.length === 0) {
+    const videos = watchLater.videos;
+    const shorts = watchLater.shorts;
+    if (videos.length === 0 && shorts.length === 0) {
         return (
             <div className="flex items-center justify-center h-full text-2xl">
-                No liked videos...
+                No videos or shorts saved to watch later
             </div>
         );
     }
@@ -66,6 +67,7 @@ const WatchLater = () => {
                     0
                 ),
                 videos,
+                shorts,
                 description: "videos you saved to watch later",
             }}
         />

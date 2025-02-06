@@ -6,9 +6,9 @@ import mongoose from "mongoose";
 import { Comment } from "../models/comment.js";
 import { Reply } from "../models/reply.js";
 import { Video } from "../models/video.js";
-import { User } from "../models/user.js"
 import { Tweet } from "../models/tweet.js"
 import { publishNotification } from "../lib/kafka/producer.js";
+import { Short } from "../models/short.js";
 class LikeController {
     toggleCommentLike = asyncHandler(async (req, res) => {
         const { commentId } = req.params;
@@ -89,6 +89,44 @@ class LikeController {
         }
         return res.status(200).json(new ApiResponse(200, null, `${dbLike ? "unliked" : "liked"} video`));
     })
+    toggleShortLike = asyncHandler(async (req, res) => {
+        const { shortId } = req.params;
+        const user = req.user;
+        if (!shortId) throw new ApiError(400, "short id is required");
+        const dbLike = await Like.findOne({ shortId: new mongoose.Types.ObjectId(shortId), userId: user._id });
+        if (!dbLike) {
+            const like = await Like.create({
+                shortId,
+                userId: user._id
+            })
+            // publishing notification
+            const short = await Short.findById(shortId)
+            if (like && !short.userId.equals(user._id)) {
+                console.log(short.userId, user._id)
+                const message = `@${user.username} liked your short: "${short.title}"`;
+                publishNotification({
+                    userId: short.userId,
+                    message,
+                    short: {
+                        _id: short._id,
+                        thumbnail: short.thumbnail,
+                    },
+                    creator: {
+                        _id: user._id,
+                        avatar: user.avatar,
+                        fullname: user.fullname
+                    },
+                    read: false,
+                    createdAt: new Date(Date.now()),
+                });
+            }
+            //end
+        }
+        else {
+            await Like.findByIdAndDelete(dbLike._id)
+        }
+        return res.status(200).json(new ApiResponse(200, null, `${dbLike ? "unliked" : "liked"} short`));
+    })
     toggleTweetLike = asyncHandler(async (req, res) => {
         const { tweetId } = req.params;
         const user = req.user;
@@ -163,13 +201,30 @@ class LikeController {
         }
         return res.status(200).json(new ApiResponse(200, null, `${dbLike ? "unliked" : "liked"} reply`))
     })
-    isVideoLiked = asyncHandler(async (req, res) => {
-        const { videoId } = req.params;
+    likesCount = asyncHandler(async (req, res) => {
+        const { videoId, shortId } = req.query;
+        if (!videoId && !shortId) {
+            throw new ApiError(400, "video id or short id is required")
+        }
+        let likesCount = 0;
+        if (videoId) {
+            likesCount = await Like.countDocuments({ videoId })
+        } else {
+            likesCount = await Like.countDocuments({ shortId })
+        }
+        return res.status(200).json(new ApiResponse(200,{likesCount},"likes fetched successfully"))
+    })
+    isLiked = asyncHandler(async (req, res) => {
+        const { videoId, shortId } = req.query;
         const userId = req.user?._id;
-        if (!videoId) throw new ApiError(400, "video id is required");
-        const dbLike = await Like.findOne({ videoId: new mongoose.Types.ObjectId(videoId), userId });
-        const likesCount = await Like.countDocuments({ videoId: new mongoose.Types.ObjectId(videoId) });
-        return res.status(200).json(new ApiResponse(200, { isLiked: !!dbLike, likesCount }, `user has${!!dbLike ? "" : " not"} liked this video`))
+        if (!videoId && !shortId) throw new ApiError(400, "video id or short id is required");
+        let isLiked = false;
+        if (videoId) {
+            isLiked = await Like.findOne({ videoId: new mongoose.Types.ObjectId(videoId), userId });
+        } else {
+            isLiked = await Like.findOne({ shortId: new mongoose.Types.ObjectId(shortId), userId });
+        }
+        return res.status(200).json(new ApiResponse(200, { isLiked }, `user has${isLiked ? "" : " not"} liked this video`))
     })
     videoCommentsLike = asyncHandler(async (req, res) => {
         const { videoId } = req.params;
@@ -177,6 +232,19 @@ class LikeController {
         if (!videoId) throw new ApiError(400, "Video id is required");
         const comments = await Comment.find({
             videoId: new mongoose.Types.ObjectId(videoId),
+        })
+        let isLiked = {};
+        for (let comment of comments) {
+            isLiked[comment._id] = { status: !!(await Like.findOne({ commentId: comment._id, userId })), count: await Like.countDocuments({ commentId: comment._id }) }
+        }
+        return res.status(200).json(new ApiResponse(200, { isLiked }, "User has liked these comments"))
+    })
+    shortCommentsLike = asyncHandler(async (req, res) => {
+        const { shortId } = req.params;
+        const userId = req.user?._id;
+        if (!shortId) throw new ApiError(400, "short id is required");
+        const comments = await Comment.find({
+            shortId: new mongoose.Types.ObjectId(shortId),
         })
         let isLiked = {};
         for (let comment of comments) {

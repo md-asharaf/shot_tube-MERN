@@ -20,13 +20,13 @@ import { RootState } from "@/store/store";
 import userServices from "@/services/User";
 
 interface Props {
-    videoId: string;
+    id: string;
     children: React.ReactNode;
     className?: string;
 }
 
 const SaveToPlaylist: React.FC<Props> = ({
-    videoId,
+    id,
     children,
     className = "",
 }) => {
@@ -51,34 +51,38 @@ const SaveToPlaylist: React.FC<Props> = ({
 
     const { data: isSavedToWatchLater, refetch: refetchIsSavedToWatchLater } =
         useQuery({
-            queryKey: ["is-video-saved", videoId, userId],
+            queryKey: ["is-video-saved", id, userId],
             queryFn: async () => {
-                const data = await userServices.isSavedToWatchLater(videoId);
+                const data = await userServices.isSavedToWatchLater(
+                    id,
+                    "video"
+                );
                 return data.isSaved;
             },
-            enabled: !!videoId && !!userId,
+            enabled: !!id && !!userId,
         });
 
     const { data: isSavedToPlaylists, refetch: refetchIsSavedToPlaylists } =
         useQuery({
-            queryKey: ["is-saved-statuses", videoId, playlists],
+            queryKey: ["is-saved-statuses", id, playlists],
             queryFn: async (): Promise<boolean[]> => {
                 return await Promise.all(
                     playlists?.map(async (p) => {
                         const data = await playlistServices.isSavedToPlaylist(
-                            videoId,
-                            p._id
+                            p._id,
+                            id,
+                            "video"
                         );
                         return data.isSaved;
                     })
                 );
             },
-            enabled: !!videoId && !!playlists,
+            enabled: !!id && !!playlists,
         });
 
     const { mutate: saveToWatchLater } = useMutation({
         mutationFn: async () => {
-            await userServices.saveToWatchLater(videoId);
+            await userServices.saveToWatchLater(id, "video");
         },
         onSuccess: () => {
             toast.success("Saved to watch later");
@@ -94,7 +98,7 @@ const SaveToPlaylist: React.FC<Props> = ({
 
     const { mutate: removeFromWatchLater } = useMutation({
         mutationFn: async () => {
-            await userServices.removeFromWatchLater(videoId);
+            await userServices.removeFromWatchLater(id, "video");
         },
         onSuccess: () => {
             toast.success("Removed from watch later");
@@ -110,7 +114,7 @@ const SaveToPlaylist: React.FC<Props> = ({
 
     const { mutate: add } = useMutation({
         mutationFn: async ({ playlistId }: { playlistId: string }) => {
-            await playlistServices.addVideoToPlaylist(videoId, playlistId);
+            await playlistServices.addToPlaylist(playlistId, id, "video");
         },
         onSuccess: () => {
             toast.success(`Added to playlist`);
@@ -130,7 +134,11 @@ const SaveToPlaylist: React.FC<Props> = ({
 
     const { mutate: remove } = useMutation({
         mutationFn: async ({ playlistId }: { playlistId: string }) => {
-            await playlistServices.removeVideoFromPlaylist(videoId, playlistId);
+            await playlistServices.removeFromPlaylist(
+                playlistId,
+                id,
+                "video"
+            );
         },
         onSuccess: () => {
             toast.success(`Removed from playlist`);

@@ -1,4 +1,4 @@
-import { useState, useCallback } from "react";
+import { useState, useEffect, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import {
@@ -20,6 +20,7 @@ import { formatDistanceToNowStrict } from "date-fns";
 import { CheckCheck, EllipsisVertical, EyeOff, Loader2 } from "lucide-react";
 import { toast } from "sonner";
 import AvatarImg from "./AvatarImg";
+import { useIntersection } from "@mantine/hooks";
 
 const Notifications = () => {
     const dispatch = useDispatch();
@@ -28,7 +29,7 @@ const Notifications = () => {
     );
     const userId = useSelector((state: RootState) => state.auth.userData?._id);
     const [expandedMessages, setExpandedMessages] = useState({});
-
+    const lastNotificationRef = useRef(null);
     const toggleExpand = (id: string) => {
         setExpandedMessages((prev) => ({
             ...prev,
@@ -51,14 +52,14 @@ const Notifications = () => {
     });
 
     const { mutate: markAsRead } = useMutation({
-        mutationFn: async (id: string) => {
-            await notificationService.markAsRead(id);
+        mutationFn: async (date: Date) => {
+            await notificationService.markAsRead(date);
         },
-        onSuccess: (_, id) => {
+        onSuccess: (_, date) => {
             dispatch(
                 setNotifications(
                     notifications.map((n) =>
-                        n._id === id ? { ...n, read: true } : n
+                        n.createdAt === date ? { ...n, read: true } : n
                     )
                 )
             );
@@ -92,28 +93,15 @@ const Notifications = () => {
             dispatch(resetNotificationCount());
         }
     };
-
-    const observerCallback = useCallback(
-        (entries: IntersectionObserverEntry[]) => {
-            const [entry] = entries;
-            if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
-                fetchNextPage();
-            }
-        },
-        [fetchNextPage, hasNextPage, isFetchingNextPage]
-    );
-
-    const getRef = useCallback(
-        (node: HTMLDivElement | null) => {
-            if (!node) return;
-            const observer = new IntersectionObserver(observerCallback, {
-                threshold: 0.5,
-            });
-            observer.observe(node);
-        },
-        [observerCallback]
-    );
-
+    const { ref, entry } = useIntersection({
+        root: lastNotificationRef.current,
+        threshold: 1,
+    });
+    useEffect(() => {
+        if (entry?.isIntersecting && hasNextPage) {
+            fetchNextPage();
+        }
+    }, [entry]);
     return (
         <DropdownMenu onOpenChange={onDropDownOpenChange}>
             <DropdownMenuTrigger>
@@ -147,7 +135,9 @@ const Notifications = () => {
                             .reverse()
                             .map((notification, index) => {
                                 const isExpanded =
-                                    expandedMessages[notification._id] || false;
+                                    expandedMessages[
+                                        notification.createdAt.toString()
+                                    ] || false;
                                 const message = notification.message;
                                 const shortMessage =
                                     message.length > 100
@@ -157,9 +147,14 @@ const Notifications = () => {
                                 return (
                                     <DropdownMenuItem
                                         onClick={() =>
-                                            markAsRead(notification._id)
+                                            markAsRead(notification.createdAt)
                                         }
                                         key={index}
+                                        ref={
+                                            index === notifications.length - 1
+                                                ? ref
+                                                : null
+                                        }
                                         className="flex items-start hover:dark:bg-[#3E3E3E] space-x-2 rounded-none py-3"
                                     >
                                         <div className="flex space-x-2 w-3/4 items-start overflow-hidden">
@@ -192,7 +187,7 @@ const Notifications = () => {
                                                             onClick={(e) => {
                                                                 e.stopPropagation();
                                                                 toggleExpand(
-                                                                    notification._id
+                                                                    notification.createdAt.toString()
                                                                 );
                                                             }}
                                                             className="text-blue-500 ml-1"
@@ -257,7 +252,7 @@ const Notifications = () => {
                                                     <button
                                                         onClick={() =>
                                                             markAsRead(
-                                                                notification._id
+                                                                notification.createdAt
                                                             )
                                                         }
                                                         className="flex space-x-2 hover:bg-muted-foreground w-full p-2"
@@ -273,10 +268,7 @@ const Notifications = () => {
                                     </DropdownMenuItem>
                                 );
                             })}
-                        <div
-                            className="flex items-center justify-center"
-                            ref={getRef}
-                        >
+                        <div className="flex items-center justify-center">
                             {isFetchingNextPage && (
                                 <Loader2 className="h-10 w-10 animate-spin" />
                             )}

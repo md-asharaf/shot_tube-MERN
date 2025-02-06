@@ -1,7 +1,6 @@
 import { IVideoData, IPlaylist } from "@/interfaces";
 import { Link } from "react-router-dom";
 import VideoCard from "./VideoCard";
-import VideoTitle from "./VideoTitle";
 import PlaylistCard from "./PlaylistCard";
 import VideoTitle2 from "./VideoTitle2";
 import { Button } from "@/components/ui/button";
@@ -12,6 +11,7 @@ import {
   CarouselNext, 
   CarouselPrevious 
 } from "@/components/ui/carousel";
+import { useRef } from "react";
 
 const Library = ({
   videos = null,
@@ -22,6 +22,7 @@ const Library = ({
   playlists?: IPlaylist[];
   label: string;
 }) => {
+  const playerRef = useRef(null);
   return (
     <div className="space-y-4 px-4">
       <div className="flex justify-between items-center">
@@ -41,24 +42,11 @@ const Library = ({
                 <CarouselItem key={video._id} className="pl-4 basis-10/12 sm:basis-1/2 md:basis-1/3 lg:basis-1/4  2xl:basis-1/5">
                   <Link
                     to={`/video?v=${video._id}`}
-                    className="flex flex-col gap-2 hover:bg-muted rounded-lg p-2"
+                    className="flex flex-col gap-2 rounded-lg"
                   >
                     <VideoCard
-                      thumbnail={video.thumbnail}
-                      duration={video.duration}
-                    />
-                    <VideoTitle
-                      video={{
-                        _id: video._id,
-                        title: video.title,
-                        views: video.views,
-                        createdAt: video.createdAt,
-                      }}
-                      creator={{
-                        fullname: video.creator.fullname,
-                        username: video.creator.username,
-                        avatar: video.creator.avatar,
-                      }}
+                      video={video}
+                      playerRef={playerRef}
                     />
                   </Link>
                 </CarouselItem>
@@ -68,7 +56,7 @@ const Library = ({
                 <CarouselItem key={playlist._id} className="pl-4 basis-10/12 sm:basis-1/2 md:basis-1/3 lg:basis-1/4 2xl:basis-1/5">
                   <Link
                     to={`/playlist?p=${playlist._id}`}
-                    className="flex flex-col gap-2 hover:bg-muted rounded-lg p-2"
+                    className="flex flex-col gap-2 rounded-lg"
                   >
                     <PlaylistCard
                       playlistThumbnail={

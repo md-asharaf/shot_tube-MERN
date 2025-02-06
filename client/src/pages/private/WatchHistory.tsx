@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useSelector } from "react-redux";
-import { IVideoData } from "@/interfaces";
+import { IShortData, IVideoData } from "@/interfaces";
 import userServices from "@/services/User";
 import { Button } from "@/components/ui/button";
 import { MdDelete } from "react-icons/md";
@@ -25,19 +25,21 @@ import { AlertDialogDescription } from "@radix-ui/react-alert-dialog";
 const WatchHistory = () => {
     const userId = useSelector((state: RootState) => state.auth.userData?._id);
     const {
-        data: videos,
+        data: watchHistory,
         isError,
         isLoading,
         error,
         refetch,
     } = useQuery({
         queryKey: ["watch-history", userId],
-        queryFn: async (): Promise<IVideoData[]> => {
+        queryFn: async (): Promise<{shorts:IShortData[];videos:IVideoData[]}> => {
             const data = await userServices.getWatchHistory();
             return data.watchHistory;
         },
         enabled: !!userId,
     });
+    const videos = watchHistory.videos;
+    const shorts = watchHistory.shorts;
     const { mutate: clearAllHistory } = useMutation({
         mutationFn: async () => {
             await userServices.clearWatchHistory();
@@ -50,7 +52,7 @@ const WatchHistory = () => {
     });
     const { mutate: remove } = useMutation({
         mutationFn: async ({ videoId }: { videoId: string }) => {
-            await userServices.removeFromWatchHistory(videoId);
+            await userServices.removeFromWatchHistory(videoId,"video");
         },
         onSuccess: () => {
             refetch();

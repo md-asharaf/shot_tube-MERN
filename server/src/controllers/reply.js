@@ -1,7 +1,6 @@
 import { Reply } from "../models/reply.js";
 import { Comment } from "../models/comment.js"
 import { Video } from "../models/video.js"
-import { User } from "../models/user.js"
 import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/handler.js";

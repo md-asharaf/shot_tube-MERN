@@ -9,6 +9,7 @@ import commentRoutes from "./routes/comment.js";
 import likeRoutes from "./routes/like.js";
 import subscriptionRoutes from "./routes/subscription.js";
 import videoRoutes from "./routes/video.js";
+import shortRoutes from "./routes/short.js";
 import playlistRoutes from "./routes/playlist.js";
 import notificationRoutes from "./routes/notification.js";
 import uploadRoutes from "./routes/upload.js";
@@ -49,6 +50,8 @@ app.use("/api/v1/likes", likeRoutes)
 app.use("/api/v1/subscriptions", subscriptionRoutes)
 
 app.use("/api/v1/videos", videoRoutes)
+
+app.use("/api/v1/shorts", shortRoutes)
 
 app.use("/api/v1/playlists", playlistRoutes)
 

@@ -176,172 +176,375 @@ class UserController {
         }
         return res.status(200).json(new ApiResponse(200, { users }, "users fetched with username or email successfully"))
     })
-    addVideoToWatchHistory = asyncHandler(async (req, res) => {
-        const { videoId } = req.params;
+    addToWatchHistory = asyncHandler(async (req, res) => {
+        const { videoId, shortId } = req.query;
         const userId = req.user?._id;
-        if (!videoId) {
-            throw new ApiError(400, "video id is required")
+        if (!videoId && !shortId) {
+            throw new ApiError(400, "video id or short id is required")
         }
-        const response = await User.findByIdAndUpdate(userId, {
-            $push: {
-                watchHistory: new mongoose.Types.ObjectId(videoId)
-            }
+        let updateQuery = {};
+        if (videoId) {
+            updateQuery["watchHistory.videoIds"] = new mongoose.Types.ObjectId(videoId);
+        }
+        if (shortId) {
+            updateQuery["watchHistory.shortIds"] = new mongoose.Types.ObjectId(shortId);
+        }
+        await User.findByIdAndUpdate(userId, {
+            $push: updateQuery
         });
-        if (!response) {
-            throw new ApiError(400, "video not found")
-        }
         return res.status(200).json(new ApiResponse(200, null, "Video added to watch history"))
     })
-    removeVideoFromWatchHistory = asyncHandler(async (req, res) => {
-        const { videoId } = req.params;
+    removeFromWatchHistory = asyncHandler(async (req, res) => {
+        const { videoId, shortId } = req.query;
         const userId = req.user?._id;
-        if (!videoId) {
-            throw new ApiError(400, "video id is required")
+        if (!videoId && !shortId) {
+            throw new ApiError(400, "video id or short id is required")
         }
-        const response = await User.findByIdAndUpdate(userId, {
-            $pull: {
-                watchHistory: new mongoose.Types.ObjectId(videoId)
-            }
+        let updateQuery = {};
+        if (videoId) {
+            updateQuery["watchHistory.videoIds"] = new mongoose.Types.ObjectId(videoId);
+        }
+        if (shortId) {
+            updateQuery["watchHistory.shortIds"] = new mongoose.Types.ObjectId(shortId);
+        }
+        await User.findByIdAndUpdate(userId, {
+            $pull: updateQuery
         }, { new: true });
-        if (!response) {
-            throw new ApiError(400, "video not found")
-        }
         return res.status(200).json(new ApiResponse(200, null, `Video removed from watch history`))
     })
     getWatchHistory = asyncHandler(async (req, res) => {
         const userId = req.user?._id;
+        const userObjectId = new mongoose.Types.ObjectId(userId);
+
         const users = await User.aggregate([
             {
-                $match: {
-                    _id: userId
+                $match: { _id: userObjectId }
+            },
+            {
+                $project: {
+                    watchHistoryVideoIds: "$watchHistory.videoIds",
+                    watchHistoryShortIds: "$watchHistory.shortIds"
                 }
             },
             {
                 $lookup: {
                     from: "videos",
-                    localField: "watchHistory",
+                    localField: "watchHistoryVideoIds",
                     foreignField: "_id",
-                    as: "watchHistory",
+                    as: "watchHistoryVideos"
+                }
+            },
+            {
+                $lookup: {
+                    from: "shorts",
+                    localField: "watchHistoryShortIds",
+                    foreignField: "_id",
+                    as: "watchHistoryShorts"
+                }
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "watchHistoryVideos.userId",
+                    foreignField: "_id",
+                    as: "videoCreators",
                     pipeline: [
                         {
-                            $lookup: {
-                                from: "users",
-                                localField: "userId",
-                                foreignField: "_id",
-                                as: "creator",
-                                pipeline: [
-                                    {
-                                        $project: {
-                                            fullname: 1,
-                                            username: 1,
-                                            avatar: 1
-                                        }
-                                    }
-                                ]
-                            }
-                        },
-                        {
-                            $addFields: {
-                                creator: {
-                                    $first: "$creator"
-                                }
+                            $project: {
+                                _id: 1,
+                                username: 1,
+                                fullname: 1,
+                                avatar: 1
                             }
                         }
                     ]
                 }
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "watchHistoryShorts.userId",
+                    foreignField: "_id",
+                    as: "shortCreators",
+                    pipeline: [
+                        {
+                            $project: {
+                                _id: 1,
+                                username: 1,
+                                fullname: 1,
+                                avatar: 1
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                $addFields: {
+                    "watchHistoryVideos": {
+                        $map: {
+                            input: "$watchHistoryVideos",
+                            as: "video",
+                            in: {
+                                $mergeObjects: [
+                                    "$$video",
+                                    {
+                                        creator: {
+                                            $arrayElemAt: [
+                                                {
+                                                    $filter: {
+                                                        input: "$videoCreators",
+                                                        as: "creator",
+                                                        cond: { $eq: ["$$creator._id", "$$video.userId"] }
+                                                    }
+                                                },
+                                                0
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "watchHistoryShorts": {
+                        $map: {
+                            input: "$watchHistoryShorts",
+                            as: "short",
+                            in: {
+                                $mergeObjects: [
+                                    "$$short",
+                                    {
+                                        creator: {
+                                            $arrayElemAt: [
+                                                {
+                                                    $filter: {
+                                                        input: "$shortCreators",
+                                                        as: "creator",
+                                                        cond: { $eq: ["$$creator._id", "$$short.userId"] }
+                                                    }
+                                                },
+                                                0
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    watchHistory: {
+                        videos: "$watchHistoryVideos",
+                        shorts: "$watchHistoryShorts"
+                    }
+                }
             }
-        ])
-        return res.status(200).json(new ApiResponse(200, { watchHistory: users[0]?.watchHistory }, "Watch history found"))
-    })
+        ]);
+
+        return res.status(200).json(new ApiResponse(200, { watchHistory: users[0]?.watchHistory || { videos: [], shorts: [] } }, "Watch history found"));
+    });
     clearWatchHistory = asyncHandler(async (req, res) => {
         const userId = req.user?._id;
-        await User.findByIdAndUpdate(userId, { $set: { watchHistory: [] } }, { new: true });
+        await User.findByIdAndUpdate(userId, {
+            $set: {
+                watchHistory: {
+                    videoIds: [],
+                    shortIds: []
+                }
+            }
+        }, { new: true });
         return res.status(200).json(new ApiResponse(200, null, "Watch history cleared"))
     })
-    saveVideoToWatchLater = asyncHandler(async (req, res) => {
-        const { videoId } = req.params;
+    saveToWatchLater = asyncHandler(async (req, res) => {
+        const { videoId, shortId } = req.query;
         const userId = req.user?._id;
-        if (!videoId) {
-            throw new ApiError(400, "video id is required")
+
+        if (!videoId && !shortId) {
+            throw new ApiError(400, "Video ID or Short ID is required");
         }
-        const response = await User.findByIdAndUpdate(userId, {
-            $push: { watchLater: new mongoose.Types.ObjectId(videoId) }
-        }, { new: true })
-        if (!response) {
-            throw new ApiError(400, "video not found")
+
+        let updateQuery = {};
+        if (videoId) {
+            updateQuery["watchLater.videoIds"] = new mongoose.Types.ObjectId(videoId);
         }
-        return res.status(200).json(new ApiResponse(200, null, "Video added to watch later"))
-    })
-    removeVideoFromWatchLater = asyncHandler(async (req, res) => {
-        const { videoId } = req.params;
+        if (shortId) {
+            updateQuery["watchLater.shortIds"] = new mongoose.Types.ObjectId(shortId);
+        }
+
+        await User.findByIdAndUpdate(
+            userId,
+            { $push: updateQuery },
+            { new: true }
+        );
+        return res.status(200).json(new ApiResponse(200, null, "Video added to watch later"));
+    });
+
+    removeFromWatchLater = asyncHandler(async (req, res) => {
+        const { videoId, shortId } = req.query;
         const userId = req.user?._id;
-        if (!videoId) {
-            throw new ApiError(400, "video id is required")
+        if (!videoId && !shortId) {
+            throw new ApiError(400, "video id or short id is required")
         }
-        const response = await User.findByIdAndUpdate(userId, {
-            $pull: { watchLater: new mongoose.Types.ObjectId(videoId) }
+        let updateQuery = {};
+        if (videoId) {
+            updateQuery["watchLater.videoIds"] = new mongoose.Types.ObjectId(videoId);
+        }
+        if (shortId) {
+            updateQuery["watchLater.shortIds"] = new mongoose.Types.ObjectId(shortId);
+        }
+        await User.findByIdAndUpdate(userId, {
+            $pull: updateQuery
         }, { new: true });
-        if (!response) {
-            throw new ApiError(400, "video not found")
-        }
         return res.status(200).json(new ApiResponse(200, null, "Video removed from watch later"))
     })
     getWatchLater = asyncHandler(async (req, res) => {
         const userId = req.user?._id;
+        const userObjectId = new mongoose.Types.ObjectId(userId);
+
         const users = await User.aggregate([
             {
-                $match: {
-                    _id: userId
+                $match: { _id: userObjectId }
+            },
+            {
+                $project: {
+                    watchLaterVideoIds: "$watchLater.videoIds",
+                    watchLaterShortIds: "$watchLater.shortIds"
                 }
             },
             {
                 $lookup: {
                     from: "videos",
-                    localField: "watchLater",
+                    localField: "watchLaterVideoIds",
                     foreignField: "_id",
-                    as: "watchLater",
+                    as: "watchLaterVideos"
+                }
+            },
+            {
+                $lookup: {
+                    from: "shorts",
+                    localField: "watchLaterShortIds",
+                    foreignField: "_id",
+                    as: "watchLaterShorts"
+                }
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "watchLaterVideos.userId",
+                    foreignField: "_id",
+                    as: "videoCreators",
                     pipeline: [
                         {
-                            $lookup: {
-                                from: "users",
-                                localField: "userId",
-                                foreignField: "_id",
-                                as: "creator",
-                                pipeline: [
-                                    {
-                                        $project: {
-                                            fullname: 1,
-                                            username: 1,
-                                            avatar: 1
-                                        }
-                                    }
-                                ]
-                            }
-                        },
-                        {
-                            $addFields: {
-                                creator: {
-                                    $first: "$creator"
-                                }
+                            $project: {
+                                _id: 1,
+                                username: 1,
+                                fullname: 1,
+                                avatar: 1
                             }
                         }
                     ]
                 }
+            },
+            {
+                $lookup: {
+                    from: "users",
+                    localField: "watchLaterShorts.userId",
+                    foreignField: "_id",
+                    as: "shortCreators",
+                    pipeline: [
+                        {
+                            $project: {
+                                _id: 1,
+                                username: 1,
+                                fullname: 1,
+                                avatar: 1
+                            }
+                        }
+                    ]
+                }
+            },
+            {
+                $addFields: {
+                    "watchLaterVideos": {
+                        $map: {
+                            input: "$watchLaterVideos",
+                            as: "video",
+                            in: {
+                                $mergeObjects: [
+                                    "$$video",
+                                    {
+                                        creator: {
+                                            $arrayElemAt: [
+                                                {
+                                                    $filter: {
+                                                        input: "$videoCreators",
+                                                        as: "creator",
+                                                        cond: { $eq: ["$$creator._id", "$$video.userId"] }
+                                                    }
+                                                },
+                                                0
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    },
+                    "watchLaterShorts": {
+                        $map: {
+                            input: "$watchLaterShorts",
+                            as: "short",
+                            in: {
+                                $mergeObjects: [
+                                    "$$short",
+                                    {
+                                        creator: {
+                                            $arrayElemAt: [
+                                                {
+                                                    $filter: {
+                                                        input: "$shortCreators",
+                                                        as: "creator",
+                                                        cond: { $eq: ["$$creator._id", "$$short.userId"] }
+                                                    }
+                                                },
+                                                0
+                                            ]
+                                        }
+                                    }
+                                ]
+                            }
+                        }
+                    }
+                }
+            },
+            {
+                $project: {
+                    _id: 0,
+                    watchLater: {
+                        videos: "$watchLaterVideos",
+                        shorts: "$watchLaterShorts"
+                    }
+                }
             }
-        ])
-        return res.status(200).json(new ApiResponse(200, { watchLater: users[0]?.watchLater }, "Watch later found"))
-    })
+        ]);
+
+        return res.status(200).json(new ApiResponse(200, { watchLater: users[0]?.watchLater || { videos: [], shorts: [] } }, "Watch later found"));
+    });
     isSavedToWatchLater = asyncHandler(async (req, res) => {
-        const { videoId } = req.params;
+        const { videoId, shortId } = req.query;
         const userId = req.user?._id;
-        if ( !videoId) {
-            throw new ApiError(400, "video id bis required")
+        if (!videoId && !shortId) {
+            throw new ApiError(400, "video id or short id is required")
         }
         const user = await User.findById(userId);
         if (!user) {
             throw new ApiError(400, "User not found")
         }
-        const isSaved = user.watchLater.includes(videoId);
+        let isSaved = false;
+        if (videoId) isSaved = user.watchLater.videoIds.includes(videoId);
+        else isSaved = user.watchLater.shortIds.includes(shortId);
         return res.status(200).json(new ApiResponse(200, { isSaved }, `Video ${isSaved ? "is" : "is not"} saved to watch later`))
     })
 }

@@ -15,7 +15,7 @@ const io = new Server(webSocketServer, {
 
 const userSocketMap = {};
 io.use(async (socket, next) => {
-  const { accessToken, idToken } = cookie.parse(socket.handshake.headers.cookie);
+  const { accessToken, idToken } = cookie.parse(socket.handshake.headers.cookie||"");
   try {
     let user = null;
     if (idToken) {

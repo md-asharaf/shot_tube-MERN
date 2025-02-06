@@ -43,6 +43,7 @@ const Playlist = () => {
                 updatedAt: playlist.updatedAt,
                 description: playlist.description,
                 videos: playlist.videos,
+                shorts: playlist.shorts,
                 totalViews: playlist.videos.reduce(
                     (prev, curr) => prev + curr.views,
                     0

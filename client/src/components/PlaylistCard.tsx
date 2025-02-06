@@ -4,7 +4,6 @@ interface Props {
 }
 
 const PlaylistCard: React.FC<Props> = ({ playlistThumbnail, videosLength }) => {
-    if (!playlistThumbnail) return null;
     return (
         <div className="relative">
             <img

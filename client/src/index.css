@@ -4,12 +4,13 @@
 @tailwind utilities;
 body {
     font-family: "Nunito Sans", serif;
+    --plyr-color-main: red;
+    --plyr-range-track-height:3px;
 }
 .scrollbar-hide {
     -ms-overflow-style: none;
     scrollbar-width: none;
 }
-
 .scrollbar-hide::-webkit-scrollbar {
     display: none;
 }

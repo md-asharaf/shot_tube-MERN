@@ -22,15 +22,19 @@ class PlaylistController {
         return res.status(201).json(new ApiResponse(201, null, "Playlist created successfully"));
     })
     isSavedToPlaylist = asyncHandler(async (req, res) => {
-        const { playlistId, videoId } = req.params;
-        if (!playlistId || !videoId) {
-            throw new ApiError(400, "PlaylistId and videoId are required");
+        const { playlistId } = req.params;
+        const { videoId, shortId } = req.query;
+        if (!playlistId) {
+            throw new ApiError(400, "PlaylistId is required");
+        }
+        if (!videoId && !shortId) {
+            throw new ApiError(400, "VideoId or shortId is required");
         }
         const playlist = await PlayList.findById(playlistId);
         if (!playlist) {
             throw new ApiError(404, "Playlist not found");
         }
-        const isSaved = playlist.videos.includes(videoId);
+        const isSaved = videoId ? playlist.videos.includes(videoId) : playlist.shorts.includes(shortId);
         return res.status(200).json(new ApiResponse(200, { isSaved }, "Video is saved to playlist"));
     })
     getUserPlaylists = asyncHandler(async (req, res) => {
@@ -69,23 +73,38 @@ class PlaylistController {
                                     $first: "$creator"
                                 }
                             }
+                        },
+                        {
+                            $project: {
+                                userId: 0
+                            }
                         }
                     ]
                 }
-            }, {
+            },
+            {
                 $lookup: {
                     from: "users",
                     localField: "userId",
                     foreignField: "_id",
-                    as: "creator"
+                    as: "creator",
+                    pipeline: [
+                        {
+                            $project: {
+                                fullname: 1
+                            }
+                        }
+                    ]
                 }
-            }, {
+            },
+            {
                 $addFields: {
                     creator: {
                         $first: "$creator"
                     }
                 }
-            }, {
+            },
+            {
                 $project: {
                     userId: 0
                 }
@@ -116,7 +135,14 @@ class PlaylistController {
                                 from: "users",
                                 localField: "userId",
                                 foreignField: "_id",
-                                as: "creator"
+                                as: "creator",
+                                pipeline: [
+                                    {
+                                        $project: {
+                                            fullname: 1
+                                        }
+                                    }
+                                ]
                             }
                         },
                         {
@@ -125,27 +151,38 @@ class PlaylistController {
                                     $first: "$creator"
                                 }
                             }
-                        }, {
+                        },
+                        {
                             $project: {
                                 userId: 0
                             }
                         }
                     ]
                 }
-            }, {
+            },
+            {
                 $lookup: {
                     from: "users",
                     localField: "userId",
                     foreignField: "_id",
-                    as: "creator"
+                    as: "creator",
+                    pipeline: [
+                        {
+                            $project: {
+                                fullname: 1
+                            }
+                        }
+                    ]
                 }
-            }, {
+            },
+            {
                 $addFields: {
                     creator: {
                         $first: "$creator"
                     }
                 }
-            }, {
+            },
+            {
                 $project: {
                     userId: 0
                 }
@@ -156,40 +193,43 @@ class PlaylistController {
         }
         return res.status(200).json(new ApiResponse(200, { playlist: playlists[0] }, "Playlist fetched successfully"));
     })
-    addVideoToPlaylist = asyncHandler(async (req, res) => {
-        const { playlistId, videoId } = req.params
-        if (!playlistId || !videoId) {
-            throw new ApiError(400, "PlaylistId and videoId are required");
+    addToPlaylist = asyncHandler(async (req, res) => {
+        const { playlistId } = req.params;
+        const { videoId, shortId } = req.query;
+        if (!playlistId) {
+            throw new ApiError(400, "PlaylistId is required");
         }
+        if (!videoId && !shortId) {
+            throw new ApiError(400, "VideoId or shortId is required");
+        }
+        const updateQuery = videoId ? { videos: new mongoose.Types.ObjectId(videoId) } : { shorts: new mongoose.Types.ObjectId(shortId) };
         const playlist = await PlayList.findByIdAndUpdate(playlistId, {
-            $push: {
-                videos: new mongoose.Types.ObjectId(videoId)
-            }
+
+            $push: updateQuery
         }, {
             new: true
         });
-        if(!playlist){
+        if (!playlist) {
             throw new ApiError(500, "Failed to add video to playlist");
         }
-        return res.status(200).json(new ApiResponse(200, null, "Video added to playlist successfully"));
+        return res.status(200).json(new ApiResponse(200, null, "added to playlist successfully"));
     })
-    removeVideoFromPlaylist = asyncHandler(async (req, res) => {
-        const { playlistId, videoId } = req.params;
-        if (!playlistId || !videoId) {
-            throw new ApiError(400, "PlaylistId and videoId are required");
+    removeFromPlaylist = asyncHandler(async (req, res) => {
+        const { playlistId } = req.params;
+        const { videoId, shortId } = req.query;
+        if (!playlistId) {
+            throw new ApiError(400, "PlaylistId is required");
+        }
+        if (!videoId && !shortId) {
+            throw new ApiError(400, "VideoId or shortId is required");
         }
         const playlist = await PlayList.findById(playlistId);
         if (!playlist) {
             throw new ApiError(404, "Playlist not found");
         }
-        const video = playlist.videos.find(v => v == videoId);
-        if (!video) {
-            throw new ApiError(404, "Video not found in playlist");
-        }
+        const updateQuery = videoId ? { videos: new mongoose.Types.ObjectId(videoId) } : { shorts: new mongoose.Types.ObjectId(shortId) };
         const updatedPlaylist = await PlayList.findByIdAndUpdate(playlist._id, {
-            $pull: {
-                videos: new mongoose.Types.ObjectId(videoId)
-            },
+            $pull: updateQuery
         }, {
             new: true
         });
@@ -227,7 +267,7 @@ class PlaylistController {
             playlist.description = description;
         }
         const updatedPlaylist = await playlist.save({ validateBeforeSave: false });
-        if(!updatedPlaylist){
+        if (!updatedPlaylist) {
             throw new ApiError(500, "Failed to update playlist");
         }
         return res.status(200).json(new ApiResponse(200, null, "Playlist updated successfully"));

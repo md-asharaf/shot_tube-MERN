@@ -31,14 +31,28 @@ const userSchema = new Schema({
         type: String
     },
     watchHistory: {
-        type: [Schema.Types.ObjectId],
-        ref: "Video",
-        default: []
+        videoIds:{
+            type: [Schema.Types.ObjectId],
+            ref: "Video",
+            default: []
+        },
+        shortIds:{
+            type: [Schema.Types.ObjectId],
+            ref: "Short",
+            default: []
+        }
     },
     watchLater: {
-        type: [Schema.Types.ObjectId],
-        ref: "Video",
-        default: []
+        videoIds:{
+            type: [Schema.Types.ObjectId],
+            ref: "Video",
+            default: []
+        },
+        shortIds:{
+            type: [Schema.Types.ObjectId],
+            ref: "Short",
+            default: []
+        }
     },
     password: {
         type: String,

@@ -1,17 +1,17 @@
 import { Schema, model } from "mongoose";
 import MAP from "mongoose-aggregate-paginate-v2";
 const videoSchema = new Schema({
-    video: {
-        type:String,
+    source: {
+        type: String,
         required: true
     },
     thumbnail: {
-        type:String,
+        type: String,
         required: true
     },
     subtitle: {
-        type:String,
-        required: true
+        type: String,
+        default: ""
     },
     title: {
         type: String,
@@ -29,9 +29,13 @@ const videoSchema = new Schema({
         type: Number,
         default: 0
     },
-    isPublished: {
-        type: Boolean,
-        default: true
+    thumbnailPreviews:{
+        type: String,
+        default: ""
+    },
+    tags: {
+        type: [String],
+        required: true
     },
     userId: {
         type: Schema.Types.ObjectId,

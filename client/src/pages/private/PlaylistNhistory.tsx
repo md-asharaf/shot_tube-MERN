@@ -1,6 +1,6 @@
 import { useSelector } from "react-redux";
 import DefaultAvatarImage from "@/assets/images/profile.png";
-import { IPlaylist, IVideoData } from "@/interfaces";
+import { IPlaylist, IShortData, IVideoData } from "@/interfaces";
 import { useQuery } from "@tanstack/react-query";
 import playlistServices from "@/services/Playlist";
 import subscriptionServices from "@/services/Subscription";
@@ -27,7 +27,10 @@ const PlaylistNhistory = () => {
 
     const { data: watchHistory, isLoading: loadingHistory } = useQuery({
         queryKey: ["watch-history", userData?._id],
-        queryFn: async (): Promise<IVideoData[]> => {
+        queryFn: async (): Promise<{
+            videos: IVideoData[];
+            shorts: IShortData[];
+        }> => {
             const data = await userServices.getWatchHistory();
             return data.watchHistory;
         },
@@ -45,7 +48,10 @@ const PlaylistNhistory = () => {
 
     const { data: watchLater, isLoading: loadingWatchLater } = useQuery({
         queryKey: ["watch-later", userData?._id],
-        queryFn: async (): Promise<IVideoData[]> => {
+        queryFn: async (): Promise<{
+            videos: IVideoData[];
+            shorts: IShortData[];
+        }> => {
             const data = await userServices.getWatchLater();
             return data.watchLater;
         },
@@ -90,20 +96,24 @@ const PlaylistNhistory = () => {
                     <div className="text-muted-foreground">{`@${
                         userData?.username
                     } • ${subscriberCount} subscribers • ${
-                        watchHistory?.length || 0
+                        watchHistory?.videos.length +
+                            watchHistory?.shorts.length || 0
                     } videos`}</div>
                 </div>
             </div>
 
             <div className="space-y-10">
-                {watchHistory?.length > 0 && (
-                    <Library videos={watchHistory} label="Watch History" />
+                {watchHistory?.videos.length > 0 && (
+                    <Library
+                        videos={watchHistory.videos}
+                        label="Watch History"
+                    />
                 )}
                 {playlists?.length > 0 && (
                     <Library playlists={playlists} label="Playlists" />
                 )}
-                {watchLater?.length > 0 && (
-                    <Library videos={watchLater} label="Watch Later" />
+                {watchLater?.videos.length > 0 && (
+                    <Library videos={watchLater.videos} label="Watch Later" />
                 )}
                 {likedVideos?.length > 0 && (
                     <Library videos={likedVideos} label="Liked Videos" />

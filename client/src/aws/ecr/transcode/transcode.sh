@@ -29,26 +29,12 @@ transcode_and_upload_to_s3() {
   HEIGHT=$1
   WIDTH=$2
   BANDWIDTH=$3
-  
-  # Choose the smaller dimension (height or width) for the playlist name
-  if [ "$HEIGHT" -le "$WIDTH" ]; then
-    PLAYLIST_NAME="${HEIGHT}p.m3u8"  # Use height as part of the playlist name
-  else
-    PLAYLIST_NAME="${WIDTH}p.m3u8"  # Use width as part of the playlist name
-  fi
-
-  echo "Checking if $PLAYLIST_NAME output already exists in S3..."
-  
-  # Check if the playlist already exists in the bucket
-  if aws s3 ls "${OUTPUT_PATH}/${PLAYLIST_NAME}" >/dev/null 2>&1; then
-    echo "$PLAYLIST_NAME output already exists in S3. Skipping transcoding."
-    return
-  fi
+  PLAYLIST_NAME="${HEIGHT}p.m3u8"  # Use height as part of the playlist name
 
   echo "Processing video with resolution ${HEIGHT}x${WIDTH}..."
 
   # Generate HLS playlist and segments for the given height and width
-  time ffmpeg -i "$INPUT_FILE" -vf "scale=${WIDTH}:${HEIGHT}" -b:v "${BANDWIDTH}k" -f hls -hls_time 10 -hls_playlist_type vod -hls_segment_filename "${TEMP_DIR}/${PLAYLIST_NAME%.*}_%03d.ts" "${TEMP_DIR}/${PLAYLIST_NAME}"
+  time ffmpeg -i "$INPUT_FILE" -vf "scale=${WIDTH}:${HEIGHT}" -b:v "${BANDWIDTH}k" -f hls -hls_time 10 -hls_playlist_type vod -hls_segment_filename "${TEMP_DIR}/${PLAYLIST_NAME%.*}_%03d.ts" -loglevel debug "${TEMP_DIR}/${PLAYLIST_NAME}"
 
   # Upload the generated playlist and segments to S3
   for file in "${TEMP_DIR}/${PLAYLIST_NAME%.*}"*.ts "${TEMP_DIR}/${PLAYLIST_NAME}"; do

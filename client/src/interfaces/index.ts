@@ -23,7 +23,10 @@ export interface ILoginForm {
 }
 export interface IUiData {
     isShareModalOpen: boolean;
-    videoId: string;
+    shareData: {
+        id: string;
+        type: string;
+    };
     isMenuOpen: boolean;
     isVideoModalOpen: boolean;
     isLoginPopoverVisible: boolean;
@@ -42,8 +45,9 @@ export interface IVideoUploadForm {
 export interface IVideoData {
     _id: string;
     title: string;
+    thumbnailPreviews:string;
     description?: string;
-    video?: string;
+    source?: string;
     subtitle?: string;
     thumbnail: string;
     creator: IUser;
@@ -51,6 +55,21 @@ export interface IVideoData {
     duration: string;
     createdAt?: Date;
     updatedAt?: Date;
+}
+export interface IShortData {
+    _id: string;
+    title: string;
+    thumbnailPreviews:string;
+    description?: string;
+    source?: string;
+    subtitle?: string;
+    thumbnail: string;
+    creator: IUser;
+    views: number;
+    createdAt?: Date;
+    updatedAt?: Date;
+    next:string;
+    prev:string;
 }
 export interface IComment {
     _id: string;
@@ -67,17 +86,18 @@ export interface IReply {
     creator: IUser;
     createdAt?: Date;
 }
-export interface ApiResponse<T = any> {
+export interface ApiResponse {
     success: boolean;
     message: string;
     status: number;
-    data: T;
+    data: any;
 }
 export interface IPlaylist {
     _id: string;
     name: string;
     description: string;
     videos: Array<IVideoData>;
+    shorts: Array<IShortData>;
     creator: IUser;
     createdAt: Date;
     updatedAt: Date;
@@ -89,6 +109,10 @@ export interface PartETag {
 export interface INotification {
     _id: string;
     video?: {
+        _id: string;
+        thumbnail: string;
+    };
+    short?: {
         _id: string;
         thumbnail: string;
     };

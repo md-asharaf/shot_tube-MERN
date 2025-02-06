@@ -3,8 +3,6 @@ import Axios from "@/lib/axios";
 class VideoSevice {
     upload = async (data: any) =>
         await Axios.post("/videos/publish-video", data);
-    allVideos = async (limit: number, page: number) =>
-        await Axios.get(`/videos/all-videos?page=${page}&limit=${limit}`);
     singleVideo = async (videoId: string) =>
         await Axios.get(`/videos/${videoId}`);
     allVideosByUser = async (userId: string) =>
@@ -14,11 +12,9 @@ class VideoSevice {
         await Axios.post(`/videos/increase-views/${videoId}`);
     searchVideos = async (query: string) =>
         await Axios.get(`/videos/search-videos?query=${query}`);
-    recommendedVideos = async (videoId: string, userId: string) =>
+    recommendedVideos = async (page: number, videoId = null, userId = null) =>
         await Axios.get(
-            `/videos/recommended-videos?videoId=${videoId}&userId=${
-                userId ?? ""
-            }`
+            `/videos/recommended-videos?page=${page}${videoId?`&videoId=${videoId}`:""}${userId?`&userId=${userId}`:""}`
         );
 }
 export default new VideoSevice();

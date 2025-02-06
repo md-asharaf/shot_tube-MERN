@@ -2,7 +2,6 @@ import { asyncHandler } from "../utils/handler.js";
 import Notification from "../models/notification.js"
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
-import mongoose from "mongoose";
 class NotificationController {
     getAllNotifications = asyncHandler(async (req, res) => {
         const { page = 1, limit = 10 } = req.query;
@@ -17,12 +16,12 @@ class NotificationController {
         return res.status(200).json(new ApiResponse(200, { notifications }, "Notifications fetched successfully"))
     })
     markAsRead = asyncHandler(async (req, res) => {
-        const { id } = req.query;
+        const { createdAt } = req.query;
         if (!id) {
             throw new ApiError(400, "createdAt is required")
         }
         const userId = req.user?._id;
-        await Notification.updateOne({ userId, _id: new mongoose.Types.ObjectId(id) }, { read: true });
+        await Notification.updateOne({ userId, createdAt }, { read: true });
         return res.status(200).json(new ApiResponse(200, null, "Notification marked as read"))
     })
     markAllAsRead = asyncHandler(async (req, res) => {
