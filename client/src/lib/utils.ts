@@ -53,8 +53,8 @@ export function formatViews(count: number) {
     if (count >= 1000) return `${(count / 1000).toFixed(1)}K views`;
     return `${count} views`;
 }
-export function generateColor(fullname:string) {
-    if(!fullname) return ;
+export function generateColor(fullname: string) {
+    if (!fullname) return;
     const colors = [
         "bg-red-500/30",
         "bg-blue-500/30",
@@ -70,3 +70,17 @@ export function generateColor(fullname:string) {
     }
     return colors[Math.abs(hash) % colors.length];
 }
+
+export const onTimestampClick = (seconds: number, playerRef: any) => {
+    if (playerRef.current) {
+        playerRef.current.currentTime = seconds;
+        window.scrollTo({
+            top: 0,
+            behavior: "smooth",
+        });
+        if (playerRef.current.paused) {
+            playerRef.current.play();
+        }
+    }
+};
+

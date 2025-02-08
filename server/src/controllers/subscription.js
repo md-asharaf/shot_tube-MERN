@@ -2,8 +2,8 @@ import { asyncHandler } from "../utils/handler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 import { Subscription } from "../models/subscription.js";
-import mongoose from "mongoose";
 import { User } from "../models/user.js";
+import { ObjectId } from "mongodb"
 class SubscriptionController {
 
     toggleSubscription = asyncHandler(async (req, res) => {
@@ -12,7 +12,7 @@ class SubscriptionController {
         if (!channelId) {
             throw new ApiError(400, "Channel Id is required")
         }
-        let subscription = await Subscription.findOne({ channelId: new mongoose.Types.ObjectId(channelId), subscriberId });
+        let subscription = await Subscription.findOne({ channelId: new ObjectId(channelId), subscriberId });
         if (subscription) {
             await Subscription.findByIdAndDelete(subscription._id, { new: true });
             subscription = null;
@@ -31,7 +31,7 @@ class SubscriptionController {
         const subscribers = await Subscription.aggregate([
             {
                 $match: {
-                    channelId: new mongoose.Types.ObjectId(channelId)
+                    channelId: new ObjectId(channelId)
                 }
             },
             {
@@ -78,7 +78,7 @@ class SubscriptionController {
         const subscribedChannels = await Subscription.aggregate([
             {
                 $match: {
-                    subscriberId: new mongoose.Types.ObjectId(subscriberId)
+                    subscriberId: new ObjectId(subscriberId)
                 }
             },
             {
@@ -115,7 +115,7 @@ class SubscriptionController {
         if (!channelId) {
             throw new ApiError(400, "Channel Id is required")
         }
-        const isSubscribed = await Subscription.findOne({ channelId: new mongoose.Types.ObjectId(channelId), subscriberId }) ? true : false;
+        const isSubscribed = await Subscription.findOne({ channelId: new ObjectId(channelId), subscriberId }) ? true : false;
         return res.status(200).json(new ApiResponse(200, { isSubscribed }, `User is ${isSubscribed ? "" : "not"} subscribed to this channel`));
     })
     getSubscribersCount = asyncHandler(async (req, res) => {
@@ -123,7 +123,7 @@ class SubscriptionController {
         if (!channelId) {
             throw new ApiError(400, "Channel Id is required");
         }
-        const subscribersCount = await Subscription.countDocuments({ channelId: new mongoose.Types.ObjectId(channelId) });
+        const subscribersCount = await Subscription.countDocuments({ channelId: new ObjectId(channelId) });
         return res.status(200).json(new ApiResponse(200, { subscribersCount }, "Subscribers count fetched successfully"));
     })
 }

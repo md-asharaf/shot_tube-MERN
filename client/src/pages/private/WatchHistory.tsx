@@ -20,7 +20,7 @@ import {
 import ThreeDots from "@/components/ThreeDots";
 import { toast } from "sonner";
 import { RootState } from "@/store/store";
-import { AlertDialogDescription } from "@radix-ui/react-alert-dialog";
+import { AlertDialogDescription } from "@/components/ui/alert-dialog";
 
 const WatchHistory = () => {
     const userId = useSelector((state: RootState) => state.auth.userData?._id);
@@ -38,8 +38,8 @@ const WatchHistory = () => {
         },
         enabled: !!userId,
     });
-    const videos = watchHistory.videos;
-    const shorts = watchHistory.shorts;
+    const videos = watchHistory?.videos;
+    const shorts = watchHistory?.shorts;
     const { mutate: clearAllHistory } = useMutation({
         mutationFn: async () => {
             await userServices.clearWatchHistory();

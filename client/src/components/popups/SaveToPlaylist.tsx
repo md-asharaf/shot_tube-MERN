@@ -25,11 +25,7 @@ interface Props {
     className?: string;
 }
 
-const SaveToPlaylist: React.FC<Props> = ({
-    id,
-    children,
-    className = "",
-}) => {
+const SaveToPlaylist: React.FC<Props> = ({ id, children, className = "" }) => {
     const userId = useSelector((state: RootState) => state.auth.userData?._id);
     const [playlistName, setPlaylistName] = useState<string>("");
     const [dialogState, setDialogState] = useState({
@@ -66,16 +62,11 @@ const SaveToPlaylist: React.FC<Props> = ({
         useQuery({
             queryKey: ["is-saved-statuses", id, playlists],
             queryFn: async (): Promise<boolean[]> => {
-                return await Promise.all(
-                    playlists?.map(async (p) => {
-                        const data = await playlistServices.isSavedToPlaylist(
-                            p._id,
-                            id,
-                            "video"
-                        );
-                        return data.isSaved;
-                    })
+                const data = await playlistServices.isSavedToPlaylists(
+                    id,
+                    "video"
                 );
+                return data.isSaved;
             },
             enabled: !!id && !!playlists,
         });
@@ -116,8 +107,9 @@ const SaveToPlaylist: React.FC<Props> = ({
         mutationFn: async ({ playlistId }: { playlistId: string }) => {
             await playlistServices.addToPlaylist(playlistId, id, "video");
         },
-        onSuccess: () => {
-            toast.success(`Added to playlist`);
+        onSuccess: (_, { playlistId }) => {
+            const playlist = playlists?.find((p) => p._id === playlistId);
+            toast.success(`Added to ${playlist?.name}`);
             refetchIsSavedToPlaylists();
         },
         onSettled: (data, error, variables) => {
@@ -134,14 +126,11 @@ const SaveToPlaylist: React.FC<Props> = ({
 
     const { mutate: remove } = useMutation({
         mutationFn: async ({ playlistId }: { playlistId: string }) => {
-            await playlistServices.removeFromPlaylist(
-                playlistId,
-                id,
-                "video"
-            );
+            await playlistServices.removeFromPlaylist(playlistId, id, "video");
         },
-        onSuccess: () => {
-            toast.success(`Removed from playlist`);
+        onSuccess: (_, { playlistId }) => {
+            const playlist = playlists?.find((p) => p._id === playlistId);
+            toast.success(`Removed from ${playlist?.name}`);
             refetchIsSavedToPlaylists();
         },
         onSettled: (data, error, variables) => {
@@ -187,7 +176,7 @@ const SaveToPlaylist: React.FC<Props> = ({
                 </DialogTrigger>
                 <DialogContent
                     className="w-60 bg-white dark:bg-[#212121] rounded-lg"
-                    aria-describedby=""
+                    aria-describedby={undefined}
                 >
                     <DialogHeader>
                         <DialogTitle>Save video to...</DialogTitle>
@@ -262,7 +251,10 @@ const SaveToPlaylist: React.FC<Props> = ({
                     }))
                 }
             >
-                <DialogContent className="w-80 bg-white dark:bg-[#212121] rounded-lg">
+                <DialogContent
+                    className="w-80 bg-white dark:bg-[#212121] rounded-lg"
+                    aria-describedby={undefined}
+                >
                     <DialogHeader>
                         <DialogTitle>New Playlist</DialogTitle>
                     </DialogHeader>

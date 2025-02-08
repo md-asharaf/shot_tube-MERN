@@ -27,6 +27,7 @@ const Notifications = () => {
     const { notifications, newNotificationCount } = useSelector(
         (state: RootState) => state.notification
     );
+    const [open, setOpen] = useState(notifications.map(() => false));
     const userId = useSelector((state: RootState) => state.auth.userData?._id);
     const [expandedMessages, setExpandedMessages] = useState({});
     const lastNotificationRef = useRef(null);
@@ -66,31 +67,35 @@ const Notifications = () => {
         },
     });
 
-    const { fetchNextPage, hasNextPage, isFetchingNextPage, isLoading } =
-        useInfiniteQuery({
-            queryKey: ["notifications", userId],
-            queryFn: async ({ pageParam }) => {
-                const data = await notificationService.getNotifications(
-                    pageParam
-                );
-                dispatch(
-                    setNotifications(
-                        pageParam === 1
-                            ? data.notifications.docs
-                            : [...notifications, ...data.notifications.docs]
-                    )
-                );
-                return data.notifications;
-            },
-            initialPageParam: 0,
-            getNextPageParam: (lastPage, allPages) =>
-                lastPage.hasNextPage ? allPages.length + 1 : undefined,
-            enabled: !!userId,
-        });
+    const {
+        fetchNextPage,
+        hasNextPage,
+        isFetchingNextPage,
+        isLoading,
+        refetch,
+    } = useInfiniteQuery({
+        queryKey: ["notifications", userId],
+        queryFn: async ({ pageParam }) => {
+            const data = await notificationService.getNotifications(pageParam);
+            dispatch(
+                setNotifications(
+                    pageParam === 1
+                        ? data.notifications.docs
+                        : [...notifications, ...data.notifications.docs]
+                )
+            );
+            return data.notifications;
+        },
+        initialPageParam: 1,
+        getNextPageParam: (lastPage, allPages) =>
+            lastPage.hasNextPage ? allPages.length + 1 : undefined,
+        enabled: false,
+    });
 
     const onDropDownOpenChange = (open: boolean) => {
-        if (open && newNotificationCount > 0) {
-            dispatch(resetNotificationCount());
+        if (open) {
+            refetch();
+            if (newNotificationCount > 0) dispatch(resetNotificationCount());
         }
     };
     const { ref, entry } = useIntersection({
@@ -108,8 +113,15 @@ const Notifications = () => {
                 <div className="p-1 rounded-full hover:bg-muted relative">
                     <IoNotificationsOutline className="text-2xl" />
                     {newNotificationCount > 0 && (
-                        <span className="absolute top-0 right-0 h-4 w-4 bg-red-500 text-white rounded-full text-xs flex items-center justify-center">
-                            {newNotificationCount}
+                        <span className="absolute top-0 right-0 h-4 w-4 bg-red-500 text-white rounded-full text-xs flex items-center justify-center p-0.5">
+                            {newNotificationCount > 9 ? (
+                                <div className="flex items-center">
+                                    <span>9</span>
+                                    <span className="mb-1">+</span>
+                                </div>
+                            ) : (
+                                newNotificationCount
+                            )}
                         </span>
                     )}
                 </div>
@@ -129,7 +141,7 @@ const Notifications = () => {
                         <Loader2 className="h-10 w-10 animate-spin" />
                     </div>
                 ) : (
-                    <div className="max-h-[550px] overflow-y-auto">
+                    <div className="h-[550px] overflow-y-auto">
                         {notifications
                             .slice()
                             .reverse()
@@ -221,7 +233,15 @@ const Notifications = () => {
                                                     className="h-full w-full aspect-video object-cover rounded-sm"
                                                 />
                                             </div>
-                                            <DropdownMenu>
+                                            <DropdownMenu
+                                                open={open?.[index]}
+                                                onOpenChange={(open) =>
+                                                    setOpen((prev) => ({
+                                                        ...prev,
+                                                        [index]: open,
+                                                    }))
+                                                }
+                                            >
                                                 <DropdownMenuTrigger className="p-0">
                                                     <div className="p-1 rounded-full hover:bg-muted">
                                                         <EllipsisVertical className="text-sm" />
@@ -229,9 +249,13 @@ const Notifications = () => {
                                                 </DropdownMenuTrigger>
                                                 <DropdownMenuContent
                                                     key={index}
-                                                    onClick={(e) =>
-                                                        e.stopPropagation()
-                                                    }
+                                                    onClick={(e) => {
+                                                        e.stopPropagation();
+                                                        setOpen((prev) => ({
+                                                            ...prev,
+                                                            [index]: false,
+                                                        }));
+                                                    }}
                                                     collisionPadding={120}
                                                     className="dark:bg-[#282828] p-0 rounded-lg shadow-lg space-y-2"
                                                 >

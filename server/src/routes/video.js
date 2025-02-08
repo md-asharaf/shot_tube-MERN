@@ -6,11 +6,12 @@ const router = Router();
 router.get("/search-videos", videoControllers.getVideosByQuery);
 router.get("/recommended-videos", videoControllers.getRecommendedVideos);
 router.get("/user-videos/:userId", videoControllers.getVideosByUserId);
-router.get("/liked-videos", verifyJWT, videoControllers.getLikedVideos);
+router.get("/liked-videos",verifyJWT, videoControllers.getLikedVideos);
 router.get("/:videoId", videoControllers.getVideoById);
-router.post("/publish-video", verifyJWT, videoControllers.publishVideo);
 router.post("/increase-views/:videoId", videoControllers.increaseViews)
-router.delete("/delete-video/:videoId", verifyJWT, videoControllers.deleteVideo);
-router.patch("/update-video/:videoId", verifyJWT, videoControllers.updateVideoDetails);
+router.use(verifyJWT);
+router.post("/publish-video", videoControllers.publishVideo);
+router.delete("/delete-video/:videoId", videoControllers.deleteVideo);
+router.patch("/update-video/:videoId", videoControllers.updateVideoDetails);
 
 export default router;

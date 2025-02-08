@@ -5,7 +5,7 @@ import { ApiError } from "../utils/ApiError.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { asyncHandler } from "../utils/handler.js";
 import { publishNotification } from "../lib/kafka/producer.js";
-import mongoose from "mongoose"
+import { ObjectId } from "mongodb"
 class ReplyController {
     createReply = asyncHandler(async (req, res) => {
         const { commentId } = req.params;
@@ -20,8 +20,8 @@ class ReplyController {
             userId: user._id,
             commentId
         });
-        if(!reply){
-            throw new ApiError(400,"Reply could not be created")
+        if (!reply) {
+            throw new ApiError(400, "Reply could not be created")
         }
         //publishing notification
         const comment = await Comment.findById(commentId);
@@ -45,7 +45,7 @@ class ReplyController {
             });
         }
         //end
-        return res.status(201).json(new ApiResponse(201, reply, "Reply added successfully"));
+        return res.status(201).json(new ApiResponse(201, { reply }, "Reply added successfully"));
     });
 
     updateReply = asyncHandler(async (req, res) => {
@@ -83,7 +83,7 @@ class ReplyController {
         const aggregate = Reply.aggregate([
             {
                 $match: {
-                    commentId: new mongoose.Types.ObjectId(commentId)
+                    commentId: new ObjectId(commentId)
                 }
             },
             {

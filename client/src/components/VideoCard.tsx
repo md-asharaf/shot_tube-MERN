@@ -40,7 +40,6 @@ const VideoCard: React.FC<Props> = ({
         player.toggleCaptions();
         setIsCCEnabled(!isCCEnabled);
     };
-
     return (
         <div
             onMouseEnter={() => setIsHovered(true)}
@@ -64,6 +63,7 @@ const VideoCard: React.FC<Props> = ({
                     ) : (
                         <div className="relative w-full h-full">
                             <PlyrPlayer
+                                key={video._id}
                                 source={video.source}
                                 subtitles={[
                                     {

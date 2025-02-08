@@ -11,8 +11,7 @@ const PlyrPlayer = ({
     playerRef,
     onViewTracked = () => {},
     minWatchTime = 15,
-    controls,
-    ...props
+    controls
 }) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const hlsRef = useRef<Hls | null>(null);
@@ -40,7 +39,6 @@ const PlyrPlayer = ({
                     enabled: !!thumbnailPreviews,
                     src: thumbnailPreviews,
                 },
-                keyboard: { focused: true, global: true },
                 tooltips: { controls: true, seek: true },
             };
 
@@ -86,8 +84,8 @@ const PlyrPlayer = ({
 
                     playerRef.current.on("ready", () => {
                         if (playerRef.current) {
-                            playerRef.current.captions.active = false;
                             playerRef.current.muted=true;
+                            playerRef.current.captions.active = false;
                         }
                     });
                 });
@@ -143,7 +141,7 @@ const PlyrPlayer = ({
                 className={`plyr-react plyr ${className}`}
                 crossOrigin="anonymous"
                 preload="none"
-                // autoPlay
+                autoPlay
             >
                 {subtitles.map((subtitle, index) => (
                     <track

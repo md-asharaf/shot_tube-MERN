@@ -3,9 +3,9 @@ import { ApiError } from '../utils/ApiError.js';
 import { User } from '../models/user.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
 import jwt from "jsonwebtoken"
-import mongoose from 'mongoose';
 import bcrypt from "bcrypt"
 import { Resend } from "resend";
+import { ObjectId } from "mongodb";
 const resend = new Resend(process.env.RESEND_API_KEY);
 class UserController {
     forgetPassword = asyncHandler(async (req, res) => {
@@ -184,10 +184,10 @@ class UserController {
         }
         let updateQuery = {};
         if (videoId) {
-            updateQuery["watchHistory.videoIds"] = new mongoose.Types.ObjectId(videoId);
+            updateQuery["watchHistory.videoIds"] = new ObjectId(videoId);
         }
         if (shortId) {
-            updateQuery["watchHistory.shortIds"] = new mongoose.Types.ObjectId(shortId);
+            updateQuery["watchHistory.shortIds"] = new ObjectId(shortId);
         }
         await User.findByIdAndUpdate(userId, {
             $push: updateQuery
@@ -202,10 +202,10 @@ class UserController {
         }
         let updateQuery = {};
         if (videoId) {
-            updateQuery["watchHistory.videoIds"] = new mongoose.Types.ObjectId(videoId);
+            updateQuery["watchHistory.videoIds"] = new ObjectId(videoId);
         }
         if (shortId) {
-            updateQuery["watchHistory.shortIds"] = new mongoose.Types.ObjectId(shortId);
+            updateQuery["watchHistory.shortIds"] = new ObjectId(shortId);
         }
         await User.findByIdAndUpdate(userId, {
             $pull: updateQuery
@@ -214,7 +214,7 @@ class UserController {
     })
     getWatchHistory = asyncHandler(async (req, res) => {
         const userId = req.user?._id;
-        const userObjectId = new mongoose.Types.ObjectId(userId);
+        const userObjectId = new ObjectId(userId);
 
         const users = await User.aggregate([
             {
@@ -367,10 +367,10 @@ class UserController {
 
         let updateQuery = {};
         if (videoId) {
-            updateQuery["watchLater.videoIds"] = new mongoose.Types.ObjectId(videoId);
+            updateQuery["watchLater.videoIds"] = new ObjectId(videoId);
         }
         if (shortId) {
-            updateQuery["watchLater.shortIds"] = new mongoose.Types.ObjectId(shortId);
+            updateQuery["watchLater.shortIds"] = new ObjectId(shortId);
         }
 
         await User.findByIdAndUpdate(
@@ -389,10 +389,10 @@ class UserController {
         }
         let updateQuery = {};
         if (videoId) {
-            updateQuery["watchLater.videoIds"] = new mongoose.Types.ObjectId(videoId);
+            updateQuery["watchLater.videoIds"] = new ObjectId(videoId);
         }
         if (shortId) {
-            updateQuery["watchLater.shortIds"] = new mongoose.Types.ObjectId(shortId);
+            updateQuery["watchLater.shortIds"] = new ObjectId(shortId);
         }
         await User.findByIdAndUpdate(userId, {
             $pull: updateQuery
@@ -401,7 +401,7 @@ class UserController {
     })
     getWatchLater = asyncHandler(async (req, res) => {
         const userId = req.user?._id;
-        const userObjectId = new mongoose.Types.ObjectId(userId);
+        const userObjectId = new ObjectId(userId);
 
         const users = await User.aggregate([
             {

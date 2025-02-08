@@ -76,8 +76,8 @@ const Library = ({
               ))
             )}
           </CarouselContent>
-          <CarouselPrevious className="left-0 top-1/3 -translate-x-1/3" />
-          <CarouselNext className="right-0 top-1/3 translate-x-1/3" />
+          <CarouselPrevious className="left-0 top-1/3 -translate-x-1/3" hidden />
+          <CarouselNext className="right-0 top-1/3 translate-x-1/3" hidden />
         </Carousel>
       </div>
     </div>

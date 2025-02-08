@@ -3,32 +3,28 @@ import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 import { Comment } from "../models/comment.js";
 import { Video } from "../models/video.js";
-import mongoose from "mongoose";
 import { publishNotification } from "../lib/kafka/producer.js";
 import { Short } from "../models/short.js";
+import { ObjectId } from "mongodb"
 class CommentController {
     getAllVideoComments = asyncHandler(async (req, res) => {
         const { videoId } = req.params;
-        const { page = 1, limit = 10, sentiment='All' } = req.query;
+        const { page = 1, limit = 10, sentiment = 'All' } = req.query;
         if (!videoId) {
             throw new ApiError(400, "Video ID is required")
-        }
-        const video = await Video.findById(videoId);
-        if (!video) {
-            throw new ApiError(404, "Invalid video ID provided")
         }
         const aggregate = Comment.aggregate([
             {
                 $match: {
-                    videoId: new mongoose.Types.ObjectId(videoId),
+                    videoId: new ObjectId(videoId),
                     sentiment: sentiment === 'All' ? { $exists: true } : sentiment
                 }
             },
             {
                 $lookup: {
                     from: "replies",
-                    localField: "_id",
                     foreignField: "commentId",
+                    localField: "_id",
                     as: "replies"
                 }
             },
@@ -51,6 +47,11 @@ class CommentController {
                 }
             },
             {
+                $sort: {
+                    createdAt: -1
+                }
+            },
+            {
                 $project: {
                     content: 1,
                     sentiment: 1,
@@ -59,14 +60,9 @@ class CommentController {
                     repliesCount: 1
                 }
 
-            }, {
-                $sort: {
-                    createdAt: -1
-                }
             }
         ]);
         const comments = await Comment.aggregatePaginate(aggregate, { page, limit });
-        //get repliesCount for each comment
         return res.status(200).json(new ApiResponse(200, { comments }, "Comments fetched successfully"))
     })
     addCommentToVideo = asyncHandler(async (req, res) => {
@@ -114,18 +110,14 @@ class CommentController {
     });
     getAllShortComments = asyncHandler(async (req, res) => {
         const { shortId } = req.params;
-        const { page = 1, limit = 10, sentiment='All' } = req.query;
+        const { page = 1, limit = 10, sentiment = 'All' } = req.query;
         if (!shortId) {
             throw new ApiError(400, "Short ID is required")
-        }
-        const short = await Short.findById(shortId);
-        if (!short) {
-            throw new ApiError(404, "Invalid short ID provided")
         }
         const aggregate = Comment.aggregate([
             {
                 $match: {
-                    shortId: new mongoose.Types.ObjectId(shortId),
+                    shortId: new ObjectId(shortId),
                     sentiment: sentiment === 'All' ? { $exists: true } : sentiment
                 }
             },
@@ -156,6 +148,11 @@ class CommentController {
                 }
             },
             {
+                $sort: {
+                    createdAt: -1
+                }
+            },
+            {
                 $project: {
                     content: 1,
                     sentiment: 1,
@@ -164,14 +161,12 @@ class CommentController {
                     repliesCount: 1
                 }
 
-            }, {
-                $sort: {
-                    createdAt: -1
-                }
             }
         ]);
-        const comments = await Comment.aggregatePaginate(aggregate, { page, limit });
-        //get repliesCount for each comment
+        const comments = await Comment.aggregatePaginate(aggregate, {
+            page,
+            limit,
+        });
         return res.status(200).json(new ApiResponse(200, { comments }, "Comments fetched successfully"))
     })
     addCommentToShort = asyncHandler(async (req, res) => {
@@ -217,19 +212,18 @@ class CommentController {
             .status(201)
             .json(new ApiResponse(201, { comment }, "Comment created successfully"));
     });
-    commentsCount = asyncHandler( async (req,res)=>{
-        const {videoId,shortId} = req.query;
-        if(!videoId && !shortId){
-            throw new ApiError(400,"video id or short id is required")
+    commentsCount = asyncHandler(async (req, res) => {
+        const { videoId, shortId } = req.query;
+        if (!videoId && !shortId) {
+            throw new ApiError(400, "video id or short id is required")
         }
-        let commentsCount=0;
-        if(videoId){
-            commentsCount= await Comment.countDocuments({videoId: new mongoose.Types.ObjectId(videoId)})
-        }else{
-            commentsCount = await Comment.countDocuments( {shortId:new mongoose.Types.ObjectId(shortId)})
+        let commentsCount = 0;
+        if (videoId) {
+            commentsCount = await Comment.countDocuments({ videoId: new ObjectId(videoId) })
+        } else {
+            commentsCount = await Comment.countDocuments({ shortId: new ObjectId(shortId) })
         }
-
-        return res.status(200).json(new ApiResponse(200,{commentsCount},"commments count fetched successfully"))
+        return res.status(200).json(new ApiResponse(200, { commentsCount }, "comments count fetched successfully"))
     })
     deleteComment = asyncHandler(async (req, res) => {
         const { commentId } = req.params;
@@ -237,7 +231,7 @@ class CommentController {
         if (!commentId) {
             throw new ApiError(400, "Comment ID is required")
         }
-        const deletedComment = await Comment.findOneAndDelete({ _id: new mongoose.Types.ObjectId(commentId), userId });
+        const deletedComment = await Comment.findOneAndDelete({ _id: new ObjectId(commentId), userId });
         if (!deletedComment) {
             throw new ApiError(404, "Comment not found or you are not authorized to delete it")
         }
@@ -251,7 +245,7 @@ class CommentController {
             throw new ApiError(400, "comment ID and content are required")
         }
         console.log("commentId", commentId)
-        const comment = await Comment.findOne({ _id: new mongoose.Types.ObjectId(commentId), userId });
+        const comment = await Comment.findOne({ _id: new ObjectId(commentId), userId });
         if (!comment) {
             throw new ApiError(404, "Comment not found or you are not authorized to update it")
         }

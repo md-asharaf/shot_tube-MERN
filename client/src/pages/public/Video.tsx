@@ -368,9 +368,9 @@ const Video = () => {
                 </div>
                 <div className="hidden xl:block">
                     <Comments
-                        videoId={videoId}
+                        id={videoId}
                         playerRef={playerRef}
-                        videoCreatorId={video.creator._id}
+                        creatorId={video.creator._id}
                     />
                 </div>
             </div>
@@ -410,9 +410,9 @@ const Video = () => {
             </div>
             <div className="xl:hidden">
                 <Comments
-                    videoId={videoId}
+                    id={videoId}
                     playerRef={playerRef}
-                    videoCreatorId={video.creator._id}
+                    creatorId={video.creator._id}
                 />
             </div>
         </div>

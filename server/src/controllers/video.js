@@ -2,11 +2,11 @@ import { asyncHandler } from "../utils/handler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 import { Video } from "../models/video.js";
-import mongoose from "mongoose";
 import { User } from "../models/user.js";
 import { Like } from "../models/like.js";
 import { publishNotification } from "../lib/kafka/producer.js";
 import { getCache, setCache } from "../lib/redis.js";
+import { ObjectId } from "mongodb"
 class VideoController {
     publishVideo = asyncHandler(async (req, res) => {
         const user = req.user;
@@ -184,7 +184,7 @@ class VideoController {
             [
                 {
                     $match: {
-                        _id: new mongoose.Types.ObjectId(videoId)
+                        _id: new ObjectId(videoId)
                     }
                 },
                 {
@@ -216,7 +216,7 @@ class VideoController {
         const videos = await Video.aggregate([
             {
                 $match: {
-                    userId: new mongoose.Types.ObjectId(userId),
+                    userId: new ObjectId(userId),
                 }
             },
             {
@@ -423,7 +423,7 @@ class VideoController {
                 }
             }
             recommendations = recommendations.map(r => {
-                r._doc.creator= r._doc.userId;
+                r._doc.creator = r._doc.userId;
                 delete r._doc.userId;
                 return r._doc;
             });

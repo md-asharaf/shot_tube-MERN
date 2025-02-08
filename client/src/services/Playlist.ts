@@ -17,9 +17,9 @@ class PLaylistService {
         await Axios.patch(
             `/playlists/remove-video-from-playlist/${playlistId}?${type}Id=${id}`
         );
-    isSavedToPlaylist = async (playlistId: string, id: string, type: string) =>
+    isSavedToPlaylists = async (id: string, type: string) =>
         await Axios.get(
-            `/playlists/is-video-saved/${playlistId}?${type}Id=${id}`
+            `/playlists/is-video-saved?${type}Id=${id}`
         );
 }
 export default new PLaylistService();

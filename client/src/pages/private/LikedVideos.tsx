@@ -33,7 +33,7 @@ const LikedVideos = () => {
             </div>
         );
     }
-
+    const shorts= [];
     if (isError) {
         const errorMessage = error?.message || "Something went wrong.";
         return (
@@ -68,6 +68,7 @@ const LikedVideos = () => {
                     0
                 ),
                 videos,
+                shorts,
                 description: "Liked videos by you",
             }}
             refetch={refetch}

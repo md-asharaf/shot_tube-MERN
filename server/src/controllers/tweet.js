@@ -4,9 +4,10 @@ import { ApiError } from "../utils/ApiError.js";
 import { Tweet } from "../models/tweet.js";
 import { Subscription } from "../models/subscription.js";
 import { publishNotification } from "../lib/kafka/producer.js";
+import { ObjectId } from "mongodb"
 class TweetController {
     createTweet = asyncHandler(async (req, res) => {
-        const { content,image } = req.body;
+        const { content, image } = req.body;
         const user = req.user;
         if (!content || !image) {
             throw new ApiError(400, "Content is required")
@@ -14,7 +15,7 @@ class TweetController {
         const tweet = await Tweet.create({
             content,
             image,
-            userId:user._id
+            userId: user._id
         })
         if (!tweet) {
             throw new ApiError(500, "Tweet could not be created")
@@ -43,12 +44,12 @@ class TweetController {
             },
             {
                 $project: {
-                    subscriberId:1,
+                    subscriberId: 1,
                 }
             }
         ]);
         const message = `@${user.username} posted: "${content}"`;
-        subscribers.forEach((s)=>{
+        subscribers.forEach((s) => {
             publishNotification({
                 userId: s.subscriberId,
                 message,
@@ -76,12 +77,9 @@ class TweetController {
         if (!content || !tweetId) {
             throw new ApiError(400, "Content and tweetId are required")
         }
-        const tweet = await Tweet.findById(tweetId);
+        const tweet = await Tweet.findOne({ _id: new ObjectId(tweetId), userId });
         if (!tweet) {
             throw new ApiError(404, "Tweet not found")
-        }
-        if (tweet.userId.toString() !== userId.toString()) {
-            throw new ApiError(400, "You are not authorized to update this tweet")
         }
         tweet.content = content;
         const updatedTweet = await tweet.save({ validateBeforeSave: false });
@@ -93,12 +91,9 @@ class TweetController {
         if (!tweetId) {
             throw new ApiError(400, "Tweet id is required")
         }
-        const tweet = await Tweet.findById(tweetId);
+        const tweet = await Tweet.findOne({ _id: new ObjectId(tweetId), userId });
         if (!tweet) {
             throw new ApiError(404, "Tweet not found")
-        }
-        if (tweet.userId.toString() !== userId.toString()) {
-            throw new ApiError(400, "You are not authorized to delete this tweet")
         }
         const isDeleted = await Tweet.findByIdAndDelete(tweet._id);
         if (!isDeleted) {

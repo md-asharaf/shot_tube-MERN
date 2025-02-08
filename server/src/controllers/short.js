@@ -2,7 +2,7 @@ import { asyncHandler } from "../utils/handler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 import { Short } from "../models/short.js";
-import mongoose from "mongoose";
+import { ObjectId } from "mongodb"
 import { User } from "../models/user.js";
 import { Like } from "../models/like.js";
 import { publishNotification } from "../lib/kafka/producer.js";
@@ -179,34 +179,34 @@ class ShortController {
 
     getShortById = asyncHandler(async (req, res) => {
         const { shortId } = req.params;
-    
+
         let short = await Short.findById(shortId)
             .populate("userId", "username fullname avatar")
             .select("-__v")
             .lean();
-    
+
         short.creator = short.userId;
         delete short.userId;
-    
-        short.next = await Short.findOne({ createdAt: { $gt: short.createdAt } })
+
+        short.next = (await Short.findOne({ createdAt: { $gt: short.createdAt } })
             .sort({ createdAt: 1 })
             .select("_id")
-            .lean();
-    
-        short.prev = await Short.findOne({ createdAt: { $lt: short.createdAt } })
+            .lean())?._id ?? "";
+
+        short.prev = (await Short.findOne({ createdAt: { $lt: short.createdAt } })
             .sort({ createdAt: -1 })
             .select("_id")
-            .lean();    
+            .lean())?._id ?? "";
         return res.status(200).json(new ApiResponse(200, { short }, "Short fetched successfully"));
     });
-    
+
     getShortsByUserId = asyncHandler(async (req, res) => {
         const { userId } = req.params;
         if (!userId) throw new ApiError(400, "Please provide userId")
         const shorts = await Short.aggregate([
             {
                 $match: {
-                    userId: new mongoose.Types.ObjectId(userId),
+                    userId: new ObjectId(userId),
                 }
             },
             {
@@ -320,7 +320,6 @@ class ShortController {
     });
 
     getRecommendedShorts = asyncHandler(async (req, res) => {
-
         const { shortId, userId, page = 1, limit = 12 } = req.query;
         let short;
         if (shortId) {
@@ -415,7 +414,7 @@ class ShortController {
                 }
             }
             recommendations = recommendations.map(r => {
-                r._doc.creator= r._doc.userId;
+                r._doc.creator = r._doc.userId;
                 delete r._doc.userId;
                 return r._doc;
             });

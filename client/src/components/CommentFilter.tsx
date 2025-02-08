@@ -4,7 +4,6 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { Button } from "@/components/ui/button";
 import { ChevronDown } from "lucide-react";
 
 const sentimentOptions = ["All", "Positive", "Negative", "Neutral"];
@@ -18,13 +17,12 @@ const CommentFilter = ({ onFilterChange, filter }: CommentFilterProps) => {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <Button
-                    variant="secondary"
-                    className="flex items-center space-x-2 text-lg"
+                <button
+                    className="flex items-center space-x-2 px-2 bg-secondary rounded"
                 >
                     <span>{filter}</span>
                     <ChevronDown className="w-4 h-4" />
-                </Button>
+                </button>
             </DropdownMenuTrigger>
             <DropdownMenuContent
                 collisionPadding={20}
@@ -35,7 +33,7 @@ const CommentFilter = ({ onFilterChange, filter }: CommentFilterProps) => {
                     <DropdownMenuItem
                         key={option}
                         onClick={() => onFilterChange(option)}
-                        className="rounded-none dark:hover:bg-[#535353] hover:bg-[#E5E5E5] py-2 text-lg px-4"
+                        className="rounded-none dark:hover:bg-[#535353] hover:bg-[#E5E5E5] py-2 px-4"
                     >
                         {option}
                     </DropdownMenuItem>

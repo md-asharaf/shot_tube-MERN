@@ -13,7 +13,6 @@ const Playlist = () => {
         isError,
         isLoading,
         error,
-        refetch
     } = useQuery({
         queryKey: ["playlist", playlistId],
         queryFn: async (): Promise<IPlaylist> => {
@@ -49,7 +48,6 @@ const Playlist = () => {
                     0
                 ),
             }}
-            refetch={refetch}
         />
     );
 };

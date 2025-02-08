@@ -41,6 +41,7 @@ const Home = () => {
             return lastPage.length === 12 ? allPages.length + 1 : null;
         },
     });
+    const videos = videoPages?.pages?.flatMap((page) => page);
     useQuery({
         queryKey: ["recommended-shorts", userId, null],
         queryFn: async () => {
@@ -50,7 +51,6 @@ const Home = () => {
             return true;
         },
     });
-    const videos = videoPages?.pages?.flatMap((page) => page);
     const { ref, entry } = useIntersection({
         root: lastVideoRef.current,
         threshold: 1,

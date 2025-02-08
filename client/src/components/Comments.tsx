@@ -6,7 +6,7 @@ import { formatDistanceToNowStrict } from "date-fns";
 import likeServices from "@/services/Like";
 import { IComment } from "@/interfaces";
 import { useNavigate } from "react-router-dom";
-import { memo, useCallback, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { FaPlus } from "react-icons/fa";
 import { FiMinus } from "react-icons/fi";
 import { GoDot } from "react-icons/go";
@@ -37,12 +37,15 @@ import TextArea from "./ReusableTextArea";
 import { queryClient } from "@/main";
 import AvatarImg from "./AvatarImg";
 import CommentFilter from "./CommentFilter";
+import { useIntersection } from "@mantine/hooks";
+import { processText } from "@/lib";
 
-const Comments = ({ videoId, playerRef, videoCreatorId }) => {
+const Comments = ({ id, playerRef, creatorId, type = "video" }) => {
     const [filter, setFilter] = useState("All");
     const theme = useSelector((state: RootState) => state.theme.mode);
     const navigate = useNavigate();
     const userData = useSelector((state: RootState) => state.auth.userData);
+    const lastCommentRef = useRef(null);
     const [isRepliesOpen, setIsRepliesOpen] = useState([]);
     const [editingCommentId, setEditingCommentId] = useState<string | null>(
         null
@@ -57,7 +60,7 @@ const Comments = ({ videoId, playerRef, videoCreatorId }) => {
         fetchNextPage,
         hasNextPage,
     } = useInfiniteQuery({
-        queryKey: [`comments/${filter}`, videoId],
+        queryKey: [`comments/${filter}`, id],
         queryFn: async ({
             pageParam,
         }): Promise<{
@@ -65,9 +68,10 @@ const Comments = ({ videoId, playerRef, videoCreatorId }) => {
             hasNextPage: boolean;
             totalDocs: number;
         }> => {
-            const data = await commentServices.getVideoComments(
-                videoId,
+            const data = await commentServices.getComments(
+                id,
                 pageParam,
+                type,
                 filter
             );
             return data.comments;
@@ -75,28 +79,37 @@ const Comments = ({ videoId, playerRef, videoCreatorId }) => {
         initialPageParam: 1,
         getNextPageParam: (lastPage, allPages) =>
             lastPage.hasNextPage ? allPages.length + 1 : undefined,
-        enabled: !!videoId,
+        enabled: !!id,
     });
     const comments = commentsPages?.pages.flatMap((page) => page.docs);
     const totalComments = commentsPages?.pages[0].totalDocs;
-    const { data: isLikedOfComments, isLoading: likesLoading } = useQuery({
-        queryKey: ["commentsLike", videoId],
-        queryFn: async () => {
-            const data = await likeServices.getVideoCommentsLike(videoId);
-            return data.isLiked;
-        },
-        enabled: !!comments && !!userData,
-    });
-
+    const { data: likeStatusOfComments, isLoading: likesCountLoading } =
+        useQuery({
+            queryKey: ["comments-like-status", id],
+            queryFn: async (): Promise<boolean[]> => {
+                const data = await likeServices.getCommentsLikeStatus(id, type);
+                return data.likedStatus;
+            },
+            enabled: !!comments && !!userData,
+        });
+    const { data: likesCountofComments, isLoading: likeStatusLoading } =
+        useQuery({
+            queryKey: ["comments-likes-count", id],
+            queryFn: async (): Promise<number[]> => {
+                const data = await likeServices.getCommentsLikesCount(id, type);
+                return data.likesCount;
+            },
+            enabled: !!comments,
+        });
     const { mutate: addComment, isPending } = useMutation({
         mutationFn: async ({
-            videoId,
+            id,
             content,
         }: {
-            videoId: string;
+            id: string;
             content: string;
         }) => {
-            const data = await commentServices.commentToVideo(videoId, content);
+            const data = await commentServices.comment(id, content, type);
             return data.comment;
         },
         onSuccess: (comment) => {
@@ -107,22 +120,45 @@ const Comments = ({ videoId, playerRef, videoCreatorId }) => {
                 creator: userData,
             });
         },
-        onError: (error) => {
-            toast.error(error.message);
-        },
     });
 
     const { mutate: toggleCommentLike } = useMutation({
-        mutationFn: async (commentId: string) => {
+        mutationFn: async ({
+            commentId,
+            index,
+        }: {
+            commentId: string;
+            index: number;
+        }) => {
             await likeServices.toggleLike(commentId, "comment");
         },
-        onSuccess: (_, commentId) => {
-            isLikedOfComments[commentId] = {
-                status: !isLikedOfComments[commentId]?.status,
-                count:
-                    isLikedOfComments[commentId]?.count +
-                    (isLikedOfComments[commentId]?.status ? -1 : 1),
-            };
+        onMutate: ({ index }) => {
+            queryClient.cancelQueries({queryKey:["comments-like-status", id]});
+            queryClient.cancelQueries({queryKey:["comments-likes-count", id]});
+            queryClient.setQueryData(["comments-like-status", id],(prev:boolean[])=>{
+                const updatedLikes = [...prev];
+                updatedLikes[index] = !updatedLikes[index];
+                return updatedLikes;
+            } );
+            queryClient.setQueryData(["comments-likes-count", id],(prev:number[])=>{
+                const updatedLikes = [...prev];
+                updatedLikes[index] += updatedLikes[index] ? -1 : 1;
+                return updatedLikes;
+            });
+        },
+        onError: (error, { index }) => {
+            queryClient.cancelQueries({queryKey:["comments-like-status", id]});
+            queryClient.cancelQueries({queryKey:["comments-likes-count", id]});
+            queryClient.setQueryData(["comments-like-status", id],(prev:boolean[])=>{
+                const updatedLikes = [...prev];
+                updatedLikes[index] = !updatedLikes[index];
+                return updatedLikes;
+            } );
+            queryClient.setQueryData(["comments-likes-count", id],(prev:number[])=>{
+                const updatedLikes = [...prev];
+                updatedLikes[index] += updatedLikes[index] ? -1 : 1;
+                return updatedLikes;
+            });
         },
     });
 
@@ -140,9 +176,6 @@ const Comments = ({ videoId, playerRef, videoCreatorId }) => {
                 );
             });
         },
-        onError: (error) => {
-            toast.error(error.message);
-        },
     });
     const { mutate: updateComment } = useMutation({
         mutationFn: async (content: string) => {
@@ -159,9 +192,6 @@ const Comments = ({ videoId, playerRef, videoCreatorId }) => {
         },
         onSettled: () => {
             setEditingCommentId(null);
-        },
-        onError: (error) => {
-            toast.error(error.message);
         },
     });
     const { mutate: addReply } = useMutation({
@@ -182,79 +212,18 @@ const Comments = ({ videoId, playerRef, videoCreatorId }) => {
             });
             setReplyingToCommentId(null);
         },
-        onError: (error) => {
-            toast.error(error.message);
-        },
     });
-    const observerCallback = useCallback(
-        (entries: IntersectionObserverEntry[]) => {
-            const [entry] = entries;
-            if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
-                fetchNextPage();
-            }
-        },
-        [fetchNextPage, hasNextPage, isFetchingNextPage]
-    );
-
-    const getRef = useCallback(
-        (node: HTMLDivElement | null) => {
-            if (!node) return;
-
-            const observer = new IntersectionObserver(observerCallback, {
-                threshold: 0.5,
-            });
-            observer.observe(node);
-        },
-        [observerCallback]
-    );
-    const processComment = (
-        comment: string,
-        onTimestampClick: (seconds: number) => void
-    ) => {
-        const timestampRegex = /\b(\d{1,2}:\d{2})\b/g;
-
-        const parts = comment.split(timestampRegex);
-
-        return parts.map((part, index) => {
-            if (timestampRegex.test(part)) {
-                const [minutes, seconds] = part.split(":").map(Number);
-                const timeInSeconds = minutes * 60 + seconds;
-
-                return (
-                    <a
-                        key={index}
-                        href="#"
-                        className="text-blue-500"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            onTimestampClick(timeInSeconds);
-                        }}
-                    >
-                        {part}
-                    </a>
-                );
-            }
-
-            return (
-                <span key={index}>
-                    {part}
-                </span>
-            );
-        });
-    };
-    const onTimestampClick = (seconds: number) => {
-        if (playerRef.current) {
-            playerRef.current.currentTime = seconds;
-            window.scrollTo({
-                top: 0,
-                behavior: "smooth",
-            });
-            if (playerRef.current.paused) {
-                playerRef.current.play();
-            }
+    const processComment = (content: string) => processText(content, playerRef);
+    const { ref, entry } = useIntersection({
+        root: lastCommentRef.current,
+        threshold: 1,
+    });
+    useEffect(() => {
+        if (entry?.isIntersecting && hasNextPage) {
+            fetchNextPage();
         }
-    };
-    if (commentsLoading || likesLoading)
+    }, [entry]);
+    if (commentsLoading || likeStatusLoading || likesCountLoading)
         return (
             <div className="w-full flex justify-center">
                 <Loader2 className="h-10 w-10 animate-spin" />
@@ -266,9 +235,7 @@ const Comments = ({ videoId, playerRef, videoCreatorId }) => {
                 <div className="font-bold text-2xl text-zinc-600 dark:text-zinc-300 mb-2">
                     {`${totalComments} Comments`}
                 </div>
-                <div>
-                    <CommentFilter onFilterChange={setFilter} filter={filter} />
-                </div>
+                <CommentFilter onFilterChange={setFilter} filter={filter} />
             </div>
             <div className="flex flex-col">
                 {userData && isPending ? (
@@ -280,7 +247,7 @@ const Comments = ({ videoId, playerRef, videoCreatorId }) => {
                         fullname={userData?.fullname}
                         userAvatar={userData?.avatar}
                         placeholder="Add a public comment..."
-                        onSubmit={(content) => addComment({ videoId, content })}
+                        onSubmit={(content) => addComment({ id, content })}
                         submitLabel="Comment"
                     />
                 )}
@@ -289,7 +256,10 @@ const Comments = ({ videoId, playerRef, videoCreatorId }) => {
                     {comments?.map((comment, index) => {
                         const sentiment = comment.sentiment?.toLowerCase();
                         return (
-                            <div key={comment._id}>
+                            <div
+                                key={index}
+                                ref={index === comments.length - 1 ? ref : null}
+                            >
                                 {editingCommentId === comment._id ? (
                                     <TextArea
                                         fullname="userData?.fullname"
@@ -304,7 +274,7 @@ const Comments = ({ videoId, playerRef, videoCreatorId }) => {
                                         submitLabel="Save"
                                     />
                                 ) : (
-                                    <div>
+                                    <div className="max-w-full">
                                         <div className="flex justify-between">
                                             <div className="flex space-x-2 items-start">
                                                 <div
@@ -317,7 +287,8 @@ const Comments = ({ videoId, playerRef, videoCreatorId }) => {
                                                 >
                                                     <AvatarImg
                                                         fullname={
-                                                            comment.creator.fullname
+                                                            comment.creator
+                                                                .fullname
                                                         }
                                                         avatar={
                                                             comment.creator
@@ -349,7 +320,7 @@ const Comments = ({ videoId, playerRef, videoCreatorId }) => {
                                                             )}
                                                         </div>
                                                         {userData?._id ===
-                                                            videoCreatorId && (
+                                                            creatorId && (
                                                             <div
                                                                 className={`flex ${
                                                                     sentiment ===
@@ -382,55 +353,60 @@ const Comments = ({ videoId, playerRef, videoCreatorId }) => {
                                                     </div>
                                                     <div className="break-all whitespace-pre-wrap">
                                                         {processComment(
-                                                            comment.content,
-                                                            onTimestampClick
+                                                            comment.content
                                                         )}
                                                     </div>
-                                                    {userData && (
-                                                        <div className="flex items-center">
-                                                            <Button
-                                                                onClick={() =>
-                                                                    toggleCommentLike(
-                                                                        comment._id
-                                                                    )
-                                                                }
-                                                                variant="ghost"
-                                                                className="rounded-full p-2"
-                                                            >
-                                                                <ThumbsUp
-                                                                    fill={
-                                                                        isLikedOfComments[
-                                                                            comment
-                                                                                ._id
-                                                                        ]
-                                                                            ?.status
-                                                                            ? theme ==
-                                                                              "dark"
-                                                                                ? "white"
-                                                                                : "black"
-                                                                            : theme ==
-                                                                              "dark"
-                                                                            ? "black"
-                                                                            : "white"
+
+                                                    <div className="flex items-center">
+                                                        <Button
+                                                            onClick={() =>
+                                                                toggleCommentLike(
+                                                                    {
+                                                                        commentId:
+                                                                            comment._id,
+                                                                        index,
                                                                     }
-                                                                />{" "}
-                                                                {isLikedOfComments[
-                                                                    comment._id
-                                                                ]?.count ?? ""}
-                                                            </Button>
-                                                            <Button
-                                                                className="text-sm rounded-full"
-                                                                variant="ghost"
-                                                                onClick={() =>
-                                                                    setReplyingToCommentId(
-                                                                        comment._id
-                                                                    )
+                                                                )
+                                                            }
+                                                            variant="ghost"
+                                                            className="rounded-full p-2"
+                                                        >
+                                                            <ThumbsUp
+                                                                fill={
+                                                                    likeStatusOfComments &&
+                                                                    likeStatusOfComments[
+                                                                        index
+                                                                    ]
+                                                                        ? theme ==
+                                                                          "dark"
+                                                                            ? "white"
+                                                                            : "black"
+                                                                        : theme ==
+                                                                          "dark"
+                                                                        ? "black"
+                                                                        : "white"
                                                                 }
-                                                            >
-                                                                reply
-                                                            </Button>
-                                                        </div>
-                                                    )}
+                                                            />{" "}
+                                                            {likesCountofComments[
+                                                                index
+                                                            ] === 0
+                                                                ? ""
+                                                                : likesCountofComments[
+                                                                      index
+                                                                  ]}
+                                                        </Button>
+                                                        <Button
+                                                            className="text-sm rounded-full"
+                                                            variant="ghost"
+                                                            onClick={() =>
+                                                                setReplyingToCommentId(
+                                                                    comment._id
+                                                                )
+                                                            }
+                                                        >
+                                                            reply
+                                                        </Button>
+                                                    </div>
                                                 </div>
                                             </div>
                                             {userData?._id ===
@@ -526,8 +502,8 @@ const Comments = ({ videoId, playerRef, videoCreatorId }) => {
                                                     </CollapsibleTrigger>
                                                     <CollapsibleContent>
                                                         <Replies
-                                                            onTimestampClick={
-                                                                onTimestampClick
+                                                            playerRef={
+                                                                playerRef
                                                             }
                                                             commentId={
                                                                 comment._id
@@ -543,10 +519,7 @@ const Comments = ({ videoId, playerRef, videoCreatorId }) => {
                         );
                     })}
 
-                    <div
-                        className="flex items-center justify-center"
-                        ref={getRef}
-                    >
+                    <div className="flex items-center justify-center">
                         {isFetchingNextPage && (
                             <Loader2 className="h-10 w-10 animate-spin" />
                         )}

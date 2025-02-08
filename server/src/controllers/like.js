@@ -2,7 +2,7 @@ import { asyncHandler } from "../utils/handler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 import { Like } from "../models/like.js";
-import mongoose from "mongoose";
+import { ObjectId } from "mongodb"
 import { Comment } from "../models/comment.js";
 import { Reply } from "../models/reply.js";
 import { Video } from "../models/video.js";
@@ -16,16 +16,16 @@ class LikeController {
         if (!commentId) {
             throw new ApiError(400, "Comment id is required")
         }
-        const dbLike = await Like.findOne({ commentId: new mongoose.Types.ObjectId(commentId), userId: user._id })
+        const dbLike = await Like.findOne({ commentId: new ObjectId(commentId), userId: user._id })
         if (!dbLike) {
             const like = await Like.create({
                 commentId,
                 userId: user._id
             })
             // publishing notification
-            const comment = await Comment.findById(commentId);
+            const comment = await Comment.findById(new ObjectId(commentId));
             if (like && !comment.userId.equals(user._id)) {
-                const video = await Video.findById(comment.videoId)
+                const video = await Video.findById(comment.videoId) || await Short.findById(comment.shortId);
                 const message = `@${user.username} liked your comment: "${comment.content}"`;
                 publishNotification({
                     userId: comment.userId,
@@ -55,7 +55,7 @@ class LikeController {
         const { videoId } = req.params;
         const user = req.user;
         if (!videoId) throw new ApiError(400, "Video id is required");
-        const dbLike = await Like.findOne({ videoId: new mongoose.Types.ObjectId(videoId), userId: user._id });
+        const dbLike = await Like.findOne({ videoId: new ObjectId(videoId), userId: user._id });
         if (!dbLike) {
             const like = await Like.create({
                 videoId,
@@ -93,7 +93,7 @@ class LikeController {
         const { shortId } = req.params;
         const user = req.user;
         if (!shortId) throw new ApiError(400, "short id is required");
-        const dbLike = await Like.findOne({ shortId: new mongoose.Types.ObjectId(shortId), userId: user._id });
+        const dbLike = await Like.findOne({ shortId: new ObjectId(shortId), userId: user._id });
         if (!dbLike) {
             const like = await Like.create({
                 shortId,
@@ -131,7 +131,7 @@ class LikeController {
         const { tweetId } = req.params;
         const user = req.user;
         if (!tweetId) throw new ApiError(400, "Tweet id is required");
-        const dbLike = await Like.findOne({ tweetId: new mongoose.Types.ObjectId(tweetId), userId: user._id })
+        const dbLike = await Like.findOne({ tweetId: new ObjectId(tweetId), userId: user._id })
         if (!dbLike) {
             const like = await Like.create({
                 userId: user._id,
@@ -167,7 +167,7 @@ class LikeController {
         const { replyId } = req.params;
         const user = req.user;
         if (!replyId) throw new ApiError(400, "Reply id is required");
-        const dbLike = await Like.findOne({ replyId: new mongoose.Types.ObjectId(replyId), userId: user._id });
+        const dbLike = await Like.findOne({ replyId: new ObjectId(replyId), userId: user._id });
         if (!dbLike) {
             const like = await Like.create({
                 userId: user._id,
@@ -212,7 +212,7 @@ class LikeController {
         } else {
             likesCount = await Like.countDocuments({ shortId })
         }
-        return res.status(200).json(new ApiResponse(200,{likesCount},"likes fetched successfully"))
+        return res.status(200).json(new ApiResponse(200, { likesCount }, "likes fetched successfully"))
     })
     isLiked = asyncHandler(async (req, res) => {
         const { videoId, shortId } = req.query;
@@ -220,50 +220,81 @@ class LikeController {
         if (!videoId && !shortId) throw new ApiError(400, "video id or short id is required");
         let isLiked = false;
         if (videoId) {
-            isLiked = await Like.findOne({ videoId: new mongoose.Types.ObjectId(videoId), userId });
+            isLiked = await Like.findOne({ videoId: new ObjectId(videoId), userId });
         } else {
-            isLiked = await Like.findOne({ shortId: new mongoose.Types.ObjectId(shortId), userId });
+            isLiked = await Like.findOne({ shortId: new ObjectId(shortId), userId });
         }
         return res.status(200).json(new ApiResponse(200, { isLiked }, `user has${isLiked ? "" : " not"} liked this video`))
     })
-    videoCommentsLike = asyncHandler(async (req, res) => {
+    videoCommentsLikeCount = asyncHandler(async (req, res) => {
+        const { videoId } = req.params;
+        if (!videoId) throw new ApiError(400, "Video id is required");
+        const comments = await Comment.find({
+            videoId: new ObjectId(videoId),
+        })
+        let likesCount = [];
+        for (let comment of comments) { likesCount.push(await Like.countDocuments({ commentId: comment._id })) }
+        return res.status(200).json(new ApiResponse(200, { likesCount }, "video comments like count fetched successfully"))
+    })
+    shortCommentsLikeCount = asyncHandler(async (req, res) => {
+        const { shortId } = req.params;
+        if (!shortId) throw new ApiError(400, "short id is required");
+        const comments = await Comment.find({
+            shortId: new ObjectId(shortId),
+        })
+        let likesCount = [];
+        for (let comment of comments) { likesCount.push(await Like.countDocuments({ commentId: comment._id })) }
+        return res.status(200).json(new ApiResponse(200, { likesCount }, "short comments like count fetched successfully"))
+    })
+    commentRepliesLikeCount = asyncHandler(async (req, res) => {
+        const { commentId } = req.params;
+        if (!commentId) throw new ApiError(400, "Comment id is required");
+        const replies = await Reply.find({
+            commentId: new ObjectId(commentId)
+        })
+        let likesCount = [];
+        for (let reply of replies) { likesCount.push(await Like.countDocuments({ replyId: reply._id })) }
+        return res.status(200).json(new ApiResponse(200, { likesCount }, "comment replies like count fetched successfully"))
+    })
+    likedStatusofVideoComments = asyncHandler(async (req, res) => {
         const { videoId } = req.params;
         const userId = req.user?._id;
         if (!videoId) throw new ApiError(400, "Video id is required");
         const comments = await Comment.find({
-            videoId: new mongoose.Types.ObjectId(videoId),
+            videoId: new ObjectId(videoId)
         })
-        let isLiked = {};
+        let likedStatus = [];
         for (let comment of comments) {
-            isLiked[comment._id] = { status: !!(await Like.findOne({ commentId: comment._id, userId })), count: await Like.countDocuments({ commentId: comment._id }) }
+            likedStatus.push(await Like.findOne({ commentId: comment._id, userId } ?? false))
         }
-        return res.status(200).json(new ApiResponse(200, { isLiked }, "User has liked these comments"))
+        return res.status(200).json(new ApiResponse(200, { likedStatus }, "liked status of video comments fetched successfully"))
     })
-    shortCommentsLike = asyncHandler(async (req, res) => {
+    likedStatusofShortComments = asyncHandler(async (req, res) => {
         const { shortId } = req.params;
         const userId = req.user?._id;
         if (!shortId) throw new ApiError(400, "short id is required");
         const comments = await Comment.find({
-            shortId: new mongoose.Types.ObjectId(shortId),
+            shortId: new ObjectId(shortId)
         })
-        let isLiked = {};
+        let likedStatus = [];
         for (let comment of comments) {
-            isLiked[comment._id] = { status: !!(await Like.findOne({ commentId: comment._id, userId })), count: await Like.countDocuments({ commentId: comment._id }) }
+            likedStatus.push(await Like.findOne({ commentId: comment._id, userId }) ?? false)
         }
-        return res.status(200).json(new ApiResponse(200, { isLiked }, "User has liked these comments"))
+        return res.status(200).json(new ApiResponse(200, { likedStatus }, "liked status of short comments fetched successfully"))
     })
-    commentRepliesLike = asyncHandler(async (req, res) => {
+    likedStatusofCommentReplies = asyncHandler(async (req, res) => {
         const { commentId } = req.params;
         const userId = req.user?._id;
-        if (!commentId) throw new ApiError(400, "Comment id is required");
+        if (!commentId) throw new ApiError(400, "Video id is required");
         const replies = await Reply.find({
-            commentId: new mongoose.Types.ObjectId(commentId)
+            commentId: new ObjectId(commentId)
         })
-        let isLiked = {};
+        let likedStatus = [];
         for (let reply of replies) {
-            isLiked[reply._id] = { status: !!(await Like.findOne({ replyId: reply._id, userId })), count: await Like.countDocuments({ replyId: reply._id }) }
+            likedStatus.push(await Like.findOne({ replyId: reply._id, userId }) ?? false)
         }
-        return res.status(200).json(new ApiResponse(200, { isLiked }, "User has liked these replies"))
+        console.log({ likedStatus })
+        return res.status(200).json(new ApiResponse(200, { likedStatus }, "liked status of comment replies fetched successfully"))
     })
 }
 

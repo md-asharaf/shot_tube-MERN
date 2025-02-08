@@ -23,7 +23,7 @@ interface Props {
     };
     refetch?: () => void;
 }
-const PlaylistComp: React.FC<Props> = ({ playlist, refetch = () => {} }) => {
+const PlaylistComp: React.FC<Props> = ({ playlist }) => {
     const [background, setBackground] = useState<string>("");
 
     useEffect(() => {
@@ -58,26 +58,58 @@ const PlaylistComp: React.FC<Props> = ({ playlist, refetch = () => {} }) => {
         mutationFn: async ({
             playlistId,
             videoId,
-            playlistName,
         }: {
             playlistId: string;
             videoId: string;
-            playlistName: string;
         }) => {
-            await playlistServices.removeFromPlaylist(playlistId,videoId,"video");
+            await playlistServices.removeFromPlaylist(
+                playlistId,
+                videoId,
+                "video"
+            );
         },
-        onSuccess: (data,variables) => {
-            toast.success(`Removed from ${variables.playlistName}`)
-            refetch();
+        onMutate: ({ videoId }) => {
+            toast.success(`Removed from ${playlist.name}`);
+            let video;
+            let index;
+            playlist.videos = playlist.videos.filter((v, i) => {
+                if (v._id !== videoId) {
+                    return true;
+                } else {
+                    video = v;
+                    index = i;
+                    return false;
+                }
+            });
+            return { video, index };
+        },
+        onError: ({ message }, _, { index, video }) => {
+            toast.error(message);
+            playlist.videos.splice(index, 0, video);
         },
     });
     const { mutate: toggleLike } = useMutation({
-        mutationFn: async ({ videoId }: { videoId: string }) => {
+        mutationFn: async (videoId: string) => {
             await likeServices.toggleLike(videoId, "video");
         },
-        onSuccess: () => {
-            toast.success("Removed from Liked Videos");
-            refetch();
+        onMutate: (videoId) => {
+            toast.success(`Removed from liked videos`);
+            let video;
+            let index;
+            playlist.videos = playlist.videos.filter((v, i) => {
+                if (v._id !== videoId) {
+                    return true;
+                } else {
+                    video = v;
+                    index = i;
+                    return false;
+                }
+            });
+            return { video, index };
+        },
+        onError: ({ message }, _, { index, video }) => {
+            toast.error(message);
+            playlist.videos.splice(index, 0, video);
         },
     });
     return (
@@ -98,13 +130,11 @@ const PlaylistComp: React.FC<Props> = ({ playlist, refetch = () => {} }) => {
                     <h1 className="text-2xl font-bold truncate">
                         {playlist.name}
                     </h1>
-                    <p className="text-sm truncate">
-                        {playlist.creator}
-                    </p>
+                    <p className="text-sm truncate">{playlist.creator}</p>
                     <p className="text-xs ">
-                        {`${playlist.videos?.length} videos • ${
-                            formatViews(playlist.totalViews)
-                        } • Last updated on ${new Date(
+                        {`${playlist.videos?.length} videos • ${formatViews(
+                            playlist.totalViews
+                        )} • Last updated on ${new Date(
                             playlist.updatedAt
                         ).toDateString()}`}
                     </p>
@@ -118,9 +148,7 @@ const PlaylistComp: React.FC<Props> = ({ playlist, refetch = () => {} }) => {
                         </Button>
                     </div>
 
-                    <p className="text-sm">
-                        {playlist.description}
-                    </p>
+                    <p className="text-sm">{playlist.description}</p>
                 </div>
             </div>
 
@@ -148,9 +176,9 @@ const PlaylistComp: React.FC<Props> = ({ playlist, refetch = () => {} }) => {
                                     {video.title}
                                 </h3>
                                 <p className="text-gray-400 text-sm">
-                                    {`${video.creator.fullname} • ${
-                                        formatViews(video.views)
-                                    } • ${formatDistanceToNowStrict(
+                                    {`${video.creator.fullname} • ${formatViews(
+                                        video.views
+                                    )} • ${formatDistanceToNowStrict(
                                         new Date(video.createdAt)
                                     ).replace("about", "")} ago`}
                                 </p>
@@ -168,11 +196,9 @@ const PlaylistComp: React.FC<Props> = ({ playlist, refetch = () => {} }) => {
                                                             playlistId:
                                                                 playlist._id,
                                                             videoId: video._id,
-                                                            playlistName:playlist.name
                                                         })
-                                                      : toggleLike({
-                                                            videoId: video._id,
-                                                        }),
+                                                      : toggleLike(video._id
+                                                        )
                                           }
                                 }
                             />

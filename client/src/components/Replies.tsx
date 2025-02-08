@@ -1,10 +1,10 @@
-import { useCallback, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useQuery, useMutation, useInfiniteQuery } from "@tanstack/react-query";
 import replyService from "@/services/Reply";
 import { Button } from "@/components/ui/button";
 import { Edit, EllipsisVertical, Loader2, ThumbsUp, Trash } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { formatDistanceToNowStrict, set } from "date-fns";
+import { formatDistanceToNowStrict } from "date-fns";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import likeServices from "@/services/Like";
@@ -20,17 +20,20 @@ import { IReply } from "@/interfaces";
 import { toast } from "sonner";
 import { queryClient } from "@/main";
 import AvatarImg from "./AvatarImg";
+import { useIntersection } from "@mantine/hooks";
+import { processText } from "@/lib";
 
 const Replies = ({
     commentId,
-    onTimestampClick,
+    playerRef,
 }: {
     commentId: string;
-    onTimestampClick: (prop: any) => void;
+    playerRef: any;
 }) => {
     const theme = useSelector((state: RootState) => state.theme.mode);
     const userData = useSelector((state: RootState) => state.auth?.userData);
     const navigate = useNavigate();
+    const lastReplyRef = useRef(null);
     const [editingReplyId, setEditingReplyId] = useState<string | null>(null);
     const [replyingToReplyId, setReplyingToReplyId] = useState<string | null>(
         null
@@ -58,22 +61,42 @@ const Replies = ({
     });
 
     const replies = repliesPages?.pages.flatMap((page) => page.docs);
-    const { data: isLikedOfReplies = {}, isLoading: LikesLoading } = useQuery({
-        queryKey: ["isLikedOfReplies", commentId],
-        queryFn: async () => {
-            const data = await likeServices.getCommentRepliesLike(commentId);
-            return data.isLiked;
-        },
-        enabled: !!replies && !!userData,
-    });
+    const { data: likeStatusOfReplies, isLoading: likeStatusLoading } =
+        useQuery({
+            queryKey: ["replies-like-status", commentId],
+            queryFn: async () => {
+                const data = await likeServices.getRepliesLikeStatus(commentId);
+                console.log({ data });
+                return data.likedStatus;
+            },
+            enabled: !!userData && !!replies,
+        });
+
+    const { data: likesCountOfReplies, isLoading: likesCountLoading } =
+        useQuery({
+            queryKey: ["replies-likes-count", commentId],
+            queryFn: async (): Promise<number[]> => {
+                const data = await likeServices.getRepliesLikesCount(commentId);
+                return data.likesCount;
+            },
+            enabled: !!replies,
+        });
     const { mutate: toggleReplyLike } = useMutation({
-        mutationFn: async (replyId: string) =>
-            await likeServices.toggleLike(replyId, "reply"),
-        onSuccess: () => {
-            queryClient.invalidateQueries({
-                queryKey: ["isLikedOfReplies", commentId],
-                exact: true,
-            });
+        mutationFn: async ({
+            replyId,
+            index,
+        }: {
+            replyId: string;
+            index: number;
+        }) => await likeServices.toggleLike(replyId, "reply"),
+        onMutate: ({ index }) => {
+            likeStatusOfReplies[index] = !likeStatusOfReplies[index];
+            likesCountOfReplies[index] += likeStatusOfReplies[index] ? 1 : -1;
+        },
+        onError: ({ message }, { index }) => {
+            likeStatusOfReplies[index] = !likeStatusOfReplies[index];
+            likesCountOfReplies[index] += likeStatusOfReplies[index] ? 1 : -1;
+            toast.error(message);
         },
     });
     const { mutate: deleteReply, isPending: isDeletionPending } = useMutation({
@@ -88,7 +111,7 @@ const Replies = ({
         },
         onError: (error) => {
             toast.error(error.message);
-        }
+        },
     });
 
     const { mutate: updateReply, isPending: isUpdationPending } = useMutation({
@@ -106,23 +129,14 @@ const Replies = ({
         },
         onError: (error) => {
             toast.error(error.message);
-        }
-    });
-    const observerCallback = useCallback(
-        (entries: IntersectionObserverEntry[]) => {
-            const [entry] = entries;
-            if (entry.isIntersecting && hasNextPage && !isFetchingNextPage) {
-                fetchNextPage();
-            }
         },
-        [fetchNextPage, hasNextPage, isFetchingNextPage]
-    );
+    });
     const { mutate: addReply, isPending: isAdditionPending } = useMutation({
         mutationFn: async (content: string) => {
             const data = await replyServices.addReply(commentId, content);
             return data.reply;
         },
-        onSuccess: (reply) => {
+        onSuccess: () => {
             setReplyingToReplyId(null);
             queryClient.invalidateQueries({
                 queryKey: ["replies", commentId],
@@ -132,55 +146,24 @@ const Replies = ({
         },
         onError: (error) => {
             toast.error(error.message);
-        }
-    });
-    const getRef = useCallback(
-        (node: HTMLDivElement | null) => {
-            if (!node) return;
-
-            const observer = new IntersectionObserver(observerCallback, {
-                threshold: 0.5,
-            });
-            observer.observe(node);
         },
-        [observerCallback]
-    );
-    const processReply = (
-        reply: string,
-        onTimestampClick: (seconds: number) => void
-    ) => {
-        const timestampRegex = /\b(\d{1,2}:\d{2})\b/g;
-
-        const parts = reply.split(timestampRegex);
-
-        return parts.map((part, index) => {
-            if (timestampRegex.test(part)) {
-                const [minutes, seconds] = part.split(":").map(Number);
-                const timeInSeconds = minutes * 60 + seconds;
-
-                return (
-                    <a
-                        key={index}
-                        href="#"
-                        className="text-blue-500"
-                        onClick={(e) => {
-                            e.preventDefault();
-                            onTimestampClick(timeInSeconds);
-                        }}
-                    >
-                        {part}
-                    </a>
-                );
-            }
-
-            return <span key={index}>{part}</span>;
-        });
-    };
-    if (repliesLoading || LikesLoading) {
-        <div className="flex items-center justify-center">
-            <Loader2 className="h-6 w-6 animate-spin" />
-        </div>;
-    }
+    });
+    const { ref, entry } = useIntersection({
+        root: lastReplyRef.current,
+        threshold: 1,
+    });
+    useEffect(() => {
+        if (entry?.isIntersecting && hasNextPage) {
+            fetchNextPage();
+        }
+    }, [entry]);
+    const processReply = (content: string) => processText(content, playerRef);
+    if (repliesLoading || likesCountLoading || likeStatusLoading)
+        return (
+            <div className="flex items-center justify-center">
+                <Loader2 className="h-6 w-6 animate-spin" />
+            </div>
+        );
     return (
         <div className="flex flex-col space-y-2 overflow-y-auto overflow-x-hidden">
             {isDeletionPending && (
@@ -188,9 +171,12 @@ const Replies = ({
                     <Loader2 className="h-6 w-6 animate-spin" />
                 </div>
             )}
-            {replies?.map((reply) => {
+            {replies?.map((reply, index) => {
                 return (
-                    <div key={reply._id}>
+                    <div
+                        key={index}
+                        ref={index === replies.length - 1 ? ref : null}
+                    >
                         {editingReplyId === reply._id ? (
                             isUpdationPending ? (
                                 <div className="flex items-center justify-center">
@@ -249,27 +235,26 @@ const Replies = ({
                                                 </div>
                                             </div>
                                             <div className="break-words whitespace-pre-wrap">
-                                                {processReply(
-                                                    reply.content,
-                                                    onTimestampClick
-                                                )}
+                                                {processReply(reply.content)}
                                             </div>
                                             {userData && (
                                                 <div className="flex items-center">
                                                     <Button
                                                         onClick={() =>
-                                                            toggleReplyLike(
-                                                                reply._id
-                                                            )
+                                                            toggleReplyLike({
+                                                                replyId:
+                                                                    reply._id,
+                                                                index,
+                                                            })
                                                         }
                                                         variant="ghost"
                                                         className="rounded-full p-2"
                                                     >
                                                         <ThumbsUp
                                                             fill={
-                                                                isLikedOfReplies[
-                                                                    reply._id
-                                                                ]?.status
+                                                                likeStatusOfReplies[
+                                                                    index
+                                                                ]
                                                                     ? theme ==
                                                                       "dark"
                                                                         ? "white"
@@ -280,11 +265,13 @@ const Replies = ({
                                                                     : "white"
                                                             }
                                                         />{" "}
-                                                        {Number(
-                                                            isLikedOfReplies[
-                                                                reply._id
-                                                            ]?.count
-                                                        ) ?? ""}
+                                                        {likesCountOfReplies[
+                                                            index
+                                                        ] === 0
+                                                            ? ""
+                                                            : likesCountOfReplies[
+                                                                  index
+                                                              ]}
                                                     </Button>
                                                     <Button
                                                         className="text-sm rounded-full"
@@ -362,7 +349,7 @@ const Replies = ({
                 );
             })}
 
-            <div className="flex items-center justify-center" ref={getRef}>
+            <div className="flex items-center justify-center">
                 {isFetchingNextPage && (
                     <Loader2 className="h-10 w-10 animate-spin" />
                 )}
