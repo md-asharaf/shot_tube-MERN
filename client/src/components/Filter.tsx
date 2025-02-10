@@ -4,25 +4,19 @@ import {
     DropdownMenuItem,
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
-import { ChevronDown } from "lucide-react";
+import { SlidersHorizontal } from "lucide-react";
 
 const sentimentOptions = ["All", "Positive", "Negative", "Neutral"];
 
-interface CommentFilterProps {
+interface FilterProps {
     onFilterChange: (filter: string) => void;
-    filter: string;
 }
 
-const CommentFilter = ({ onFilterChange, filter }: CommentFilterProps) => {
+const Filter = ({ onFilterChange }: FilterProps) => {
     return (
         <DropdownMenu>
             <DropdownMenuTrigger asChild>
-                <button
-                    className="flex items-center space-x-2 px-2 bg-secondary rounded"
-                >
-                    <span>{filter}</span>
-                    <ChevronDown className="w-4 h-4" />
-                </button>
+                <SlidersHorizontal size={20} strokeWidth={1.5} />
             </DropdownMenuTrigger>
             <DropdownMenuContent
                 collisionPadding={20}
@@ -43,4 +37,4 @@ const CommentFilter = ({ onFilterChange, filter }: CommentFilterProps) => {
     );
 };
 
-export default CommentFilter;
+export default Filter;

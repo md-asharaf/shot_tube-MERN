@@ -40,9 +40,7 @@ const ForgotPassword = () => {
                 (user) => user._id === selectedUserId
             );
             if (!selectedUser) throw new Error("No user selected");
-            await authServices.sendResetLinkOnEmail(
-                selectedUser.email
-            );
+            await authServices.sendResetLinkOnEmail(selectedUser.email);
             toast.info("Password reset link sent to your email");
         } catch (error) {
             toast.error(error.message);
@@ -99,9 +97,11 @@ const ForgotPassword = () => {
                                 className="flex items-center justify-between border space-x-3 p-1 pr-4 rounded-lg hover:bg-gray-400"
                             >
                                 <div className="flex items-center space-x-4">
-                                    <div className="bg-orange-500">
-                                        <AvatarImg fullname={user?.fullname} avatar={user?.avatar} />
-                                    </div>
+                                    <AvatarImg
+                                        fullname={user?.fullname}
+                                        avatar={user?.avatar}
+                                        className="h-10 w-10"
+                                    />
                                     <span className="cursor-pointer text-blue-600 hover:text-blue-800">
                                         {user.fullname}
                                     </span>

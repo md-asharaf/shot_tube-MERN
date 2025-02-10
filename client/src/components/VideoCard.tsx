@@ -117,13 +117,11 @@ const VideoCard: React.FC<Props> = ({
             </div>
             <div className="flex space-x-3 dark:text-white items-start">
                 {isAvatar && (
-                    <div className="w-10 h-10 rounded-full object-cover aspect-square">
-                        {" "}
-                        <AvatarImg
-                            avatar={video.creator.avatar}
-                            fullname={video.creator.fullname}
-                        />
-                    </div>
+                    <AvatarImg
+                        className="w-10 h-10 rounded-full object-cover aspect-square"
+                        avatar={video.creator.avatar}
+                        fullname={video.creator.fullname}
+                    />
                 )}
                 <div className="flex-1 overflow-hidden">
                     <p

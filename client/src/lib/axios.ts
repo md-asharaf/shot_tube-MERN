@@ -1,10 +1,7 @@
 import axios from "axios";
 import { ApiResponse } from "@/interfaces";
 import { store } from "@/store/store";
-import {
-    setLoginPopoverMessage,
-    toggleLoginPopover,
-} from "@/store/reducers/ui";
+import { setLoginPopoverData } from "@/store/reducers/ui";
 import { logout } from "@/store/reducers/auth";
 import authServices from "@/services/Auth";
 const axiosInstance = axios.create({
@@ -16,12 +13,17 @@ axiosInstance.interceptors.response.use(
         return response.data.data;
     },
     (error) => {
-        if (error.response?.status === 401 && !store.getState().ui.isLoginPopoverVisible) {
+        if (
+            error.response?.status === 401 &&
+            !store.getState().ui.loginPopoverData.open
+        ) {
             store.dispatch(logout());
             authServices.logout();
-            store.dispatch(toggleLoginPopover(true));
             store.dispatch(
-                setLoginPopoverMessage(error.response?.data?.message)
+                setLoginPopoverData({
+                    message: error.response?.data?.message,
+                    open: true,
+                })
             );
         }
         return Promise.reject(error.response?.data as ApiResponse);

@@ -59,12 +59,11 @@ const SearchedVideos = () => {
                                 </p>
                             </div>
                             <div className="flex items-center gap-2 sm:mt-2">
-                                <div className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-full object-cover">
-                                    <AvatarImg
-                                        avatar={video.creator.avatar}
-                                        fullname={video.creator.fullname}
-                                    />{" "}
-                                </div>
+                                <AvatarImg
+                                    className="w-6 h-6 sm:w-8 sm:h-8 md:w-10 md:h-10 rounded-full object-cover"
+                                    avatar={video.creator.avatar}
+                                    fullname={video.creator.fullname}
+                                />
                                 <p className="font-medium">
                                     {video.creator.fullname}
                                 </p>

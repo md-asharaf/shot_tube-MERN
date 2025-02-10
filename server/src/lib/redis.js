@@ -1,6 +1,6 @@
 import Redis from "ioredis"
-const serviceUri = process.env.REDIS_URI
-const client = new Redis(serviceUri)
+const serviceUri = "redis://default:fPGg5EFmFVTuLWxemeOO8jKwiwQVsRyj@redis-19058.c305.ap-south-1-1.ec2.redns.redis-cloud.com:19058"
+const client = new Redis(process.env.REDIS_URI)
 
 export const setCache = async (key, value, ttl = 1800) => {
     try {

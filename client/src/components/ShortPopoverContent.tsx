@@ -2,14 +2,18 @@ import { AlignLeft, Captions } from "lucide-react";
 import { useDispatch } from "react-redux";
 import { setOpenCard } from "@/store/reducers/short";
 import { toast } from "sonner";
-import SaveToPlaylist from "./popups/SaveToPlaylist";
+import { setSaveToPlaylistDialog } from "@/store/reducers/ui";
 
 export default function ShortPopoverContent({ shortId, playerRef }) {
     const dispatch = useDispatch();
     const toggleCaption = () => {
         if (playerRef.current) {
             playerRef.current.toggleCaptions();
-            toast.success(`Captions/CC turned ${playerRef.current.captions.active ? "on" : "off"}`);
+            toast.success(
+                `Captions/CC turned ${
+                    playerRef.current.captions.active ? "on" : "off"
+                }`
+            );
         }
     };
     return (
@@ -23,11 +27,15 @@ export default function ShortPopoverContent({ shortId, playerRef }) {
                 <AlignLeft className="h-5 w-5" />
                 <span>Description</span>
             </li>
-            <li className="cursor-pointer dark:hover:bg-[#535353] hover:bg-[#E5E5E5]">
-                <SaveToPlaylist
-                    id={shortId}
-                    className="flex items-center space-x-2 py-2 px-4"
-                >
+            <li
+                className="cursor-pointer dark:hover:bg-[#535353] hover:bg-[#E5E5E5]"
+                onClick={() =>
+                    dispatch(
+                        setSaveToPlaylistDialog({ id: shortId, open: true })
+                    )
+                }
+            >
+                <div className="flex items-center space-x-2 py-2 px-4">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
                         className="h-5 w-5"
@@ -43,7 +51,7 @@ export default function ShortPopoverContent({ shortId, playerRef }) {
                         />
                     </svg>
                     <span>Save to playlist</span>
-                </SaveToPlaylist>
+                </div>
             </li>
             <li
                 className="flex items-center space-x-2 cursor-pointer py-2 px-4 dark:hover:bg-[#535353] hover:bg-[#E5E5E5]"

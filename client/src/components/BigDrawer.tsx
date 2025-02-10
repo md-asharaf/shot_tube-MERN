@@ -67,7 +67,7 @@ const BigDrawer = () => {
                     </svg>
                 </div>
             ),
-            route: `/channel?u=${username}`,
+            route: `/users/${username}`,
         },
         {
             name: "History",
@@ -126,7 +126,7 @@ const BigDrawer = () => {
                     </svg>
                 </div>
             ),
-            route: `/your-videos`,
+            route: `/studio/${username}`,
         },
         {
             name: "Watch later",

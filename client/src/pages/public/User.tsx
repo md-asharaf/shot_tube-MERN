@@ -1,4 +1,4 @@
-import { Link, useSearchParams } from "react-router-dom";
+import { Link, useParams, useSearchParams } from "react-router-dom";
 import { IUser, IVideoData } from "@/interfaces";
 import userServices from "@/services/User";
 import VideoCard from "@/components/VideoCard";
@@ -12,12 +12,12 @@ import { Loader2 } from "lucide-react";
 import { RootState } from "@/store/store";
 import { toggleMenu } from "@/store/reducers/ui";
 import AvatarImg from "@/components/AvatarImg";
+import NavigationMenu from "@/components/nav-menu";
 
-const Channel = () => {
+const User = () => {
     const dispatch = useDispatch();
     const userData = useSelector((state: RootState) => state.auth.userData);
-    const [searchParams] = useSearchParams();
-    const username = searchParams.get("u");
+    const { username } = useParams();
 
     const { data: userDetails } = useQuery({
         queryKey: ["user-details", username],
@@ -64,7 +64,13 @@ const Channel = () => {
             return true;
         },
     });
-
+    const items = [
+        { name: "All", path: "" },
+        { name: "Videos", path: "videos" },
+        { name: "Shorts", path: "shorts" },
+        { name: "Playlists", path: "playlists" },
+        { name: "Posts", path: "posts" },
+    ];
     return (
         <div className="space-y-4 w-full">
             {userData?.username === username && (
@@ -76,12 +82,11 @@ const Channel = () => {
                 />
             )}
             <div className="flex space-x-2 sm:space-x-6 justify-center">
-                <div className="rounded-full h-16 sm:h-24 w-16 sm:w-24">
-                    <AvatarImg
-                        avatar={userDetails?.user?.avatar}
-                        fullname={userDetails?.user?.fullname}
-                    />
-                </div>
+                <AvatarImg
+                    className="rounded-full h-16 sm:h-24 w-16 sm:w-24"
+                    avatar={userDetails?.user?.avatar}
+                    fullname={userDetails?.user?.fullname}
+                />
                 <div className="space-y-2">
                     <h2 className="text-xl sm:text-2xl font-bold">
                         {userDetails?.user?.fullname}
@@ -102,6 +107,7 @@ const Channel = () => {
                     )}
                 </div>
             </div>
+            <NavigationMenu data={items}/>
             <h3 className="text-xl font-semibold">Videos</h3>
             <hr />
             <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
@@ -117,9 +123,7 @@ const Channel = () => {
                             key={index}
                             className="flex flex-col space-y-2 rounded-lg"
                         >
-                            <VideoCard
-                                video={video}
-                            />
+                            <VideoCard video={video} />
                         </Link>
                     ))
                 )}
@@ -128,4 +132,4 @@ const Channel = () => {
     );
 };
 
-export default Channel;
+export default User;

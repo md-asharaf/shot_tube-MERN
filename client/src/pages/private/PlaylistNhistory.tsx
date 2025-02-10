@@ -83,12 +83,11 @@ const PlaylistNhistory = () => {
     return (
         <div className="w-full overflow-auto space-y-6">
             <div className="hidden sm:flex items-center justify-center space-x-6">
-                <div className="rounded-full h-28 w-28">
-                    <AvatarImg
-                        avatar={userData?.avatar}
-                        fullname={userData?.fullname}
-                    />{" "}
-                </div>
+                <AvatarImg
+                    avatar={userData?.avatar}
+                    fullname={userData?.fullname}
+                    className="rounded-full h-28 w-28"
+                />
                 <div className="space-y-2">
                     <div className="font-bold text-3xl">
                         {userData?.fullname}

@@ -9,12 +9,11 @@ import {
     DropdownMenuSeparator,
     DropdownMenuTrigger,
 } from "./ui/dropdown-menu";
-import { Button } from "./ui/button";
-import { FaSignOutAlt } from "react-icons/fa";
 import { logoutFromGoogle } from "@/lib/firebase";
 import { toast } from "sonner";
 import { logout } from "@/store/reducers/auth";
 import AvatarImg from "./AvatarImg";
+import { ClapperboardIcon, LogOutIcon, SettingsIcon } from "lucide-react";
 const Profile = () => {
     const dispatch = useDispatch();
     const { username, fullname, avatar } = useSelector(
@@ -36,42 +35,53 @@ const Profile = () => {
             <DropdownMenuTrigger className="h-10 w-10">
                 <AvatarImg fullname={fullname} avatar={avatar} />
             </DropdownMenuTrigger>
-            <DropdownMenuContent className="mr-2 min-w-[200px]">
-                <Link to={`/channel?u=${username}`}>
+            <DropdownMenuContent
+                className="min-w-[300px] p-0 m-0"
+                collisionPadding={20}
+            >
+                <Link to={`/users/${username}`}>
                     <DropdownMenuItem>
-                        <div className="flex flex-col gap-4">
-                            <div className="flex gap-4">
-                                <div className="h-10 w-10">
-                                    <AvatarImg
-                                        fullname={fullname}
-                                        avatar={avatar}
-                                    />
+                        <div className="flex space-x-8 p-2 items-center">
+                            <AvatarImg
+                                className="h-10 w-10"
+                                fullname={fullname}
+                                avatar={avatar}
+                            />
+                            <div>
+                                <div className="font-semibold">{fullname}</div>
+                                <div className="text-muted-foreground hover:underline">
+                                    @{username}
                                 </div>
-                                <div id="right">
-                                    <div className="font-semibold">
-                                        {fullname}
-                                    </div>
-                                    <div className="dark:text-gray-300 text-gray-500">
-                                        @{username}
-                                    </div>
-                                </div>
-                            </div>
-                            <div className="hover:underline">
-                                View your channel
                             </div>
                         </div>
                     </DropdownMenuItem>
-                    <DropdownMenuSeparator />
+                </Link>
+
+                <DropdownMenuSeparator className="m-0 p-0" />
+                <Link to={`/studio/${username}`}>
+                    <DropdownMenuItem>
+                        <div className="flex space-x-8 p-3 items-center">
+                            <ClapperboardIcon />
+                            <div>Studio</div>
+                        </div>
+                    </DropdownMenuItem>
+                </Link>
+                <Link to={`/account/${username}`}>
+                    <DropdownMenuItem>
+                        <div className="flex space-x-8 p-3 items-center">
+                            <SettingsIcon />
+                            <div>Manage your account</div>
+                        </div>
+                    </DropdownMenuItem>
                 </Link>
                 <DropdownMenuItem>
-                    <Button
-                        className="w-full space-x-2"
+                    <div
                         onClick={onLogout}
-                        variant="destructive"
+                        className="flex space-x-8 p-3 items-center"
                     >
-                        <FaSignOutAlt className="text-xl" />
+                        <LogOutIcon />
                         <div>Sign out</div>
-                    </Button>
+                    </div>
                 </DropdownMenuItem>
             </DropdownMenuContent>
         </DropdownMenu>

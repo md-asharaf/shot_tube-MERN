@@ -176,18 +176,17 @@ const Notifications = () => {
                                                         <div className="h-full w-full bg-blue-500 rounded-full" />
                                                     )}
                                                 </div>
-                                                <div className="min-w-[52px] h-[52px] rounded-full">
-                                                    <AvatarImg
-                                                        avatar={
-                                                            notification.creator
-                                                                .avatar
-                                                        }
-                                                        fullname={
-                                                            notification.creator
-                                                                .fullname
-                                                        }
-                                                    />
-                                                </div>
+                                                <AvatarImg
+                                                    className="min-w-[52px] h-[52px] rounded-full"
+                                                    avatar={
+                                                        notification.creator
+                                                            .avatar
+                                                    }
+                                                    fullname={
+                                                        notification.creator
+                                                            .fullname
+                                                    }
+                                                />
                                             </div>
                                             <div className="space-y-2">
                                                 <div className="break-all whitespace-pre-wrap">

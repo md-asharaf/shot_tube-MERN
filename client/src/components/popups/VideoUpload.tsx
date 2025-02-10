@@ -18,13 +18,6 @@ import { useState } from "react";
 import { getVideoMetadata } from "@/lib/utils";
 import { IVideoUploadForm } from "@/interfaces";
 import { toast } from "sonner";
-import {
-    Dialog,
-    DialogContent,
-    DialogHeader,
-    DialogTitle,
-    DialogDescription,
-} from "@/components/ui/dialog";
 import { resizeImage } from "@/lib/pica";
 import { RootState } from "@/store/store";
 import { VideoFormValidation } from "@/validations";
@@ -33,6 +26,7 @@ import { Button } from "../ui/button";
 import { v4 as uuid } from "uuid";
 import uploadService from "@/services/Upload";
 import { uploadAllParts, uploadToPresignedUrl } from "@/lib/upload";
+import ResponsiveModal from "../ResponsiveModal";
 interface IMetaData {
     uploadId: string;
     videoKey: string;
@@ -42,9 +36,7 @@ const BUCKET02 = process.env.AWS_S3_BUCKET_NAME;
 const VideoUpload = () => {
     const [abortController, setAbortController] =
         useState<AbortController | null>(null);
-    const isVideoModalOpen = useSelector(
-        (state: RootState) => state.ui.isVideoModalOpen
-    );
+    const open = useSelector((state: RootState) => state.ui.isVideoModalOpen);
     const dispatch = useDispatch();
     const [isUploading, setIsUploading] = useState<boolean>(false);
     const [uploadMetaData, setUploadMetaData] = useState<IMetaData | null>(
@@ -246,18 +238,17 @@ const VideoUpload = () => {
             toast.error("Failed to abort upload");
         }
     };
+    const closeDialog = () => {
+        dispatch(toggleVideoModal());
+    };
     return (
-        <Dialog
-            open={isVideoModalOpen}
-            onOpenChange={() => dispatch(toggleVideoModal())}
+        <ResponsiveModal
+            open={open}
+            onOpenChange={closeDialog}
+            title="Upload Video"
         >
-            <DialogContent className="max-w-[500px] max-h-[calc(100vh-4rem)] overflow-y-auto rounded-lg">
-                <DialogHeader>
-                    <DialogTitle>Upload Video</DialogTitle>
-                    <DialogDescription>
-                        Fill all the fields to upload a video.
-                    </DialogDescription>
-                </DialogHeader>
+            <div className="space-y-2 max-w-[500px] max-h-[calc(100vh-4rem)] rounded-lg">
+                <div>Fill all the fields to upload a video.</div>
                 <Form {...form}>
                     <form
                         onSubmit={form.handleSubmit(handleSubmit)}
@@ -292,6 +283,7 @@ const VideoUpload = () => {
                                     </FormLabel>
                                     <FormControl>
                                         <Textarea
+                                        className="h-40"
                                             placeholder="Enter a description"
                                             {...field}
                                         />
@@ -332,8 +324,8 @@ const VideoUpload = () => {
                         </div>
                     </form>
                 </Form>
-            </DialogContent>
-        </Dialog>
+            </div>
+        </ResponsiveModal>
     );
 };
 

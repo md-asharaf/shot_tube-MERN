@@ -1,6 +1,23 @@
-import { IUiData } from "@/interfaces";
+// import { IUiData } from "@/interfaces";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
-
+export interface IUiData {
+    shareModalData: {
+        open: boolean;
+        id: string;
+        type: string;
+    };
+    isMenuOpen: boolean;
+    isVideoModalOpen: boolean;
+    loginPopoverData: {
+        open: boolean;
+        message: string;
+    };
+    isCreatePlaylistDialogOpen: boolean;
+    saveToplaylistModalData: {
+        open: boolean;
+        id: string;
+    };
+}
 const rawData = localStorage.getItem("ui_data");
 let uiData: Partial<IUiData> | null = null;
 try {
@@ -10,15 +27,22 @@ try {
 }
 
 const initialState: IUiData = {
-    isMenuOpen: uiData?.isMenuOpen ?? false, 
-    isVideoModalOpen: false, 
-    isLoginPopoverVisible: false,
-    isShareModalOpen: false,
-    shareData:{
-        id:"",
-        type:""
+    isMenuOpen: uiData?.isMenuOpen ?? false,
+    isVideoModalOpen: false,
+    loginPopoverData: {
+        open: false,
+        message: "",
     },
-    loginPopoverMessage: "", 
+    shareModalData: {
+        open: false,
+        id: "",
+        type: "",
+    },
+    isCreatePlaylistDialogOpen: false,
+    saveToplaylistModalData: {
+        open: false,
+        id: "",
+    },
 };
 
 const uiSlice = createSlice({
@@ -28,25 +52,51 @@ const uiSlice = createSlice({
         toggleMenu: (state, action: PayloadAction<boolean | undefined>) => {
             state.isMenuOpen = action.payload ?? !state.isMenuOpen;
         },
-        toggleVideoModal: (state) => {
-            state.isVideoModalOpen = !state.isVideoModalOpen;
+        toggleVideoModal: (
+            state,
+            action: PayloadAction<boolean | undefined>
+        ) => {
+            state.isVideoModalOpen = action.payload ?? !state.isVideoModalOpen;
         },
-        toggleLoginPopover: (state, action: PayloadAction<boolean | undefined>) => {
-            state.isLoginPopoverVisible = action.payload ?? !state.isLoginPopoverVisible;
+        setLoginPopoverData: (
+            state,
+            action: PayloadAction<{ open: boolean; message: string }>
+        ) => {
+            state.loginPopoverData = action.payload;
         },
-        setLoginPopoverMessage: (state, action: PayloadAction<string>) => {
-            state.loginPopoverMessage = action.payload;
+        setShareModalData: (
+            state,
+            action: PayloadAction<{
+                open: boolean;
+                id: string;
+                type: string;
+            }>
+        ) => {
+            state.shareModalData = action.payload;
         },
-        setShareModal: (state, action: PayloadAction<{open:boolean,shareData:{
-            id:string;
-            type:string;
-        }}>) => {
-            state.isShareModalOpen = action.payload.open;
-            state.shareData = action.payload.shareData;
-        }
+        setCreatePlaylistDialog: (
+            state,
+            action: PayloadAction<boolean | undefined>
+        ) => {
+            state.isCreatePlaylistDialogOpen =
+                action.payload ?? !state.isCreatePlaylistDialogOpen;
+        },
+        setSaveToPlaylistDialog: (
+            state,
+            action: PayloadAction<{ id: string; open: boolean }>
+        ) => {
+            state.saveToplaylistModalData = action.payload;
+        },
     },
 });
 
-export const { toggleMenu, toggleVideoModal, toggleLoginPopover,setLoginPopoverMessage,setShareModal } = uiSlice.actions;
+export const {
+    toggleMenu,
+    toggleVideoModal,
+    setLoginPopoverData,
+    setShareModalData,
+    setCreatePlaylistDialog,
+    setSaveToPlaylistDialog,
+} = uiSlice.actions;
 
 export default uiSlice.reducer;

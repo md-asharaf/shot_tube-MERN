@@ -14,6 +14,7 @@ const BottomBar = () => {
     const username = useSelector(
         (state: RootState) => state.auth.userData?.username
     );
+    const shortId = useSelector((state:RootState)=>state.short.randomShortId)
     return (
         <div className="flex items-center justify-around bg-white dark:bg-black dark:text-white pt-2">
             <NavLink to={"/"}>
@@ -28,7 +29,7 @@ const BottomBar = () => {
                     </div>
                 )}
             </NavLink>
-            <NavLink to={"/shorts"}>
+            <NavLink to={`/short?s=${shortId}`}>
                 <div className="flex flex-col items-center">
                     <SiYoutubeshorts className="text-xl" />
                     <span className="text-[12px]">Shorts</span>

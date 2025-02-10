@@ -6,7 +6,10 @@ import { toast } from "sonner";
 import { queryClient } from "@/main";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store/store";
-import { setShareModal } from "@/store/reducers/ui";
+import {
+    setSaveToPlaylistDialog,
+    setShareModalData,
+} from "@/store/reducers/ui";
 export default function ThreeDotContent({ videoId, task }) {
     const dispatch = useDispatch();
     const userId = useSelector((state: RootState) => state.auth.userData?._id);
@@ -86,11 +89,15 @@ export default function ThreeDotContent({ videoId, task }) {
                             : "Save to Watch Later"}
                     </span>
                 </li>
-                <li className="cursor-pointer dark:hover:bg-[#535353] hover:bg-[#E5E5E5] rounded-md">
-                    <SaveToPlaylist
-                        id={videoId}
-                        className="flex items-center space-x-2 py-2 px-4"
-                    >
+                <li
+                    className="cursor-pointer dark:hover:bg-[#535353] hover:bg-[#E5E5E5] rounded-md"
+                    onClick={() =>
+                        dispatch(
+                            setSaveToPlaylistDialog({ open: true, id: videoId })
+                        )
+                    }
+                >
+                    <div className="flex items-center space-x-2 py-2 px-4">
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
                             className="h-5 w-5"
@@ -106,15 +113,18 @@ export default function ThreeDotContent({ videoId, task }) {
                             />
                         </svg>
                         <span>Save to playlist</span>
-                    </SaveToPlaylist>
+                    </div>
                 </li>
                 <li
                     className="flex items-center space-x-2 cursor-pointer py-2 px-4 dark:hover:bg-[#535353] hover:bg-[#E5E5E5] rounded-md"
                     onClick={() =>
-                        dispatch(setShareModal({ open: true, shareData:{
-                            type: "video",
-                            id: videoId
-                        } }))
+                        dispatch(
+                            setShareModalData({
+                                open: true,
+                                type: "video",
+                                id: videoId,
+                            })
+                        )
                     }
                 >
                     <Share2 className="w-5 h-5" />

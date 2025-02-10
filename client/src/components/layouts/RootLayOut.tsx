@@ -5,7 +5,9 @@ import LoginPopover from "../popups/LoginPopover";
 import VideoUpload from "../popups/VideoUpload";
 import Drawer from "../Drawer";
 import useSocketNotifications from "@/hooks/use-notification";
-import SharePopup from "../popups/sharePopup";
+import SharePopup from "../popups/SharePopup";
+import SaveToPlaylist from "../popups/SaveToPlaylist";
+import CreatePlaylist from "../popups/CreatePlaylist";
 const RootLayOut = () => {
     useSocketNotifications()
     return (
@@ -31,6 +33,8 @@ const RootLayOut = () => {
             <LoginPopover />
             <VideoUpload />
             <SharePopup />
+            <SaveToPlaylist />
+            <CreatePlaylist />
         </div>
     );
 };

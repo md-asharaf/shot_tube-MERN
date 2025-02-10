@@ -90,13 +90,52 @@ const Replies = ({
             index: number;
         }) => await likeServices.toggleLike(replyId, "reply"),
         onMutate: ({ index }) => {
-            likeStatusOfReplies[index] = !likeStatusOfReplies[index];
-            likesCountOfReplies[index] += likeStatusOfReplies[index] ? 1 : -1;
+            queryClient.cancelQueries({
+                queryKey: ["comments-like-status", commentId],
+            });
+            queryClient.cancelQueries({
+                queryKey: ["comments-likes-count", commentId],
+            });
+            queryClient.setQueryData(
+                ["comments-like-status", commentId],
+                (prev: boolean[]) => {
+                    const updatedLikes = [...prev];
+                    updatedLikes[index] = !updatedLikes[index];
+                    return updatedLikes;
+                }
+            );
+            queryClient.setQueryData(
+                ["comments-likes-count", commentId],
+                (prev: number[]) => {
+                    const updatedLikes = [...prev];
+                    updatedLikes[index] += updatedLikes[index] ? -1 : 1;
+                    return updatedLikes;
+                }
+            );
         },
         onError: ({ message }, { index }) => {
-            likeStatusOfReplies[index] = !likeStatusOfReplies[index];
-            likesCountOfReplies[index] += likeStatusOfReplies[index] ? 1 : -1;
-            toast.error(message);
+            queryClient.cancelQueries({
+                queryKey: ["comments-like-status", commentId],
+            });
+            queryClient.cancelQueries({
+                queryKey: ["comments-likes-count", commentId],
+            });
+            queryClient.setQueryData(
+                ["comments-like-status", commentId],
+                (prev: boolean[]) => {
+                    const updatedLikes = [...prev];
+                    updatedLikes[index] = !updatedLikes[index];
+                    return updatedLikes;
+                }
+            );
+            queryClient.setQueryData(
+                ["comments-likes-count", commentId],
+                (prev: number[]) => {
+                    const updatedLikes = [...prev];
+                    updatedLikes[index] += updatedLikes[index] ? -1 : 1;
+                    return updatedLikes;
+                }
+            );
         },
     });
     const { mutate: deleteReply, isPending: isDeletionPending } = useMutation({
@@ -237,55 +276,52 @@ const Replies = ({
                                             <div className="break-words whitespace-pre-wrap">
                                                 {processReply(reply.content)}
                                             </div>
-                                            {userData && (
-                                                <div className="flex items-center">
-                                                    <Button
-                                                        onClick={() =>
-                                                            toggleReplyLike({
-                                                                replyId:
-                                                                    reply._id,
-                                                                index,
-                                                            })
+                                            <div className="flex items-center">
+                                                <Button
+                                                    onClick={() =>
+                                                        toggleReplyLike({
+                                                            replyId: reply._id,
+                                                            index,
+                                                        })
+                                                    }
+                                                    variant="ghost"
+                                                    className="rounded-full p-2"
+                                                >
+                                                    <ThumbsUp
+                                                        fill={
+                                                            likeStatusOfReplies?.[
+                                                                index
+                                                            ]
+                                                                ? theme ==
+                                                                  "dark"
+                                                                    ? "white"
+                                                                    : "black"
+                                                                : theme ==
+                                                                  "dark"
+                                                                ? "black"
+                                                                : "white"
                                                         }
-                                                        variant="ghost"
-                                                        className="rounded-full p-2"
-                                                    >
-                                                        <ThumbsUp
-                                                            fill={
-                                                                likeStatusOfReplies[
-                                                                    index
-                                                                ]
-                                                                    ? theme ==
-                                                                      "dark"
-                                                                        ? "white"
-                                                                        : "black"
-                                                                    : theme ==
-                                                                      "dark"
-                                                                    ? "black"
-                                                                    : "white"
-                                                            }
-                                                        />{" "}
-                                                        {likesCountOfReplies[
-                                                            index
-                                                        ] === 0
-                                                            ? ""
-                                                            : likesCountOfReplies[
-                                                                  index
-                                                              ]}
-                                                    </Button>
-                                                    <Button
-                                                        className="text-sm rounded-full"
-                                                        variant="ghost"
-                                                        onClick={() =>
-                                                            setReplyingToReplyId(
-                                                                reply._id
-                                                            )
-                                                        }
-                                                    >
-                                                        reply
-                                                    </Button>
-                                                </div>
-                                            )}
+                                                    />{" "}
+                                                    {likesCountOfReplies[
+                                                        index
+                                                    ] === 0
+                                                        ? ""
+                                                        : likesCountOfReplies[
+                                                              index
+                                                          ]}
+                                                </Button>
+                                                <Button
+                                                    className="text-sm rounded-full"
+                                                    variant="ghost"
+                                                    onClick={() =>
+                                                        setReplyingToReplyId(
+                                                            reply._id
+                                                        )
+                                                    }
+                                                >
+                                                    reply
+                                                </Button>
+                                            </div>
                                         </div>
                                     </div>
                                     {userData?._id === reply.creator._id && (

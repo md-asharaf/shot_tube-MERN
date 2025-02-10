@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import Plyr from "plyr";
 import Hls from "hls.js";
 import "plyr/dist/plyr.css";
+import { sub } from "date-fns";
 
 const PlyrPlayer = ({
     source,
@@ -11,7 +12,7 @@ const PlyrPlayer = ({
     playerRef,
     onViewTracked = () => {},
     minWatchTime = 15,
-    controls
+    controls,
 }) => {
     const videoRef = useRef<HTMLVideoElement>(null);
     const hlsRef = useRef<Hls | null>(null);
@@ -84,7 +85,7 @@ const PlyrPlayer = ({
 
                     playerRef.current.on("ready", () => {
                         if (playerRef.current) {
-                            playerRef.current.muted=true;
+                            playerRef.current.muted = true;
                             playerRef.current.captions.active = false;
                         }
                     });
@@ -141,7 +142,7 @@ const PlyrPlayer = ({
                 className={`plyr-react plyr ${className}`}
                 crossOrigin="anonymous"
                 preload="none"
-                autoPlay
+                // autoPlay
             >
                 {subtitles.map((subtitle, index) => (
                     <track

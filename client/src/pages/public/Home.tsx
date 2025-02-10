@@ -64,8 +64,8 @@ const Home = () => {
         return <LoadingSkeleton />;
     }
     return (
-        <>
-            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 sm:gap-y-2 w-full">
+        <div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4 sm:gap-y-2 w-full ">
                 {videos.map((video, i) => (
                     <Link
                         to={`/video?v=${video._id}`}
@@ -97,7 +97,7 @@ const Home = () => {
                     <Loader2 className="animate-spin h-10 w-10" />
                 )}
             </div>
-        </>
+        </div>
     );
 };
 

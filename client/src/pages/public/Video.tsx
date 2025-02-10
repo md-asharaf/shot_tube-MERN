@@ -7,18 +7,22 @@ import { formatDistanceToNowStrict } from "date-fns";
 import videoService from "@/services/Video";
 import subscriptionService from "@/services/Subscription";
 import likeService from "@/services/Like";
-import SaveToPlaylist from "@/components/popups/SaveToPlaylist";
-import Comments from "@/components/Comments";
 import { useQuery, useMutation, useInfiniteQuery } from "@tanstack/react-query";
 import VideoPlayer from "@/components/VideoPlayer";
 import { Bookmark, Share2, ThumbsUp } from "lucide-react";
 import userServices from "@/services/User";
 import ThreeDots from "@/components/ThreeDots";
 import { formatViews } from "@/lib/utils";
-import { useWindowSize } from "@/hooks/use-window";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { RootState } from "@/store/store";
-import { setShareModal, toggleMenu } from "@/store/reducers/ui";
+import {
+    setSaveToPlaylistDialog,
+    setShareModalData,
+    toggleMenu,
+} from "@/store/reducers/ui";
 import AvatarImg from "@/components/AvatarImg";
+import VideoComments from "@/components/VideoComments";
+import { queryClient } from "@/main";
 const Video = () => {
     const theme = useSelector((state: RootState) => state.theme.mode);
     const dispatch = useDispatch();
@@ -27,7 +31,7 @@ const Video = () => {
     const videoId = searchParams.get("v");
     const [isExpanded, setIsExpanded] = useState(false);
     const userId = useSelector((state: RootState) => state.auth.userData?._id);
-    const { isMobile } = useWindowSize();
+    const isMobile = useIsMobile();
     const toggleExpanded = () => {
         setIsExpanded(!isExpanded);
     };
@@ -46,8 +50,8 @@ const Video = () => {
         enabled: !!videoId,
     });
 
-    const { data: isLiked, refetch: refetchIsLiked } = useQuery({
-        queryKey: ["isLiked", videoId],
+    const { data: isLiked } = useQuery({
+        queryKey: ["is-liked", videoId],
         queryFn: async (): Promise<boolean> => {
             const data = await likeService.isLiked(videoId, "video");
             return data.isLiked;
@@ -62,8 +66,8 @@ const Video = () => {
         },
         enabled: !!videoId,
     });
-    const { data: isSubscribed, refetch: refetchIsSubscribed } = useQuery({
-        queryKey: ["subscribe", video?.creator?._id, userId],
+    const { data: isSubscribed } = useQuery({
+        queryKey: ["is-subscribed", video?.creator?._id, userId],
         queryFn: async (): Promise<boolean> => {
             const data = await subscriptionService.isChannelSubscribed(
                 video.creator._id
@@ -73,17 +77,16 @@ const Video = () => {
         enabled: !!video && !!userId,
     });
 
-    const { data: subscribersCount, refetch: refetchSubscribersCount } =
-        useQuery({
-            queryKey: ["subscribersCount", video?.creator?._id],
-            queryFn: async (): Promise<number> => {
-                const data = await subscriptionService.getSubscribersCount(
-                    video.creator._id
-                );
-                return data.subscribersCount;
-            },
-            enabled: !!video,
-        });
+    const { data: subscribersCount } = useQuery({
+        queryKey: ["subscribers-count", video?.creator?._id],
+        queryFn: async (): Promise<number> => {
+            const data = await subscriptionService.getSubscribersCount(
+                video.creator._id
+            );
+            return data.subscribersCount;
+        },
+        enabled: !!video,
+    });
 
     const { data: videoPages } = useInfiniteQuery({
         queryKey: ["recommended-videos", userId, videoId],
@@ -109,15 +112,70 @@ const Video = () => {
     const { mutate: toggleVideoLike } = useMutation({
         mutationFn: async () => {
             await likeService.toggleLike(videoId, "video");
-            refetchIsLiked();
+        },
+        onMutate: () => {
+            queryClient.cancelQueries({ queryKey: ["is-liked", videoId] });
+            queryClient.cancelQueries({ queryKey: ["likes-count", videoId] });
+            queryClient.setQueryData(
+                ["is-liked", videoId],
+                (prevData: boolean) => !prevData
+            );
+            queryClient.setQueryData(
+                ["likes-count", videoId],
+                (prevData: number) => (isLiked ? prevData - 1 : prevData + 1)
+            );
+        },
+        onError: (error) => {
+            queryClient.cancelQueries({ queryKey: ["is-liked", videoId] });
+            queryClient.cancelQueries({ queryKey: ["likes-count", videoId] });
+            queryClient.setQueryData(
+                ["is-liked", videoId],
+                (prevData: boolean) => !prevData
+            );
+            queryClient.setQueryData(
+                ["likes-count", videoId],
+                (prevData: number) => (isLiked ? prevData - 1 : prevData + 1)
+            );
         },
     });
 
     const { mutate: toggleSubscription } = useMutation({
         mutationFn: async () => {
             await subscriptionService.toggleSubscription(video.creator._id);
-            refetchIsSubscribed();
-            refetchSubscribersCount();
+        },
+        onMutate: () => {
+            queryClient.cancelQueries({
+                queryKey: ["is-subscribed", video?.creator?._id, userId],
+            });
+            queryClient.cancelQueries({
+                queryKey: ["subscribers-count", video?.creator?._id],
+            });
+            queryClient.setQueryData(
+                ["is-subscribed", video?.creator?._id, userId],
+                (prevData: boolean) => !prevData
+            );
+            queryClient.setQueryData(
+                ["subscribers-count", video?.creator?._id],
+                (prevData: number) =>
+                    isSubscribed ? prevData - 1 : prevData + 1
+            );
+        },
+        onError: () => {
+            queryClient.cancelQueries({
+                queryKey: ["is-subscribed", video?.creator?._id, userId],
+            });
+            queryClient.cancelQueries({
+                queryKey: ["subscribers-count", video?.creator?._id],
+            });
+            queryClient.setQueryData(
+                ["is-subscribed", video?.creator?._id, userId],
+                (prevData: boolean) => !prevData
+            );
+            queryClient.setQueryData(
+                ["subscribers-count", video?.creator?._id],
+                (prevData: number) =>
+                    isSubscribed ? prevData - 1 : prevData + 1
+            );
         },
     });
 
@@ -181,12 +239,11 @@ const Video = () => {
                                 to={`/channel?u=${video.creator.username}`}
                                 className="flex gap-x-4 items-center"
                             >
-                                <div className="h-12 w-12">
-                                    <AvatarImg
-                                        fullname={video.creator.fullname}
-                                        avatar={video.creator.avatar}
-                                    />
-                                </div>
+                                <AvatarImg
+                                    className="h-12 w-12"
+                                    fullname={video.creator.fullname}
+                                    avatar={video.creator.avatar}
+                                />
                                 <div className="flex flex-col gap-y-1 items-start">
                                     <div className="font-bold">
                                         {video.creator.fullname}
@@ -230,26 +287,33 @@ const Video = () => {
                                     variant="secondary"
                                     onClick={() =>
                                         dispatch(
-                                            setShareModal({
+                                            setShareModalData({
                                                 open: true,
-                                                shareData: {
-                                                    id: videoId,
-                                                    type: "video",
-                                                },
+                                                id: videoId,
+                                                type: "video",
                                             })
                                         )
                                     }
                                 >
                                     <Share2 />
                                 </Button>
-                                <SaveToPlaylist id={videoId}>
+                                <div
+                                    onClick={() =>
+                                        dispatch(
+                                            setSaveToPlaylistDialog({
+                                                id: videoId,
+                                                open: true,
+                                            })
+                                        )
+                                    }
+                                >
                                     <Button
                                         variant="secondary"
                                         className="rounded-full"
                                     >
                                         <Bookmark /> Save
                                     </Button>
-                                </SaveToPlaylist>
+                                </div>
                             </div>
                         )}
                         {isMobile && (
@@ -297,26 +361,33 @@ const Video = () => {
                                             variant="secondary"
                                             onClick={() =>
                                                 dispatch(
-                                                    setShareModal({
+                                                    setShareModalData({
                                                         open: true,
-                                                        shareData: {
-                                                            id: videoId,
-                                                            type: "video",
-                                                        },
+                                                        id: videoId,
+                                                        type: "video",
                                                     })
                                                 )
                                             }
                                         >
                                             <Share2 />
                                         </Button>
-                                        <SaveToPlaylist id={videoId}>
+                                        <div
+                                            onClick={() =>
+                                                dispatch(
+                                                    setSaveToPlaylistDialog({
+                                                        id: videoId,
+                                                        open: true,
+                                                    })
+                                                )
+                                            }
+                                        >
                                             <Button
                                                 variant="ghost"
                                                 className="rounded-full p-0"
                                             >
                                                 <Bookmark />
                                             </Button>
-                                        </SaveToPlaylist>
+                                        </div>
                                     </div>
                                 </div>
                                 {isExpanded && (
@@ -367,10 +438,10 @@ const Video = () => {
                     )}
                 </div>
                 <div className="hidden xl:block">
-                    <Comments
-                        id={videoId}
-                        playerRef={playerRef}
+                    <VideoComments
                         creatorId={video.creator._id}
+                        videoId={video._id}
+                        playerRef={playerRef}
                     />
                 </div>
             </div>
@@ -409,8 +480,8 @@ const Video = () => {
                 ))}
             </div>
             <div className="xl:hidden">
-                <Comments
-                    id={videoId}
+                <VideoComments
+                    videoId={videoId}
                     playerRef={playerRef}
                     creatorId={video.creator._id}
                 />
