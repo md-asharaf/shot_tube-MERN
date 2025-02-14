@@ -20,4 +20,4 @@ class CommentService {
         await Axios.patch(`/comments/update-comment/${commentId}`, { content });
 }
 
-export default new CommentService();
+export const commentService = new CommentService();

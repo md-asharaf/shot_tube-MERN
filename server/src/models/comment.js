@@ -18,9 +18,9 @@ const commentSchema = new Schema({
         type: Schema.Types.ObjectId,
         ref: "Short",
     },
-    tweetId:{
+    postId:{
         type: Schema.Types.ObjectId,
-        ref: "Tweet",
+        ref: "Post",
     },
     commentId:{
         type: Schema.Types.ObjectId,

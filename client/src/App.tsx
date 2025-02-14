@@ -1,41 +1,49 @@
-import AuthLayOut from "./components/layouts/AuthLayout";
-import { Routes, Route, BrowserRouter } from "react-router-dom";
-import Home from "./pages/public/Home";
-import SignIn from "./pages/auth/SignIn";
-import SignUp from "./pages/auth/SignUp";
-import Video from "./pages/public/Video";
-import WatchHistory from "./pages/private/WatchHistory";
-import LikedVideos from "./pages/private/LikedVideos";
-import MyVideos from "./pages/private/MyVideos";
-import WatchLater from "./pages/private/WatchLater";
-import PlayLists from "./pages/private/PlayLists";
-import Playlist from "./pages/private/Playlist";
+import { AuthLayOut } from "./components/auth/auth-layout";
+import { Routes, Route, BrowserRouter, Navigate } from "react-router-dom";
+import { Home } from "./components/root/public/home";
+import { SignIn } from "./components/auth/signin";
+import { SignUp } from "./components/auth/signup";
+import { Video } from "./components/root/public/video/video";
+import { WatchHistory } from "./components/root/private/watch-history";
+import { LikedVideos } from "./components/root/public/video/liked-videos";
+import { MyVideos } from "./components/root/private/my-videos";
+import { WatchLater } from "./components/root/private/watch-later";
+import { PlayLists } from "./components/root/private/playlist/playlists";
+import { Playlist } from "./components/root/private/playlist/playlist";
 import { useSelector } from "react-redux";
-import Short from "./pages/public/Short";
-import Subscriptions from "./pages/private/Subscriptions";
-import SearchedVideos from "./pages/public/SearchedVideos";
-import ForgetPassword from "./pages/auth/ForgetPassword";
-import ResetPassword from "./pages/auth/ResetPassword";
+import { Short } from "./components/root/public/short/short";
+import { Subscriptions } from "./components/root/private/subscriptions";
+import { SearchedVideos } from "./components/root/public/video/searched-videos";
+import { ForgotPassword } from "./components/auth/forgot-password";
+import { ResetPassword } from "./components/auth/reset-password";
 import { useEffect } from "react";
 import { RootState } from "./store/store";
-import PrivateLayout from "./components/layouts/PrivateLayout";
-import RootLayOut from "./components/layouts/RootLayOut";
-import PlaylistNhistory from "./pages/private/PlaylistNhistory";
-import YourVideos from "./components/YourVideos";
-import StudioLayout from "./components/studio/sidebar/studio-layout";
-import User from "./pages/public/User";
-import { StudioVideos } from "./components/studio/content/studio-videos";
-import { StudioPlaylists } from "./components/studio/content/studio-playlists";
-import { StudioPosts } from "./components/studio/content/studio-posts";
-import { StudioShorts } from "./components/studio/content/studio-shorts";
-import { Analytics } from "./components/studio/analytics";
-import { Community } from "./components/studio/community";
-import { Subtitles } from "./components/studio/subtitles";
-import { Content } from "./components/studio/content/content";
-import { Videos } from "./components/user/videos";
-import { Playlists } from "./components/user/playlists";
-import { Shorts } from "./components/user/shorts";
-import { Posts } from "./components/user/posts";
+import { PrivateLayout } from "./components/root/private/layout";
+import { RootLayOut } from "./components/root/public/layout";
+import { PlaylistNhistory } from "./components/root/private/playlist/playlist-and-history";
+import { YourVideos } from "./components/root/private/your-videos";
+import { StudioLayout } from "./components/studio/layout";
+import { Channel } from "./components/root/public/channel/channel";
+import { ContentVideos } from "./components/studio/channel/content/videos";
+import { ContentPlaylists } from "./components/studio/channel/content/playlists";
+import { ContentPosts } from "./components/studio/channel/content/posts";
+import { ContentShorts } from "./components/studio/channel/content/shorts";
+import { AnalyticsLayout } from "./components/studio/channel/analytics/layout";
+import { CommunityLayout } from "./components/studio/channel/community/layout";
+import { SubtitlesLayout } from "./components/studio/channel/subtitles/layout";
+import { ContentLayout } from "./components/studio/channel/content/layout";
+import { ChannelVideos } from "./components/root/public/channel/videos";
+import { ChannelPlaylists } from "./components/root/public/channel/playlists";
+import { ChannelShorts } from "./components/root/public/channel/shorts";
+import { ChannelPosts } from "./components/root/public/channel/posts";
+import { ChannelLayout } from "./components/studio/channel/layout";
+import { ChannelHome } from "./components/root/public/channel/home";
+import { Post } from "./components/root/public/post/post";
+import { StudioVideo } from "./components/studio/video";
+import { StudioShort } from "./components/studio/short";
+import { StudioPost } from "./components/studio/post";
+import { StudioPlaylist } from "./components/studio/playlist";
+
 function App() {
     const theme = useSelector((state: RootState) => state.theme.mode);
     useEffect(() => {
@@ -50,23 +58,25 @@ function App() {
                     <Route path="/register" element={<SignUp />} />
                     <Route
                         path="/forgot-password"
-                        element={<ForgetPassword />}
+                        element={<ForgotPassword />}
                     />
                     <Route
                         path="/reset-password/:resetToken"
                         element={<ResetPassword />}
                     />
                 </Route>
-                <Route element={<RootLayOut />}>
-                    <Route path="/" element={<Home />} />
-                    <Route path="/video" element={<Video />} />
-                    <Route path="/short" element={<Short />} />
-                    <Route path="/results" element={<SearchedVideos />} />
-                    <Route path="/users/:username" element={<User />}>
-                        <Route path="videos" element={<Videos />} />
-                        <Route path="playlists" element={<Playlists />} />
-                        <Route path="shorts" element={<Shorts />} />
-                        <Route path="posts" element={<Posts />} />
+                <Route path="/" element={<RootLayOut />}>
+                    <Route path="" element={<Home />} />
+                    <Route path="video/:id" element={<Video />} />
+                    <Route path="short/:id" element={<Short />} />
+                    <Route path="post/:id" element={<Post />} />
+                    <Route path="results" element={<SearchedVideos />} />
+                    <Route path="channel/:username" element={<Channel />}>
+                        <Route path="" element={<ChannelHome />} />
+                        <Route path="videos" element={<ChannelVideos />} />
+                        <Route path="playlists" element={<ChannelPlaylists />} />
+                        <Route path="shorts" element={<ChannelShorts />} />
+                        <Route path="posts" element={<ChannelPosts />} />
                     </Route>
                     <Route element={<PrivateLayout />}>
                         <Route
@@ -77,7 +87,7 @@ function App() {
                         <Route path="/my-videos" element={<MyVideos />} />
                         <Route path="/watch-later" element={<WatchLater />} />
                         <Route path="/playlists" element={<PlayLists />} />
-                        <Route path="/playlist" element={<Playlist />} />
+                        <Route path="/playlist/:id" element={<Playlist />} />
                         <Route
                             path="/playlist-n-history"
                             element={<PlaylistNhistory />}
@@ -89,16 +99,29 @@ function App() {
                         <Route path="/your-videos" element={<YourVideos />} />
                     </Route>
                 </Route>
-                <Route element={<StudioLayout />} path="/studio/:username">
-                    <Route path="content" element={<Content />}>
-                        <Route path="videos" element={<StudioVideos />} />
-                        <Route path="playlists" element={<StudioPlaylists />} />
-                        <Route path="posts" element={<StudioPosts />} />
-                        <Route path="shorts" element={<StudioShorts />} />
+                <Route element={<StudioLayout />} path="/studio">
+                    <Route path=":username" element={<ChannelLayout />}>
+                        <Route path="content" element={<ContentLayout />}>
+                            <Route
+                                index
+                                element={<Navigate to="videos" replace />}
+                            />
+                            <Route path="videos" element={<ContentVideos />} />
+                            <Route
+                                path="playlists"
+                                element={<ContentPlaylists />}
+                            />
+                            <Route path="posts" element={<ContentPosts />} />
+                            <Route path="shorts" element={<ContentShorts />} />
+                        </Route>
+                        <Route path="analytics" element={<AnalyticsLayout />} />
+                        <Route path="community" element={<CommunityLayout />} />
+                        <Route path="subtitles" element={<SubtitlesLayout />} />
                     </Route>
-                    <Route path="analytics" element={<Analytics />} />
-                    <Route path="community" element={<Community />} />
-                    <Route path="subtitles" element={<Subtitles />} />
+                    <Route path="video/:id" element={<StudioVideo />} />
+                    <Route path="short/:id" element={<StudioShort />} />
+                    <Route path="post/:id" element={<StudioPost />} />
+                    <Route path="playlist/:id" element={<StudioPlaylist />} />
                 </Route>
             </Routes>
         </BrowserRouter>

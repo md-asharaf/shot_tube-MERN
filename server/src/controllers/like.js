@@ -6,7 +6,7 @@ import { ObjectId } from "mongodb"
 import { Comment } from "../models/comment.js";
 import { Reply } from "../models/reply.js";
 import { Video } from "../models/video.js";
-import { Tweet } from "../models/tweet.js"
+import { Post } from "../models/post.js"
 import { publishNotification } from "../lib/kafka/producer.js";
 import { Short } from "../models/short.js";
 class LikeController {
@@ -127,26 +127,26 @@ class LikeController {
         }
         return res.status(200).json(new ApiResponse(200, null, `${dbLike ? "unliked" : "liked"} short`));
     })
-    toggleTweetLike = asyncHandler(async (req, res) => {
-        const { tweetId } = req.params;
+    togglePostLike = asyncHandler(async (req, res) => {
+        const { postId } = req.params;
         const user = req.user;
-        if (!tweetId) throw new ApiError(400, "Tweet id is required");
-        const dbLike = await Like.findOne({ tweetId: new ObjectId(tweetId), userId: user._id })
+        if (!postId) throw new ApiError(400, "Post id is required");
+        const dbLike = await Like.findOne({ postId: new ObjectId(postId), userId: user._id })
         if (!dbLike) {
             const like = await Like.create({
                 userId: user._id,
-                tweetId,
+                postId,
             })
             // publishing notification
-            const tweet = await Tweet.findById(tweetId)
-            if (like && !tweet.userId.equals(user._id)) {
-                const message = `@${user.username} liked your post: "${tweet.content}"`;
+            const post = await Post.findById(postId)
+            if (like && !post.userId.equals(user._id)) {
+                const message = `@${user.username} liked your post: "${post.content}"`;
                 publishNotification({
-                    userId: tweet.userId,
+                    userId: post.userId,
                     message,
-                    tweet: {
-                        _id: tweet._id,
-                        image: tweet.image,
+                    post: {
+                        _id: post._id,
+                        image: post.image,
                     },
                     creator: {
                         _id: user._id,
@@ -161,7 +161,7 @@ class LikeController {
         } else {
             await Like.findByIdAndDelete(dbLike._id)
         }
-        return res.status(200).json(new ApiResponse(200, null, `${dbLike ? "unliked" : "liked"} tweet`))
+        return res.status(200).json(new ApiResponse(200, null, `${dbLike ? "unliked" : "liked"} post`))
     })
     toggleReplyLike = asyncHandler(async (req, res) => {
         const { replyId } = req.params;
@@ -298,4 +298,4 @@ class LikeController {
     })
 }
 
-export default new LikeController();
+export const likeController = new LikeController();

@@ -122,4 +122,4 @@ class AuthController {
         return res.status(200).json(new ApiResponse(200, { user }, "Tokens refreshed successfully"));
     })
 }
-export default new AuthController();
+export const authController = new AuthController();

@@ -17,4 +17,4 @@ class LikeService {
         await Axios.get(`/likes/${type}-comments-likes-count/${id}`);
 }
 
-export default new LikeService();
+export const likeService = new LikeService();

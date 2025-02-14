@@ -3,17 +3,18 @@ import express from "express";
 import cors from "cors";
 import cookieParser from "cookie-parser"
 import { errorHandler } from "./utils/handler.js";
-import userRoutes from "./routes/user.js";
-import tweetRoutes from "./routes/tweet.js";
-import commentRoutes from "./routes/comment.js";
-import likeRoutes from "./routes/like.js";
-import subscriptionRoutes from "./routes/subscription.js";
-import videoRoutes from "./routes/video.js";
-import shortRoutes from "./routes/short.js";
-import playlistRoutes from "./routes/playlist.js";
-import notificationRoutes from "./routes/notification.js";
-import uploadRoutes from "./routes/upload.js";
-import replyRoutes from "./routes/reply.js"
+import { userRoutes } from "./routes/user.js";
+import { postRoutes } from "./routes/post.js";
+import { commentRoutes } from "./routes/comment.js";
+import { likeRoutes } from "./routes/like.js";
+import { subscriptionRoutes } from "./routes/subscription.js";
+import { videoRoutes } from "./routes/video.js";
+import { shortRoutes } from "./routes/short.js";
+import { playlistRoutes } from "./routes/playlist.js";
+import { notificationRoutes } from "./routes/notification.js";
+import { uploadRoutes } from "./routes/upload.js";
+import { replyRoutes } from "./routes/reply.js"
+import { studioRoutes } from "./routes/studio.js"
 import bodyParser from "body-parser"
 const ORIGIN = process.env.CLIENT_URL
 
@@ -41,7 +42,7 @@ app.use(cookieParser())
 
 app.use("/api/v1/users", userRoutes)
 
-app.use("/api/v1/tweets", tweetRoutes)
+app.use("/api/v1/posts", postRoutes)
 
 app.use("/api/v1/shorts", shortRoutes)
 
@@ -57,9 +58,11 @@ app.use("/api/v1/playlists", playlistRoutes)
 
 app.use("/api/v1/uploads", uploadRoutes)
 
-app.use('/api/v1/notifications',notificationRoutes)
+app.use('/api/v1/notifications', notificationRoutes)
 
-app.use('/api/v1/replies',replyRoutes)
+app.use('/api/v1/replies', replyRoutes)
+
+app.use('/api/v1/studio', studioRoutes)
 
 app.use(errorHandler)
 

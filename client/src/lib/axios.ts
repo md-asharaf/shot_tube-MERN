@@ -3,7 +3,7 @@ import { ApiResponse } from "@/interfaces";
 import { store } from "@/store/store";
 import { setLoginPopoverData } from "@/store/reducers/ui";
 import { logout } from "@/store/reducers/auth";
-import authServices from "@/services/Auth";
+import { authService } from "@/services/Auth";
 const axiosInstance = axios.create({
     baseURL: process.env.BACKEND_BASE_URL,
 });
@@ -18,7 +18,7 @@ axiosInstance.interceptors.response.use(
             !store.getState().ui.loginPopoverData.open
         ) {
             store.dispatch(logout());
-            authServices.logout();
+            authService.logout();
             store.dispatch(
                 setLoginPopoverData({
                     message: error.response?.data?.message,

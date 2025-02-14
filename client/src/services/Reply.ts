@@ -1,7 +1,7 @@
 import Axios from "@/lib/axios";
 
 class ReplyService {
-    getReplies = async (commentId: string,page:number) =>
+    getReplies = async (commentId: string, page: number) =>
         await Axios.get(`/replies/all-replies/${commentId}?page=${page}`);
     addReply = async (commentId: string, content: string) =>
         await Axios.post(`/replies/add-reply/${commentId}`, { content });
@@ -11,4 +11,4 @@ class ReplyService {
         await Axios.patch(`/replies/update-reply/${replyId}`, { content });
 }
 
-export default new ReplyService();
+export const replyService = new ReplyService();

@@ -2,7 +2,6 @@ import { asyncHandler } from "../utils/handler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 import { Short } from "../models/short.js";
-import { ObjectId } from "mongodb"
 import { User } from "../models/user.js";
 import { Like } from "../models/like.js";
 import { publishNotification } from "../lib/kafka/producer.js";
@@ -200,13 +199,15 @@ class ShortController {
         return res.status(200).json(new ApiResponse(200, { short }, "Short fetched successfully"));
     });
 
-    getShortsByUserId = asyncHandler(async (req, res) => {
-        const { userId } = req.params;
-        if (!userId) throw new ApiError(400, "Please provide userId")
+    getShortsByUsername = asyncHandler(async (req, res) => {
+        const { username } = req.params;
+        if (!username) throw new ApiError(400, "Please provide username")
+        const user = await User.findOne({ username });
+        if (!user) throw new ApiError(400, "Please provide valid username")
         const shorts = await Short.aggregate([
             {
                 $match: {
-                    userId: new ObjectId(userId),
+                    userId: user._id,
                 }
             },
             {
@@ -466,4 +467,4 @@ class ShortController {
     })
 }
 
-export default new ShortController();
+export const shortController = new ShortController();

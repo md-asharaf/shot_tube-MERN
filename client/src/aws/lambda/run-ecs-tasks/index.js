@@ -40,21 +40,21 @@ module.exports.handler = async (event) => {
   console.log(`Max Height: ${maxHeight}, Max Width: ${maxWidth}`);
 
   try {
-    console.log('Starting transcription task...');
-    const transcriptionPromise = ecs.runTask(getTranscriptionParams(FILE_KEY, INPUT_BUCKET, maxHeight, maxWidth, isShort)).promise().then(
-      (data) => {
-        const taskArn = data.tasks[0]?.taskArn;
-        if (taskArn) {
-          console.log(`Transcription task started successfully with task ARN: ${taskArn}`);
-        } else {
-          console.error('Failed to retrieve task ARN for transcription task: REASON:', data.failures[0]?.reason);
-        }
-      },
-      (err) => {
-        console.error('Error starting transcription task:', err);
-        throw err;
-      }
-    );
+    // console.log('Starting transcription task...');
+    // const transcriptionPromise = ecs.runTask(getTranscriptionParams(FILE_KEY, INPUT_BUCKET, maxHeight, maxWidth, isShort)).promise().then(
+    //   (data) => {
+    //     const taskArn = data.tasks[0]?.taskArn;
+    //     if (taskArn) {
+    //       console.log(`Transcription task started successfully with task ARN: ${taskArn}`);
+    //     } else {
+    //       console.error('Failed to retrieve task ARN for transcription task: REASON:', data.failures[0]?.reason);
+    //     }
+    //   },
+    //   (err) => {
+    //     console.error('Error starting transcription task:', err);
+    //     throw err;
+    //   }
+    // );
     // Check if it is a Short (portrait mode: width < height)
     if (isShort) {
       console.log(`Video is a Short, starting transcoding task with the uploaded resolution...`);
@@ -113,7 +113,8 @@ module.exports.handler = async (event) => {
           }
         );
       });
-      await Promise.all([transcriptionPromise, ...transcodingPromises]);
+      // await Promise.all([transcriptionPromise, ...transcodingPromises]);
+      await Promise.all(transcodingPromises);
     }
     return {
       statusCode: 200,

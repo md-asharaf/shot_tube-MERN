@@ -10,7 +10,7 @@ const notificationSchema = new mongoose.Schema({
         _id: String,
         thumbnail: String,
     },
-    tweet: {
+    post: {
         _id: String,
         image: String,
     },
@@ -39,5 +39,4 @@ const notificationSchema = new mongoose.Schema({
 
 notificationSchema.plugin(MAP);
 
-const Notification = mongoose.model('Notification', notificationSchema);
-export default Notification;
+export const Notification = mongoose.model('Notification', notificationSchema);

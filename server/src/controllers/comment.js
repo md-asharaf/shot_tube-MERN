@@ -259,4 +259,4 @@ class CommentController {
     })
 }
 
-export default new CommentController();
+export const commentController = new CommentController();

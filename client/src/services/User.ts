@@ -27,4 +27,4 @@ class UserService {
         await Axios.get(`/users/is-saved-to-watch-later?${type}Id=${id}`);
 }
 
-export default new UserService();
+export const userService = new UserService();

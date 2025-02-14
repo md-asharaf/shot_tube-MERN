@@ -211,12 +211,14 @@ class VideoController {
         return res.status(200).json(new ApiResponse(200, { video: video[0] }, "Video fetched successfully"))
     })
     getVideosByUserId = asyncHandler(async (req, res) => {
-        const { userId } = req.params;
-        if (!userId) throw new ApiError(400, "Please provide userId")
+        const { username } = req.params;
+        if (!username) throw new ApiError(400, "Please provide username")
+        const user = await User.findOne({ username })
+        if (!user) throw new ApiError(400, "User not found")
         const videos = await Video.aggregate([
             {
                 $match: {
-                    userId: new ObjectId(userId),
+                    userId: user._id
                 }
             },
             {
@@ -244,6 +246,7 @@ class VideoController {
                 }
             }
         ])
+        console.log({ videos })
         return res.status(200).json(new ApiResponse(200, { videos }, "this channel's all videos fetched successfully"))
     })
 
@@ -474,6 +477,15 @@ class VideoController {
         await video.save({ validateBeforeSave: false })
         return res.status(200).json(new ApiResponse(200, null, "successfully video's views increased"))
     })
+
+    getUserVideosCount = asyncHandler(async (req, res) => {
+        const { userId } = req.params;
+        if (!userId) {
+            throw new ApiError(400, "user id is required");
+        }
+        const videosCount = await Video.countDocuments({ userId: new ObjectId(userId) })
+        return res.status(200).json(new ApiResponse(200, { videosCount }, "videos count fetched successfully"))
+    })
 }
 
-export default new VideoController();
+export const videoController = new VideoController();

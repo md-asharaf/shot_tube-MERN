@@ -1,5 +1,5 @@
 import { asyncHandler } from "../utils/handler.js";
-import Notification from "../models/notification.js"
+import { Notification } from "../models/notification.js"
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
 class NotificationController {
@@ -40,4 +40,4 @@ class NotificationController {
     })
 }
 
-export default new NotificationController();
+export const notificationController = new NotificationController();

@@ -17,4 +17,4 @@ class ShortSevice {
             `/shorts/recommended-shorts?page=${page}${shortId?`&shortId=${shortId}`:""}${userId?`&userId=${userId}`:""}`
         );
 }
-export default new ShortSevice();
+export const shortService = new ShortSevice();

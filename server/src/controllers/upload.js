@@ -41,5 +41,5 @@ class UploadController {
   })
 }
 
-export default new UploadController();
+export const uploadController = new UploadController();
 

@@ -11,4 +11,4 @@ class NotificationService {
         await axios.delete(`/notifications/delete-notification?createdAt=${createdAt}`);
 }
 
-export default new NotificationService();
+export const notificationService = new NotificationService();

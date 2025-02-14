@@ -18,7 +18,7 @@ const s3Client = new S3Client({
 
 const BUCKET_NAME = process.env.AWS_S3_BUCKET_NAME;
 
-async function generatePresignedUrlForPartUpload(uploadId, partNumber, Key) {
+const generatePresignedUrlForPartUpload = async (uploadId, partNumber, Key) => {
   try {
     const command = new UploadPartCommand({
       Bucket: BUCKET_NAME,
@@ -33,7 +33,7 @@ async function generatePresignedUrlForPartUpload(uploadId, partNumber, Key) {
   }
 }
 
-export async function initiateMultipartUpload(Key, ContentType) {
+export const initiateMultipartUpload = async (Key, ContentType) => {
   try {
     const command = new CreateMultipartUploadCommand({
       Bucket: BUCKET_NAME,
@@ -47,7 +47,7 @@ export async function initiateMultipartUpload(Key, ContentType) {
   }
 }
 
-export async function startMultipartUploadAndGenerateUrls(fileKey, contentType, totalParts) {
+export const startMultipartUploadAndGenerateUrls = async (fileKey, contentType, totalParts) => {
   try {
     const uploadId = await initiateMultipartUpload(fileKey, contentType);
     const presignedUrls = [];
@@ -61,7 +61,7 @@ export async function startMultipartUploadAndGenerateUrls(fileKey, contentType, 
   }
 }
 
-export async function completeMultipartUpload(uploadId, fileKey, partETags) {
+export const completeMultipartUpload = async (uploadId, fileKey, partETags) => {
   try {
     const command = new CompleteMultipartUploadCommand({
       Bucket: BUCKET_NAME,
@@ -76,7 +76,7 @@ export async function completeMultipartUpload(uploadId, fileKey, partETags) {
   }
 }
 
-export async function abortMultipartUpload(uploadId, fileKey) {
+export const abortMultipartUpload = async (uploadId, fileKey) => {
   try {
     const command = new AbortMultipartUploadCommand({
       Bucket: BUCKET_NAME,
@@ -90,7 +90,7 @@ export async function abortMultipartUpload(uploadId, fileKey) {
   }
 }
 
-export async function putObjectUrl(fileKey, contentType) {
+export const putObjectUrl = async (fileKey, contentType) => {
   try {
     const command = new PutObjectCommand({
       Bucket: BUCKET_NAME,

@@ -1,23 +1,23 @@
-import likeControllers from "../controllers/like.js";
+import { likeController } from "../controllers/like.js";
 import { Router } from "express";
 import { verifyJWT } from "../middlewares/auth.js";
 
 const router = Router();
 
-router.get("/likes-count",likeControllers.likesCount)
-router.get('/video-comments-likes-count/:videoId',likeControllers.videoCommentsLikeCount);
-router.get('/short-comments-likes-count/:shortId',likeControllers.shortCommentsLikeCount);
-router.get('/comment-replies-likes-count/:commentId',likeControllers.commentRepliesLikeCount);
+router.get("/likes-count", likeController.likesCount)
+router.get('/video-comments-likes-count/:videoId', likeController.videoCommentsLikeCount);
+router.get('/short-comments-likes-count/:shortId', likeController.shortCommentsLikeCount);
+router.get('/comment-replies-likes-count/:commentId', likeController.commentRepliesLikeCount);
 
 router.use(verifyJWT);
-router.get(`/is-liked`, likeControllers.isLiked);
-router.post("/toggle-comment-like/:commentId", likeControllers.toggleCommentLike);
-router.post("/toggle-short-like/:shortId", likeControllers.toggleShortLike);
-router.post("/toggle-video-like/:videoId", likeControllers.toggleVideoLike);
-router.post("/toggle-tweet-like/:tweetId", likeControllers.toggleTweetLike);
-router.post("/toggle-reply-like/:replyId", likeControllers.toggleReplyLike);
-router.get('/video-comments-like-status/:videoId',likeControllers.likedStatusofVideoComments);
-router.get('/short-comments-like-status/:shortId',likeControllers.likedStatusofShortComments);
-router.get('/comment-replies-like-status/:commentId',likeControllers.likedStatusofCommentReplies);
+router.get(`/is-liked`, likeController.isLiked);
+router.post("/toggle-comment-like/:commentId", likeController.toggleCommentLike);
+router.post("/toggle-short-like/:shortId", likeController.toggleShortLike);
+router.post("/toggle-video-like/:videoId", likeController.toggleVideoLike);
+router.post("/toggle-post-like/:postId", likeController.togglePostLike);
+router.post("/toggle-reply-like/:replyId", likeController.toggleReplyLike);
+router.get('/video-comments-like-status/:videoId', likeController.likedStatusofVideoComments);
+router.get('/short-comments-like-status/:shortId', likeController.likedStatusofShortComments);
+router.get('/comment-replies-like-status/:commentId', likeController.likedStatusofCommentReplies);
 
-export default router;
+export const likeRoutes = router;

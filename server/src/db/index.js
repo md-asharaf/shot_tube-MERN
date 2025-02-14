@@ -1,6 +1,6 @@
 import mongoose from "mongoose";
 import { DB_NAME } from "../constants.js";
-import Notification from "../models/notification.js";
+import { Notification } from "../models/notification.js";
 
 const connectDB = async () => {
     try {

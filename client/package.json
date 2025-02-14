@@ -2,7 +2,7 @@
     "name": "frontend",
     "private": true,
     "version": "0.0.0",
-    "type": "module",
+    "type": "commonjs",
     "scripts": {
         "dev": "vite",
         "build": "tsc && vite build",
@@ -54,6 +54,7 @@
         "embla-carousel-react": "^8.5.2",
         "emoji-picker-react": "^4.12.0",
         "firebase": "^11.1.0",
+        "framer-motion": "^12.4.2",
         "hls.js": "^1.5.17",
         "input-otp": "^1.4.2",
         "lucide-react": "^0.475.0",

@@ -129,3 +129,13 @@ export interface INotification {
     read: boolean;
     createdAt: Date;
 }
+
+export interface IPostData {
+    _id: string;
+    content: string;
+    image: string;
+    creator: IUser;
+    createdAt: Date;
+    updatedAt: Date;
+}
+

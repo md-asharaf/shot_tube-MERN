@@ -83,4 +83,3 @@ export const onTimestampClick = (seconds: number, playerRef: any) => {
         }
     }
 };
-

@@ -33,4 +33,4 @@ class UploadService {
         });
 }
 
-export default new UploadService();
+export const uploadService = new UploadService();

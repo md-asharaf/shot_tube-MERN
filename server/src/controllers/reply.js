@@ -114,4 +114,4 @@ class ReplyController {
     });
 }
 
-export default new ReplyController();
+export const replyController = new ReplyController();

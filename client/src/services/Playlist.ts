@@ -1,7 +1,7 @@
 import Axios from "@/lib/axios";
 class PLaylistService {
-    getAllPlaylists = async (userId: string) =>
-        await Axios.get(`/playlists/all-playlists/${userId}`);
+    getAllPlaylists = async (username: string) =>
+        await Axios.get(`/playlists/all-playlists/${username}`);
     getPlaylistById = async (playlistId: string) =>
         await Axios.get(`/playlists/${playlistId}`);
     addToPlaylist = async (playlistId: string, id: string, type: string) =>
@@ -22,4 +22,4 @@ class PLaylistService {
             `/playlists/is-video-saved?${type}Id=${id}`
         );
 }
-export default new PLaylistService();
+export const playlistService = new PLaylistService();

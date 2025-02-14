@@ -1,9 +1,9 @@
 import { asyncHandler } from "../utils/handler.js";
 import { ApiResponse } from "../utils/ApiResponse.js";
 import { ApiError } from "../utils/ApiError.js";
-import { PlayList } from "../models/playlist.js";
+import { Playlist } from "../models/playlist.js";
 import { ObjectId } from "mongodb";
-
+import { User } from "../models/user.js";
 class PlaylistController {
     addToPlaylist = asyncHandler(async (req, res) => {
         const { playlistId } = req.params;
@@ -16,7 +16,7 @@ class PlaylistController {
             throw new ApiError(400, "VideoId or shortId is required");
         }
         const updateQuery = videoId ? { videos: new ObjectId(videoId) } : { shorts: new ObjectId(shortId) };
-        const playlist = await PlayList.findOneAndUpdate({ _id: new ObjectId(playlistId), userId }, {
+        const playlist = await Playlist.findOneAndUpdate({ _id: new ObjectId(playlistId), userId }, {
             $push: updateQuery
         }, {
             new: true
@@ -36,12 +36,12 @@ class PlaylistController {
         if (!videoId && !shortId) {
             throw new ApiError(400, "VideoId or shortId is required");
         }
-        const playlist = await PlayList.findOne({ _id: new ObjectId(playlistId), userId });
+        const playlist = await Playlist.findOne({ _id: new ObjectId(playlistId), userId });
         if (!playlist) {
             throw new ApiError(404, "Playlist not found");
         }
         const updateQuery = videoId ? { videos: new ObjectId(videoId) } : { shorts: new ObjectId(shortId) };
-        const updatedPlaylist = await PlayList.findByIdAndUpdate(playlist._id, {
+        const updatedPlaylist = await Playlist.findByIdAndUpdate(playlist._id, {
             $pull: updateQuery
         }, {
             new: true
@@ -54,11 +54,11 @@ class PlaylistController {
         if (!playlistId) {
             throw new ApiError(400, "PlaylistId is required")
         }
-        const playlist = await PlayList.findOne({ _id: new ObjectId(playlistId), userId });
+        const playlist = await Playlist.findOne({ _id: new ObjectId(playlistId), userId });
         if (!playlist) {
             throw new ApiError(404, "Playlist not found");
         }
-        const isDeleted = await PlayList.findByIdAndDelete(playlist._id);
+        const isDeleted = await Playlist.findByIdAndDelete(playlist._id);
         if (!isDeleted) {
             throw new ApiError(500, "Failed to delete playlist");
         }
@@ -71,7 +71,7 @@ class PlaylistController {
         if ((!name && !description) || !playlistId) {
             throw new ApiError(400, "Name or description and playlistId is required");
         }
-        const playlist = await PlayList.findOne({ _id: new ObjectId(playlistId), userId });
+        const playlist = await Playlist.findOne({ _id: new ObjectId(playlistId), userId });
         if (!playlist) {
             throw new ApiError(404, "Playlist not found");
         }
@@ -93,7 +93,7 @@ class PlaylistController {
         if (!name) {
             throw new ApiError(400, "Name is required")
         }
-        const playlist = await PlayList.create({
+        const playlist = await Playlist.create({
             name,
             description,
             userId
@@ -109,19 +109,27 @@ class PlaylistController {
         if (!videoId && !shortId) {
             throw new ApiError(400, "VideoId or shortId is required");
         }
-        const playlists = await PlayList.find({ userId: new ObjectId(userId) });
-        let isSaved =[];
-        for( let playlist of playlists){
-            isSaved.push( videoId? playlist.videos.includes(videoId) : playlist.shorts.includes(shortId))
+        const playlists = await Playlist.find({ userId: new ObjectId(userId) });
+        let isSaved = [];
+        for (let playlist of playlists) {
+            isSaved.push(videoId ? playlist.videos.includes(videoId) : playlist.shorts.includes(shortId))
         }
         return res.status(200).json(new ApiResponse(200, { isSaved }, "playlist saved status fetched successfully"));
     })
     getUserPlaylists = asyncHandler(async (req, res) => {
-        const { userId } = req.params;
-        const playlists = await PlayList.aggregate([
+        const { username } = req.params;
+        if (!username) {
+            throw new ApiError(400, "Username is required")
+        }
+        console.log({username})
+        const user = await User.findOne({ username });
+        if (!user) {
+            throw new ApiError(404, "User not found")
+        }
+        const playlists = await Playlist.aggregate([
             {
                 $match: {
-                    userId: new ObjectId(userId)
+                    userId: user._id
                 }
             },
             {
@@ -192,12 +200,11 @@ class PlaylistController {
         return res.status(200).json(new ApiResponse(200, { playlists }, "Playlists fetched successfully"))
     })
     getPlaylistById = asyncHandler(async (req, res) => {
-        console.log("in playlist")
         const { playlistId } = req.params
         if (!playlistId) {
             throw new ApiError(400, "PlaylistId is required")
         }
-        const playlists = await PlayList.aggregate([
+        const playlists = await Playlist.aggregate([
             {
                 $match: {
                     _id: new ObjectId(playlistId),
@@ -276,4 +283,4 @@ class PlaylistController {
 }
 
 
-export default new PlaylistController();
+export const playlistController = new PlaylistController();

@@ -86,23 +86,27 @@ class SubscriptionController {
                     from: "users",
                     localField: "channelId",
                     foreignField: "_id",
-                    as: "name"
+                    as: "user"
                 }
             },
             {
                 $addFields: {
-                    name: {
-                        $first: "$name.fullname"
+                    fullname: {
+                        $first: "$user.fullname"
                     },
                     username: {
-                        $first: "$name.username"
+                        $first: "$user.username"
+                    },
+                    avatar: {
+                        $first: "$user.avatar"
                     }
                 }
             },
             {
                 $project: {
-                    name: 1,
+                    fullname: 1,
                     username: 1,
+                    avatar: 1,
                 }
             }
         ]);
@@ -128,4 +132,4 @@ class SubscriptionController {
     })
 }
 
-export default new SubscriptionController();
+export const subscriptionController = new SubscriptionController();

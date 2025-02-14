@@ -1,5 +1,5 @@
 import { Router } from "express";
-import replyController from "../controllers/reply.js";
+import { replyController } from "../controllers/reply.js";
 import { verifyJWT } from "../middlewares/auth.js";
 import { limiter } from "../utils/rate-limiter.js";
 
@@ -11,4 +11,4 @@ router.use(verifyJWT);
 router.patch("/update-reply/:replyId", replyController.updateReply);
 router.delete("/delete-reply/:replyId", replyController.deleteReply);
 
-export default router;
+export const replyRoutes = router;

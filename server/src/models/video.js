@@ -29,7 +29,7 @@ const videoSchema = new Schema({
         type: Number,
         default: 0
     },
-    thumbnailPreviews:{
+    thumbnailPreviews: {
         type: String,
         default: ""
     },

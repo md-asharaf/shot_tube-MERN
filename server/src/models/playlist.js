@@ -1,5 +1,6 @@
 import { model, Schema } from "mongoose";
-const playListSchema = new Schema({
+import MAP from "mongoose-aggregate-paginate-v2"
+const playlistSchema = new Schema({
     name: {
         type: String,
         required: true
@@ -7,12 +8,20 @@ const playListSchema = new Schema({
     description: {
         type: String,
     },
+    type:{
+        type: String,
+        default: "playlist"
+    },
     videos: [
         {
             type: Schema.Types.ObjectId,
             ref: "Video",
         }
     ],
+    visibility:{
+        type: String,
+        default: "private"
+    },
     shorts:[
         {
             type: Schema.Types.ObjectId,
@@ -25,6 +34,5 @@ const playListSchema = new Schema({
         required: true
     },
 }, { timestamps: true });
-
-
-export const PlayList = model("PlayList", playListSchema);
+playlistSchema.plugin(MAP);
+export const Playlist = model("PlayList", playlistSchema);

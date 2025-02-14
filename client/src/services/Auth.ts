@@ -13,4 +13,4 @@ class AuthService {
     loginViaRefreshToken = async () => await Axios.get("/users/refresh-tokens");
 }
 
-export default new AuthService();
+export const authService = new AuthService();

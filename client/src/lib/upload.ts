@@ -1,6 +1,6 @@
 import { PartETag } from "@/interfaces";
 import { v4 as uuidv4 } from "uuid";
-import uploadService from "@/services/Upload";
+import { uploadService } from "@/services/Upload";
 import axios from "axios";
 export const downloadImageAndUploadToS3 = async (
     imageUrl: string,

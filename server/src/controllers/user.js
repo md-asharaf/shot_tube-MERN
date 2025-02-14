@@ -1,12 +1,11 @@
+import jwt from "jsonwebtoken"
+import bcrypt from "bcrypt"
 import { asyncHandler } from '../utils/handler.js';
 import { ApiError } from '../utils/ApiError.js';
 import { User } from '../models/user.js';
 import { ApiResponse } from '../utils/ApiResponse.js';
-import jwt from "jsonwebtoken"
-import bcrypt from "bcrypt"
-import { Resend } from "resend";
 import { ObjectId } from "mongodb";
-const resend = new Resend(process.env.RESEND_API_KEY);
+import { sendEmail } from '../lib/resend.js';
 class UserController {
     forgetPassword = asyncHandler(async (req, res) => {
         const { email }
@@ -22,12 +21,9 @@ class UserController {
         }
         const resetToken = await user.generatePasswordResetToken();
         const resetLink = `${process.env.CLIENT_URL}/reset-password/${resetToken}`;
-        const { error } = await resend.emails.send({
-            to: email,
-            from: `noreply@${process.env.RESEND_DOMAIN}`,
-            subject: "Password Reset",
-            text: `Click the link to reset your password: ${resetLink}`
-        })
+        const text = `Click the link to reset your password: ${resetLink}`;
+        const subject = "Password Reset";
+        const { error } = await sendEmail(email, subject, text);
         if (error) {
             throw new ApiError(500, error.message)
         }
@@ -99,7 +95,7 @@ class UserController {
         }
         return res.status(200).json(new ApiResponse(200, null, "Account details updated successfully"))
     })
-    getUserDetails = asyncHandler(async (req, res) => {
+    getUserChannel = asyncHandler(async (req, res) => {
         const { username } = req.params;
 
         if (!username) {
@@ -548,4 +544,4 @@ class UserController {
         return res.status(200).json(new ApiResponse(200, { isSaved }, `Video ${isSaved ? "is" : "is not"} saved to watch later`))
     })
 }
-export default new UserController();
+export const userController = new UserController();

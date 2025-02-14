@@ -11,4 +11,4 @@ class SubService {
         await Axios.get(`/subscriptions/subscribed-channels/${id}`);
 }
 
-export default new SubService();
+export const subService = new SubService();
