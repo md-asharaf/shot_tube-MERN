@@ -9,7 +9,7 @@ interface IOption {
 export const SubDrawer = ({ options }: { options: IOption[] }) => {
     const location = useLocation();
     return (
-        <div className={`flex-col dark:text-white pr-6`}>
+        <div className={`flex flex-col dark:text-white pr-6 space-y-1`}>
             {options?.map(({ route, icon, name, avatar }, index) => (
                 <NavLink
                     to={route}

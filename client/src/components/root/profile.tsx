@@ -1,7 +1,7 @@
 import { RootState } from "@/store/store";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
-import {authService} from "@/services/Auth";
+import {authService} from "@/services/auth";
 import {
     DropdownMenu,
     DropdownMenuContent,

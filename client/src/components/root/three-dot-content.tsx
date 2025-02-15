@@ -1,6 +1,6 @@
 import { Check, Clock4, Share2, Trash2 } from "lucide-react";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { userService } from "@/services/User";
+import { userService } from "@/services/user";
 import { toast } from "sonner";
 import { queryClient } from "@/main";
 import { useDispatch, useSelector } from "react-redux";

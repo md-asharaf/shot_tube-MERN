@@ -1,5 +1,5 @@
 import rateLimit from "express-rate-limit";
-import { ApiError } from "../utils/ApiError.js";
+import { ApiError } from "../utils/api-error.js";
 export const limiter = (limit) =>{
     return rateLimit({
         windowMs: 1 * 60 * 1000,

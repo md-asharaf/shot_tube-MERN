@@ -4,8 +4,8 @@ import { Video } from "../models/video.js";
 import { Playlist } from "../models/playlist.js";
 import { Short } from "../models/short.js";
 import { Post } from "../models/post.js";
-import { ApiError } from "../utils/ApiError.js";
-import { ApiResponse } from "../utils/ApiResponse.js";
+import { ApiError } from "../utils/api-error.js";
+import { ApiResponse } from "../utils/api-response.js";
 class StudioController {
     getUserPosts = asyncHandler(async (req, res) => {
         const { page = 1, limit = 5 } = req.query;

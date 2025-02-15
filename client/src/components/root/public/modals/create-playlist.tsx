@@ -1,4 +1,4 @@
-import { playlistService } from "@/services/Playlist";
+import { playlistService } from "@/services/playlist";
 import { useMutation } from "@tanstack/react-query";
 import { useState } from "react";
 import { Button } from "@/components/ui/button";

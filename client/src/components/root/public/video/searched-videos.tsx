@@ -1,5 +1,5 @@
 import { IVideoData } from "@/interfaces";
-import { videoService } from "@/services/Video";
+import { videoService } from "@/services/video";
 import { useQuery } from "@tanstack/react-query";
 import { formatDistanceToNowStrict } from "date-fns";
 import { Link, useSearchParams } from "react-router-dom";

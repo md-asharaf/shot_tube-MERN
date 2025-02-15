@@ -3,7 +3,7 @@ import { SidebarLayout } from "../sidebar/layout";
 import { PostSection } from "./section";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { postService } from "@/services/Post";
+import { postService } from "@/services/post";
 import { IPostData } from "@/interfaces";
 export const StudioPost = () => {
     const { id } = useParams();

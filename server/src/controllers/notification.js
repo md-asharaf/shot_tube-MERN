@@ -1,7 +1,7 @@
 import { asyncHandler } from "../utils/handler.js";
 import { Notification } from "../models/notification.js"
-import { ApiResponse } from "../utils/ApiResponse.js";
-import { ApiError } from "../utils/ApiError.js";
+import { ApiResponse } from "../utils/api-response.js";
+import { ApiError } from "../utils/api-error.js";
 class NotificationController {
     getAllNotifications = asyncHandler(async (req, res) => {
         const { page = 1, limit = 10 } = req.query;

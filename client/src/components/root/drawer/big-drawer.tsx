@@ -3,7 +3,7 @@ import { SiYoutubeshorts } from "react-icons/si";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import { SubDrawer } from "./sub-drawer";
-import { subService } from "@/services/Subscription";
+import { subService } from "@/services/subscription";
 import { useQuery } from "@tanstack/react-query";
 import { Skeleton } from "@/components/ui/skeleton";
 import { GoHome } from "react-icons/go";
@@ -103,7 +103,7 @@ export const BigDrawer = () => {
                     </svg>
                 </div>
             ),
-            route: `/studio/${username}`,
+            route: `/studio/${username}/content`,
         },
         {
             name: "Watch later",
@@ -152,7 +152,7 @@ export const BigDrawer = () => {
     const data = channels?.map((channel) => ({
         name: channel.fullname,
         avatar: channel.avatar,
-        route: `/users/${channel.username}`,
+        route: `/channel/${channel.username}`,
     }));
     const shortId = useSelector(
         (state: RootState) => state.short.randomShortId
@@ -206,19 +206,19 @@ export const BigDrawer = () => {
                     />
                 </div>
                 {userId && (
-                    <>
-                        <Separator className="my-3" />
+                    <div className="space-y-1">
+                        <Separator className="mt-3 mb-1" />
                         <NavLink
                             to={`/playlist-n-history?u=${username}`}
-                            className={`flex items-center gap-x-2 rounded-xl p-2 hover:bg-zinc-200 dark:hover:bg-zinc-800 pr-6`}
+
                         >
-                            <p className="font-bold flex items-center gap-x-2">
+                            <p className="font-bold flex items-center gap-x-2 rounded-xl p-2 hover:bg-zinc-200 dark:hover:bg-zinc-800 mr-6">
                                 <span className="text-lg">You</span>{" "}
                                 <ChevronRight size={20} />
                             </p>
                         </NavLink>
                         <SubDrawer options={options} />
-                    </>
+                    </div>
                 )}
                 <Separator className="my-3" />
                 {isLoading ? (

@@ -3,7 +3,7 @@ import { SidebarLayout } from "../sidebar/layout";
 import { ShortSection } from "./section";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { shortService } from "@/services/Short";
+import { shortService } from "@/services/short";
 import { IShortData } from "@/interfaces";
 import { Loader2 } from "lucide-react";
 export const StudioShort = () => {

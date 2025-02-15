@@ -12,7 +12,7 @@ import {
     FormMessage,
 } from "@/components/ui/form";
 import { IoLogoYoutube } from "react-icons/io";
-import { authService } from "@/services/Auth";
+import { authService } from "@/services/auth";
 import { ILoginForm } from "@/interfaces";
 import { toast } from "sonner";
 import { PasswordInput } from "@/components/root/password-input";

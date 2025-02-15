@@ -10,7 +10,7 @@ import {
     DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useInfiniteQuery, useMutation } from "@tanstack/react-query";
-import { notificationService } from "@/services/Notification";
+import { notificationService } from "@/services/notification";
 import {
     setNotifications,
     resetNotificationCount,

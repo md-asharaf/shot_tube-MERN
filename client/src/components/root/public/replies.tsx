@@ -1,13 +1,13 @@
 import { useEffect, useRef, useState } from "react";
 import { useQuery, useMutation, useInfiniteQuery } from "@tanstack/react-query";
-import { replyService } from "@/services/Reply";
+import { replyService } from "@/services/reply";
 import { Button } from "@/components/ui/button";
 import { Edit, EllipsisVertical, Loader2, ThumbsUp, Trash } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { formatDistanceToNowStrict } from "date-fns";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
-import { likeService } from "@/services/Like";
+import { likeService } from "@/services/like";
 import {
     DropdownMenu,
     DropdownMenuContent,

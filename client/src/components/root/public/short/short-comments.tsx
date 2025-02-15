@@ -1,13 +1,17 @@
-import { X } from "lucide-react";
-import { Card, CardContent, CardTitle } from "@/components/ui/card";
-import { useDispatch } from "react-redux";
+import { Divide, Loader2, X } from "lucide-react";
+import { Card, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
+import { useDispatch, useSelector } from "react-redux";
 import { setOpenCard } from "@/store/reducers/short";
 import { Comments } from "@/components/root/public/comments";
 import { useState } from "react";
-import { useQuery } from "@tanstack/react-query";
-import { commentService } from "@/services/Comment";
+import { useMutation, useQuery } from "@tanstack/react-query";
+import { commentService } from "@/services/comment";
 import { Separator } from "@/components/ui/separator";
 import { Filter } from "@/components/root/public/filter";
+import { TextArea } from "../../text-area";
+import { RootState } from "@/store/store";
+import { toast } from "sonner";
+import { queryClient } from "@/main";
 export const ShortComments = ({
     shortId,
     playerRef,
@@ -19,11 +23,30 @@ export const ShortComments = ({
 }) => {
     const [filter, setFilter] = useState("All");
     const dispatch = useDispatch();
+    const userData = useSelector((state: RootState) => state.auth.userData);
     const { data: totalComments, isLoading } = useQuery({
         queryKey: ["comments-count", shortId],
         queryFn: async () => {
             const data = await commentService.commentsCount(shortId, "short");
             return data.commentsCount;
+        },
+    });
+    const { mutate: addComment, isPending } = useMutation({
+        mutationFn: async ({
+            id,
+            content,
+        }: {
+            id: string;
+            content: string;
+        }) => {
+            const data = await commentService.comment(id, content, "short");
+            return data.comment;
+        },
+        onSuccess: () => {
+            toast.success("Comment added");
+            queryClient.invalidateQueries({
+                queryKey: ["comments", shortId, filter],
+            });
         },
     });
     return (
@@ -65,6 +88,24 @@ export const ShortComments = ({
                     filter={filter}
                 />
             </CardContent>
+            <Separator/>
+            <CardFooter className="p-2">
+                {isPending ? (
+                    <div className="flex items-center justify-center w-full">
+                        <Loader2 className="h-6 w-6 animate-spin" strokeWidth={1} />
+                    </div>
+                ) : (
+                    <TextArea
+                        fullname={userData?.fullname}
+                        userAvatar={userData?.avatar}
+                        placeholder="Add a public comment..."
+                        onSubmit={(content) =>
+                            addComment({ id: shortId, content })
+                        }
+                        submitLabel="Comment"
+                    />
+                )}
+            </CardFooter>
         </Card>
     );
 };

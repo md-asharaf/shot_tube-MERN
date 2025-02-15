@@ -12,6 +12,7 @@ import {
     CarouselPrevious,
 } from "@/components/ui/carousel";
 import { useRef } from "react";
+import { Playlist } from "./playlist/playlists";
 
 export const Library = ({
     videos = null,
@@ -19,7 +20,7 @@ export const Library = ({
     label,
 }: {
     videos?: IVideoData[];
-    playlists?: IPlaylist[];
+    playlists?: Playlist[];
     label: string;
 }) => {
     const playerRef = useRef(null);
@@ -60,15 +61,12 @@ export const Library = ({
                                       className="pl-4 basis-10/12 sm:basis-1/2 md:basis-1/3 lg:basis-1/4 2xl:basis-1/5"
                                   >
                                       <Link
-                                          to={`/playlist?p=${playlist._id}`}
+                                          to={`/playlist/${playlist._id}`}
                                           className="flex flex-col gap-2 rounded-lg"
                                       >
                                           <PlaylistCard
                                               playlistThumbnail={
-                                                  playlist.videos?.length > 0
-                                                      ? playlist.videos[0]
-                                                            .thumbnail
-                                                      : null
+                                                  playlist.thumbnail
                                               }
                                               videosLength={
                                                   playlist.videos?.length || 0

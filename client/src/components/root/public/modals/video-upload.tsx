@@ -1,7 +1,7 @@
 import { Textarea } from "@/components/ui/textarea";
 import { useForm } from "react-hook-form";
-import { videoService } from "@/services/Video";
-import { shortService } from "@/services/Short";
+import { videoService } from "@/services/video";
+import { shortService } from "@/services/short";
 import { useDispatch, useSelector } from "react-redux";
 import { toggleVideoModal } from "@/store/reducers/ui";
 import { Input } from "@/components/ui/input";
@@ -24,7 +24,7 @@ import { VideoFormValidation } from "@/validations";
 import { DragDropInput } from "@/components/root/private/drag-n-drop-input";
 import { Button } from "@/components/ui/button";
 import { v4 as uuid } from "uuid";
-import { uploadService } from "@/services/Upload";
+import { uploadService } from "@/services/upload";
 import { uploadAllParts, uploadToPresignedUrl } from "@/lib/upload";
 import { ResponsiveModal } from "./responsive-modal";
 interface IMetaData {

@@ -8,6 +8,7 @@ import useSocketNotifications from "@/hooks/use-notification";
 import { SharePopup } from "@/components/root/public/modals/share-popup";
 import { SaveToPlaylist } from "@/components/root/public/modals/save-to-playlist";
 import { CreatePlaylist } from "@/components/root/public/modals/create-playlist";
+import { GlobalAlertDialog } from "./modals/global-alert-dialog";
 export const RootLayOut = () => {
     useSocketNotifications();
     return (
@@ -35,6 +36,7 @@ export const RootLayOut = () => {
             <SharePopup />
             <SaveToPlaylist />
             <CreatePlaylist />
+            <GlobalAlertDialog/>
         </div>
     );
 };

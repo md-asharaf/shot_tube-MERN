@@ -1,4 +1,4 @@
-import { ApiResponse } from "./ApiResponse.js"
+import { ApiResponse } from "./api-response.js"
 const errorHandler = (err, req, res,next) => {
     console.error("API ERROR: ", err);
     const status = (err.errorInfo || err.name === "TokenExpiredError") ? 401 : (err.status || 500);

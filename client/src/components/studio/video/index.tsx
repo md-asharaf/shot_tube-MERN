@@ -2,7 +2,7 @@ import { Outlet, useParams } from "react-router-dom";
 import { SidebarLayout } from "../sidebar/layout";
 import { VideoSection } from "./section";
 import { IVideoData } from "@/interfaces";
-import { videoService } from "@/services/Video";
+import { videoService } from "@/services/video";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 export const StudioVideo = () => {

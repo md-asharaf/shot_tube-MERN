@@ -4,7 +4,7 @@ import { Link, useParams } from "react-router-dom";
 import { IPostData } from "@/interfaces";
 import { useQuery } from "@tanstack/react-query";
 import { useDispatch } from "react-redux";
-import { postService } from "@/services/Post";
+import { postService } from "@/services/post";
 import { PostCard } from "../../post-card";
 export const ChannelPosts = () => {
     const dispatch = useDispatch();

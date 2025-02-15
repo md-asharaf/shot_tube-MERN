@@ -4,7 +4,7 @@ import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useSelector } from "react-redux";
 import { PlaylistComp } from "@/components/root/private/playlist/playlist-comp";
-import { userService } from "@/services/User";
+import { userService } from "@/services/user";
 import { RootState } from "@/store/store";
 
 export const WatchLater = () => {

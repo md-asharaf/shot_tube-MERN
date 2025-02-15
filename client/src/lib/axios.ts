@@ -3,7 +3,7 @@ import { ApiResponse } from "@/interfaces";
 import { store } from "@/store/store";
 import { setLoginPopoverData } from "@/store/reducers/ui";
 import { logout } from "@/store/reducers/auth";
-import { authService } from "@/services/Auth";
+import { authService } from "@/services/auth";
 const axiosInstance = axios.create({
     baseURL: process.env.BACKEND_BASE_URL,
 });

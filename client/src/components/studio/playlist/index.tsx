@@ -3,7 +3,7 @@ import { SidebarLayout } from "../sidebar/layout";
 import { PlaylistSection } from "./section";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
-import { playlistService } from "@/services/Playlist";
+import { playlistService } from "@/services/playlist";
 import { IPlaylist } from "@/interfaces";
 export const StudioPlaylist = () => {
     const { id } = useParams();

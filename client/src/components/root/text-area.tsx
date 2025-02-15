@@ -65,7 +65,7 @@ export const TextArea: React.FC<TextAreaProps> = ({
     };
 
     return (
-        <div className="flex gap-y-1 flex-col justify-start">
+        <div className="flex gap-y-1 flex-col justify-start w-full">
             <div className="flex items-center gap-2">
                 <AvatarImg
                     className={`${

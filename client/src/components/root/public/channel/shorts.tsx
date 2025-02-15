@@ -3,7 +3,7 @@ import { Loader2 } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { IShortData } from "@/interfaces";
 import { useQuery } from "@tanstack/react-query";
-import { shortService } from "@/services/Short";
+import { shortService } from "@/services/short";
 import { useDispatch } from "react-redux";
 import { ShortCard } from "@/components/root/public/short/short-card";
 import { useRef } from "react";

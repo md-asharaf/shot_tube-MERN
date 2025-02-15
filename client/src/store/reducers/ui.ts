@@ -1,5 +1,7 @@
 // import { IUiData } from "@/interfaces";
 import { createSlice, PayloadAction } from "@reduxjs/toolkit";
+import { set } from "date-fns";
+import { act } from "react";
 export interface IUiData {
     shareModalData: {
         open: boolean;
@@ -16,6 +18,11 @@ export interface IUiData {
     saveToplaylistModalData: {
         open: boolean;
         id: string;
+    };
+    alertDialogData: {
+        open: boolean;
+        message: string;
+        onConfirm: () => void;
     };
 }
 const rawData = localStorage.getItem("ui_data");
@@ -42,6 +49,11 @@ const initialState: IUiData = {
     saveToplaylistModalData: {
         open: false,
         id: "",
+    },
+    alertDialogData: {
+        open: false,
+        message: "",
+        onConfirm: () => {},
     },
 };
 
@@ -87,6 +99,16 @@ const uiSlice = createSlice({
         ) => {
             state.saveToplaylistModalData = action.payload;
         },
+        setAlertDialogData: (
+            state,
+            action: PayloadAction<{
+                open: boolean;
+                message: string;
+                onConfirm: () => void;
+            }>
+        ) => {
+            state.alertDialogData = action.payload;
+        },
     },
 });
 
@@ -97,6 +119,7 @@ export const {
     setShareModalData,
     setCreatePlaylistDialog,
     setSaveToPlaylistDialog,
+    setAlertDialogData
 } = uiSlice.actions;
 
 export default uiSlice.reducer;

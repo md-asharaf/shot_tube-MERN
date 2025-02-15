@@ -1,16 +1,16 @@
-import { commentService } from "@/services/Comment";
+import { commentService } from "@/services/comment";
 import { useInfiniteQuery, useMutation, useQuery } from "@tanstack/react-query";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Button } from "../../ui/button";
 import { formatDistanceToNowStrict } from "date-fns";
-import { likeService } from "@/services/Like";
+import { likeService } from "@/services/like";
 import { IComment } from "@/interfaces";
 import { useNavigate } from "react-router-dom";
 import { useEffect, useRef, useState } from "react";
 import { FaPlus } from "react-icons/fa";
 import { FiMinus } from "react-icons/fi";
 import { GoDot } from "react-icons/go";
-import { replyService } from "@/services/Reply";
+import { replyService } from "@/services/reply";
 import {
     ChevronDown,
     ChevronUp,
@@ -38,6 +38,7 @@ import { queryClient } from "@/main";
 import { AvatarImg } from "../avatar-image";
 import { useIntersection } from "@mantine/hooks";
 import { processText } from "@/lib";
+import { setAlertDialogData } from "@/store/reducers/ui";
 
 interface CommentProps {
     id: string;
@@ -54,6 +55,7 @@ export const Comments: React.FC<CommentProps> = ({
     type,
     filter,
 }) => {
+    const dispatch = useDispatch();
     const theme = useSelector((state: RootState) => state.theme.mode);
     const navigate = useNavigate();
     const userData = useSelector((state: RootState) => state.auth.userData);
@@ -236,8 +238,8 @@ export const Comments: React.FC<CommentProps> = ({
     }, [entry]);
     if (commentsLoading || likeStatusLoading || likesCountLoading)
         return (
-            <div className="w-full flex justify-center">
-                <Loader2 className="h-10 w-10 animate-spin" />
+            <div className="w-full flex justify-center items-center">
+                <Loader2 className="h-7 w-7 animate-spin" strokeWidth={1} />
             </div>
         );
     return (
@@ -251,7 +253,7 @@ export const Comments: React.FC<CommentProps> = ({
                     >
                         {editingCommentId === comment._id ? (
                             <TextArea
-                                fullname="userData?.fullname"
+                                fullname={userData?.fullname}
                                 userAvatar={userData?.avatar}
                                 initialValue={comment.content}
                                 onSubmit={(content) => updateComment(content)}
@@ -344,29 +346,31 @@ export const Comments: React.FC<CommentProps> = ({
                                                     variant="ghost"
                                                     className="rounded-full p-2"
                                                 >
-                                                    <ThumbsUp
-                                                        fill={
-                                                            likeStatusOfComments &&
-                                                            likeStatusOfComments[
-                                                                index
-                                                            ]
-                                                                ? theme ==
-                                                                  "dark"
-                                                                    ? "white"
-                                                                    : "black"
-                                                                : theme ==
-                                                                  "dark"
-                                                                ? "black"
-                                                                : "white"
-                                                        }
-                                                    />{" "}
-                                                    {likesCountofComments[
-                                                        index
-                                                    ] === 0
-                                                        ? ""
-                                                        : likesCountofComments[
-                                                              index
-                                                          ]}
+                                                    <div className="flex items-center gap-2">
+                                                        <ThumbsUp
+                                                            fill={
+                                                                likeStatusOfComments &&
+                                                                likeStatusOfComments[
+                                                                    index
+                                                                ]
+                                                                    ? theme ==
+                                                                      "dark"
+                                                                        ? "white"
+                                                                        : "black"
+                                                                    : theme ==
+                                                                      "dark"
+                                                                    ? "black"
+                                                                    : "white"
+                                                            }
+                                                        />
+                                                        {likesCountofComments[
+                                                            index
+                                                        ] === 0
+                                                            ? ""
+                                                            : likesCountofComments[
+                                                                  index
+                                                              ]}
+                                                    </div>
                                                 </Button>
                                                 <Button
                                                     className="text-sm rounded-full"
@@ -401,14 +405,24 @@ export const Comments: React.FC<CommentProps> = ({
                                                 </DropdownMenuItem>
                                                 <DropdownMenuItem
                                                     className="rounded-none dark:hover:bg-[#535353] hover:bg-[#E5E5E5] px-4 py-3"
-                                                    onClick={() =>
-                                                        deleteComment(
-                                                            comment._id
-                                                        )
-                                                    }
+                                                    onClick={() => {
+                                                        dispatch(
+                                                            setAlertDialogData({
+                                                                open: true,
+                                                                message:
+                                                                    "this will delete your comment permanently",
+                                                                onConfirm: () =>
+                                                                    deleteComment(
+                                                                        comment._id
+                                                                    ),
+                                                            })
+                                                        );
+                                                    }}
                                                 >
-                                                    <Trash className="h-5 w-5 mr-2" />
-                                                    Delete
+                                                    <div className="flex gap-2">
+                                                        <Trash className="h-5 w-5" />
+                                                        <span>Delete</span>
+                                                    </div>
                                                 </DropdownMenuItem>
                                             </DropdownMenuContent>
                                         </DropdownMenu>

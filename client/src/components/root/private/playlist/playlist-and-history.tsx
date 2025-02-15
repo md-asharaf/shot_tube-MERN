@@ -1,15 +1,15 @@
 import { useSelector } from "react-redux";
-import DefaultAvatarImage from "@/assets/images/profile.png";
-import { IPlaylist, IShortData, IVideoData } from "@/interfaces";
+import { IShortData, IVideoData } from "@/interfaces";
 import { useQuery } from "@tanstack/react-query";
-import { playlistService } from "@/services/Playlist";
-import { subService } from "@/services/Subscription";
+import { playlistService } from "@/services/playlist";
+import { subService } from "@/services/subscription";
 import { Loader2 } from "lucide-react";
-import { userService } from "@/services/User";
-import { videoService } from "@/services/Video";
+import { userService } from "@/services/user";
+import { videoService } from "@/services/video";
 import { RootState } from "@/store/store";
 import { Library } from "@/components/root/private/library";
 import { AvatarImg } from "@/components/root/avatar-image";
+import { Playlist } from "./playlists";
 
 export const PlaylistNhistory = () => {
     const userData = useSelector((state: RootState) => state.auth.userData);
@@ -37,7 +37,7 @@ export const PlaylistNhistory = () => {
 
     const { data: playlists, isLoading: loadingPlaylists } = useQuery({
         queryKey: ["playlists", userData?._id],
-        queryFn: async (): Promise<IPlaylist[]> => {
+        queryFn: async (): Promise<Playlist[]> => {
             const data = await playlistService.getAllPlaylists(userData?.username);
             return data.playlists;
         },

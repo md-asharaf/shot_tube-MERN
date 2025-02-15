@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { PlyrPlayer } from "@/components/root/public/video/video-player";
 import { useMutation } from "@tanstack/react-query";
-import { shortService } from "@/services/Short";
+import { shortService } from "@/services/short";
 
 export const ShortCard = ({ short, playerRef }) => {
     const { mutate: increaseViews } = useMutation({

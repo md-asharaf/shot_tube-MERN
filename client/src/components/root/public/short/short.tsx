@@ -16,14 +16,14 @@ import {
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { AvatarImg } from "@/components/root/avatar-image";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { shortService } from "@/services/Short";
-import { commentService } from "@/services/Comment";
-import { subService } from "@/services/Subscription";
+import { shortService } from "@/services/short";
+import { commentService } from "@/services/comment";
+import { subService } from "@/services/subscription";
 import { IShortData } from "@/interfaces";
 import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import { useState, useRef, useEffect } from "react";
-import { likeService } from "@/services/Like";
+import { likeService } from "@/services/like";
 import { setShareModalData } from "@/store/reducers/ui";
 import { Popover, PopoverContent } from "@/components/ui/popover";
 import { PopoverTrigger } from "@radix-ui/react-popover";
@@ -408,7 +408,7 @@ export const Short = () => {
                     <div
                         className="p-4 bg-muted rounded-full"
                         onClick={() =>
-                            navigate(`/short?s=${short.prev}`, {
+                            navigate(`/short/${short.prev}`, {
                                 replace: true,
                             })
                         }
@@ -420,7 +420,7 @@ export const Short = () => {
                     <div
                         className="p-4 bg-muted rounded-full"
                         onClick={() =>
-                            navigate(`/short?s=${short.next}`, {
+                            navigate(`/short/${short.next}`, {
                                 replace: true,
                             })
                         }

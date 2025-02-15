@@ -1,8 +1,8 @@
 import { Reply } from "../models/reply.js";
 import { Comment } from "../models/comment.js"
 import { Video } from "../models/video.js"
-import { ApiError } from "../utils/ApiError.js";
-import { ApiResponse } from "../utils/ApiResponse.js";
+import { ApiError } from "../utils/api-error.js";
+import { ApiResponse } from "../utils/api-response.js";
 import { asyncHandler } from "../utils/handler.js";
 import { publishNotification } from "../lib/kafka/producer.js";
 import { ObjectId } from "mongodb"

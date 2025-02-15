@@ -1,6 +1,6 @@
 import { asyncHandler } from "../utils/handler.js";
-import { ApiResponse } from "../utils/ApiResponse.js";
-import { ApiError } from "../utils/ApiError.js";
+import { ApiResponse } from "../utils/api-response.js";
+import { ApiError } from "../utils/api-error.js";
 import { Subscription } from "../models/subscription.js";
 import { User } from "../models/user.js";
 import { ObjectId } from "mongodb"

@@ -1,5 +1,5 @@
-import { ApiError } from '../utils/ApiError.js';
-import { ApiResponse } from '../utils/ApiResponse.js';
+import { ApiError } from '../utils/api-error.js';
+import { ApiResponse } from '../utils/api-response.js';
 import { asyncHandler } from '../utils/handler.js';
 import { abortMultipartUpload, completeMultipartUpload, putObjectUrl, startMultipartUploadAndGenerateUrls } from '../lib/s3-client.js';
 

@@ -4,7 +4,7 @@ import { Link, useParams } from "react-router-dom";
 import { VideoCard } from "@/components/root/public/video/video-card";
 import { IVideoData } from "@/interfaces";
 import { useQuery } from "@tanstack/react-query";
-import { videoService } from "@/services/Video";
+import { videoService } from "@/services/video";
 import { useDispatch } from "react-redux";
 
 export const ChannelVideos = () => {

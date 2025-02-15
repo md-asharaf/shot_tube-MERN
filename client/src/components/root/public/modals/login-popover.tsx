@@ -11,7 +11,7 @@ import { Button } from "@/components/ui/button";
 import { useNavigate } from "react-router-dom";
 import { Lock } from "lucide-react";
 import { login } from "@/store/reducers/auth";
-import { authService } from "@/services/Auth";
+import { authService } from "@/services/auth";
 import { toast } from "sonner";
 import { DialogClose } from "@radix-ui/react-dialog";
 export const LoginPopover: React.FC = () => {

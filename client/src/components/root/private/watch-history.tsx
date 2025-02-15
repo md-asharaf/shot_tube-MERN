@@ -1,28 +1,19 @@
 import { Link } from "react-router-dom";
 import { useMutation, useQuery } from "@tanstack/react-query";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { IShortData, IVideoData } from "@/interfaces";
-import { userService } from "@/services/User";
+import { userService } from "@/services/user";
 import { Button } from "@/components/ui/button";
 import { MdDelete } from "react-icons/md";
 import { Loader2 } from "lucide-react";
 import { formatDuration, formatViews } from "@/lib/utils";
-import {
-    AlertDialog,
-    AlertDialogAction,
-    AlertDialogCancel,
-    AlertDialogContent,
-    AlertDialogFooter,
-    AlertDialogHeader,
-    AlertDialogTitle,
-    AlertDialogTrigger,
-} from "@/components/ui/alert-dialog";
 import { ThreeDots } from "@/components/root/three-dots";
 import { toast } from "sonner";
 import { RootState } from "@/store/store";
-import { AlertDialogDescription } from "@/components/ui/alert-dialog";
+import { setAlertDialogData } from "@/store/reducers/ui";
 
 export const WatchHistory = () => {
+    const dispatch = useDispatch();
     const userId = useSelector((state: RootState) => state.auth.userData?._id);
     const {
         data: watchHistory,
@@ -79,42 +70,24 @@ export const WatchHistory = () => {
                 <div className="text-2xl sm:text-3xl">
                     {videos?.length > 0 ? "Watch History" : "No History"}
                 </div>
-
-                <AlertDialog>
-                    <AlertDialogTrigger disabled={videos?.length === 0}>
-                        <div className="flex justify-center items-center h-10">
-                            <span className="text-muted-foreground">
-                                clear history
-                            </span>
-                            <Button
-                                variant="destructive"
-                                className="ml-4 mr-2"
-                                disabled={videos?.length === 0}
-                            >
-                                <MdDelete className="text-2xl" />
-                            </Button>
-                        </div>
-                    </AlertDialogTrigger>
-                    <AlertDialogContent className="max-w-[90%] rounded-lg sm:max-w-md">
-                        <AlertDialogHeader>
-                            <AlertDialogTitle>
-                                Are you absolutely sure?
-                            </AlertDialogTitle>
-                            <AlertDialogDescription className="text-red-500 text-sm te">
-                                This will permanently delete all your watch
-                                history.
-                            </AlertDialogDescription>
-                        </AlertDialogHeader>
-                        <AlertDialogFooter>
-                            <AlertDialogCancel>Cancel</AlertDialogCancel>
-                            <AlertDialogAction
-                                onClick={() => clearAllHistory()}
-                            >
-                                Continue
-                            </AlertDialogAction>
-                        </AlertDialogFooter>
-                    </AlertDialogContent>
-                </AlertDialog>
+                <Button
+                    variant="secondary"
+                    className="flex justify-center items-center h-10 [&_svg]:size-7"
+                    onClick={() =>
+                        dispatch(
+                            setAlertDialogData({
+                                open: true,
+                                message:
+                                    "This will delete all your watch history permanently",
+                                onConfirm: () => clearAllHistory(),
+                            })
+                        )
+                    }
+                    disabled={videos?.length === 0}
+                >
+                    <span>Clear history</span>
+                    <MdDelete size={10} color="red" />
+                </Button>
             </div>
             <hr className="mb-2" />
             <div className="flex flex-col w-full">

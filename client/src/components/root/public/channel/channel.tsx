@@ -1,12 +1,12 @@
 import { Outlet, useParams } from "react-router-dom";
 import { IUser } from "@/interfaces";
-import { userService } from "@/services/User";
+import { userService } from "@/services/user";
 import { useSelector } from "react-redux";
 import DefaultCoverImage from "@/assets/images/coverImage.jpg";
-import { videoService } from "@/services/Video";
+import { videoService } from "@/services/video";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
-import { subService } from "@/services/Subscription";
+import { subService } from "@/services/subscription";
 import { RootState } from "@/store/store";
 import { AvatarImg } from "@/components/root/avatar-image";
 import NavigationMenu from "@/components/root/nav-menu";

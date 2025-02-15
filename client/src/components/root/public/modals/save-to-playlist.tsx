@@ -1,5 +1,5 @@
 import { IPlaylist } from "@/interfaces";
-import {playlistService} from "@/services/Playlist";
+import { playlistService } from "@/services/playlist";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
@@ -7,44 +7,44 @@ import { toast } from "sonner";
 import { useDispatch, useSelector } from "react-redux";
 import { queryClient } from "@/main";
 import { RootState } from "@/store/store";
-import { userService } from "@/services/User";
+import { userService } from "@/services/user";
 import {
     setCreatePlaylistDialog,
     setSaveToPlaylistDialog,
 } from "@/store/reducers/ui";
-import {ResponsiveModal} from "./responsive-modal";
+import { ResponsiveModal } from "./responsive-modal";
+import { Playlist } from "../../private/playlist/playlists";
 
 export const SaveToPlaylist = () => {
     const dispatch = useDispatch();
-    const userId = useSelector((state: RootState) => state.auth.userData?._id);
+    const userData = useSelector((state: RootState) => state.auth.userData);
+    const userId = userData?._id;
+    const username = userData?.username;
     const { id, open } = useSelector(
         (state: RootState) => state.ui.saveToplaylistModalData
     );
     const { data: playlists } = useQuery({
-        queryKey: ["playlists", userId],
-        queryFn: async (): Promise<IPlaylist[]> => {
-            const data = await playlistService.getAllPlaylists(userId);
+        queryKey: ["playlists", username],
+        queryFn: async (): Promise<Playlist[]> => {
+            const data = await playlistService.getAllPlaylists(username);
             return data.playlists;
         },
-        enabled: !!userId,
+        enabled: !!username,
     });
 
-    const { data: isSavedToWatchLater, refetch: refetchIsSavedToWatchLater } =
+    const { data: isSavedToWatchLater } =
         useQuery({
             queryKey: ["is-video-saved", id, userId],
-            queryFn: async () => {
-                const data = await userService.isSavedToWatchLater(
-                    id,
-                    "video"
-                );
+            queryFn: async ():Promise<boolean> => {
+                const data = await userService.isSavedToWatchLater(id, "video");
                 return data.isSaved;
             },
             enabled: !!id && !!userId,
         });
 
-    const { data: isSavedToPlaylists, refetch: refetchIsSavedToPlaylists } =
+    const { data: isSavedToPlaylists } =
         useQuery({
-            queryKey: ["is-saved-statuses", id, playlists],
+            queryKey: ["is-saved-statuses", id],
             queryFn: async (): Promise<boolean[]> => {
                 const data = await playlistService.isSavedToPlaylists(
                     id,
@@ -52,84 +52,126 @@ export const SaveToPlaylist = () => {
                 );
                 return data.isSaved;
             },
-            enabled: !!id && !!playlists,
+            enabled: !!id,
         });
 
     const { mutate: saveToWatchLater } = useMutation({
         mutationFn: async () => {
             await userService.saveToWatchLater(id, "video");
         },
-        onSuccess: () => {
+        onMutate: () => {
             toast.success("Saved to watch later");
-            refetchIsSavedToWatchLater();
+            queryClient.cancelQueries({queryKey:["is-video-saved",id,userId]})
+            queryClient.setQueryData(["is-video-saved",id,userId],true)
         },
-        onSettled: () => {
-            queryClient.invalidateQueries({
-                queryKey: ["watch-later", userId],
-                exact: true,
-            });
-        },
+        onError: () => {
+            queryClient.cancelQueries({queryKey:["is-video-saved",id,userId]})
+            queryClient.setQueryData(["is-video-saved",id,userId],false)
+        }
     });
 
     const { mutate: removeFromWatchLater } = useMutation({
         mutationFn: async () => {
             await userService.removeFromWatchLater(id, "video");
         },
-        onSuccess: () => {
+        onMutate: () => {
             toast.success("Removed from watch later");
-            refetchIsSavedToWatchLater();
+            queryClient.cancelQueries({queryKey:["is-video-saved",id,userId]})
+            queryClient.setQueryData(["is-video-saved",id,userId],false)
         },
-        onSettled: () => {
-            queryClient.invalidateQueries({
-                queryKey: ["watch-later", userId],
-                exact: true,
-            });
+        onError: () => {
+            queryClient.cancelQueries({queryKey:["is-video-saved",id,userId]})
+            queryClient.setQueryData(["is-video-saved",id,userId],true)
         },
     });
 
-    const { mutate: add } = useMutation({
+    const { mutate: addToPlaylist } = useMutation({
         mutationFn: async ({ playlistId }: { playlistId: string }) => {
             await playlistService.addToPlaylist(playlistId, id, "video");
         },
-        onSuccess: (_, { playlistId }) => {
+        onSuccess: (_,{ playlistId }) => {
             const playlist = playlists?.find((p) => p._id === playlistId);
             toast.success(`Added to ${playlist?.name}`);
-            refetchIsSavedToPlaylists();
-        },
-        onSettled: (data, error, variables) => {
-            queryClient.invalidateQueries({
-                queryKey: ["playlist", variables.playlistId],
-                exact: true,
-            });
-            queryClient.invalidateQueries({
-                queryKey: ["playlists", userId],
-                exact: true,
-            });
-        },
+            queryClient.cancelQueries({ queryKey: ["is-saved-statuses", id] });
+            queryClient.invalidateQueries({queryKey:["playlist",playlistId]})
+            queryClient.cancelQueries({ queryKey: ["playlists", username] });
+            queryClient.setQueryData(
+                ["is-saved-statuses", id],
+                (oldData: boolean[]) => {
+                    return oldData.map((data, index) => {
+                        if (playlists[index]._id === playlistId) {
+                            return true;
+                        }
+                        return data;
+                    });
+                }
+            );
+            queryClient.setQueryData(
+                ["playlists", username],
+                (oldData: Playlist[]) => {
+                    return oldData.map((playlist) => {
+                        if (playlist._id === playlistId) {
+                            playlist.videos.push(id);
+                        }
+                        return playlist;
+                    });
+                }
+            );
+        }
     });
 
-    const { mutate: remove } = useMutation({
+    const { mutate: removeFromPlaylist } = useMutation({
         mutationFn: async ({ playlistId }: { playlistId: string }) => {
             await playlistService.removeFromPlaylist(playlistId, id, "video");
         },
-        onSuccess: (_, { playlistId }) => {
+        onSuccess: (_,{ playlistId }) => {
             const playlist = playlists?.find((p) => p._id === playlistId);
             toast.success(`Removed from ${playlist?.name}`);
-            refetchIsSavedToPlaylists();
-        },
-        onSettled: (data, error, variables) => {
-            queryClient.invalidateQueries({
-                queryKey: ["playlist", variables.playlistId],
-                exact: true,
-            });
-            queryClient.invalidateQueries({
-                queryKey: ["playlists", userId],
-                exact: true,
-            });
-        },
+            queryClient.cancelQueries({ queryKey: ["is-saved-statuses", id] });
+            queryClient.cancelQueries({ queryKey: ["playlist", playlistId] });
+            queryClient.cancelQueries({ queryKey: ["playlists", username] });
+            queryClient.setQueryData(
+                ["is-saved-statuses", id],
+                (oldData: boolean[]) => {
+                    return oldData.map((data, index) => {
+                        if (playlists[index]._id === playlistId) {
+                            return false;
+                        }
+                        return data;
+                    });
+                }
+            );
+            queryClient.setQueryData(
+                ["playlist", playlistId],
+                (oldData: IPlaylist) => {
+                    return {
+                        ...oldData,
+                        videos: oldData.videos.filter(
+                            (video) => video._id !== id
+                        ),
+                    };
+                }
+            );
+            queryClient.setQueryData(
+                ["playlists", username],
+                (oldData: Playlist[]) => {
+                    return oldData.map((playlist) => {
+                        if (playlist._id === playlistId) {
+                            return {
+                                ...playlist,
+                                videos: playlist.videos.filter(
+                                    (videoId) => videoId !== id
+                                ),
+                            };
+                        }
+                        return playlist;
+                    });
+                }
+            );
+        }
     });
     const closeDialog = () => {
-        dispatch(setSaveToPlaylistDialog({ id: "", open:false }));
+        dispatch(setSaveToPlaylistDialog({ id: "", open: false }));
     };
     const handleOnNewPlaylistClick = () => {
         closeDialog();
@@ -175,9 +217,9 @@ export const SaveToPlaylist = () => {
                                 }
                                 onChange={(e) => {
                                     if (e.target.checked) {
-                                        add({ playlistId: playlist._id });
+                                        addToPlaylist({ playlistId: playlist._id });
                                     } else {
-                                        remove({
+                                        removeFromPlaylist({
                                             playlistId: playlist._id,
                                         });
                                     }
@@ -198,4 +240,3 @@ export const SaveToPlaylist = () => {
         </ResponsiveModal>
     );
 };
-

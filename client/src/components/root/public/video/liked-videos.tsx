@@ -1,6 +1,6 @@
 import { Button } from "@/components/ui/button";
 import { IVideoData } from "@/interfaces";
-import { videoService } from "@/services/Video";
+import { videoService } from "@/services/video";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
 import { useSelector } from "react-redux";

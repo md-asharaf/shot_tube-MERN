@@ -1,4 +1,4 @@
-import { commentService } from "@/services/Comment";
+import { commentService } from "@/services/comment";
 import { useMutation, useQuery } from "@tanstack/react-query";
 import { useSelector } from "react-redux";
 import { useState } from "react";

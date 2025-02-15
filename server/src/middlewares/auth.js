@@ -1,6 +1,6 @@
 import jwt from "jsonwebtoken";
 import { User } from "../models/user.js";
-import { ApiError } from "../utils/ApiError.js";
+import { ApiError } from "../utils/api-error.js";
 import { asyncHandler } from "../utils/handler.js";
 import { validateIdToken } from "../lib/firebase-admin.js"
 export const validateAccessToken = async (accessToken) => {

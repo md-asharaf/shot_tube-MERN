@@ -1,15 +1,24 @@
-import { IPlaylist, IVideoData } from "@/interfaces";
+import { IPlaylist, IUser, IVideoData } from "@/interfaces";
 import { useSelector } from "react-redux";
 import { PlaylistCard } from "@/components/root/private/playlist/playlist-card";
 import { VideoTitle2 } from "@/components/root/public/video/video-title2";
 import { Link } from "react-router-dom";
-import { playlistService } from "@/services/Playlist";
+import { playlistService } from "@/services/playlist";
 import { useQuery } from "@tanstack/react-query";
 import { Loader2 } from "lucide-react";
-import { videoService } from "@/services/Video";
-import { userService } from "@/services/User";
+import { videoService } from "@/services/video";
+import { userService } from "@/services/user";
 import { RootState } from "@/store/store";
-
+export interface Playlist {
+    _id: string;
+    videos: string[];
+    shorts: string[];
+    creator: IUser;
+    name: string;
+    updatedAt: string;
+    description: string;
+    thumbnail: string;
+}
 export const PlayLists = () => {
     const userData = useSelector((state: RootState) => state.auth?.userData);
     const {
@@ -19,7 +28,7 @@ export const PlayLists = () => {
         isLoading,
     } = useQuery({
         queryKey: ["playlists", userData?.username],
-        queryFn: async (): Promise<IPlaylist[]> => {
+        queryFn: async (): Promise<Playlist[]> => {
             const data = await playlistService.getAllPlaylists(userData?.username);
             return data.playlists;
         },
@@ -35,7 +44,7 @@ export const PlayLists = () => {
     });
     const { data: watchLaterVideos } = useQuery({
         queryKey: ["watch-later", userData?._id],
-        queryFn: async (): Promise<IVideoData[]> => {
+        queryFn: async (): Promise<Playlist[]> => {
             const data = await userService.getWatchLater();
             return data.watchLater;
         },
@@ -58,15 +67,13 @@ export const PlayLists = () => {
             <div className="mt-2 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 2xl:grid-cols-5 gap-2">
                 {playlists?.map((playlist) => (
                     <Link
-                        to={`/playlist?p=${playlist._id}`}
+                        to={`/playlist/${playlist._id}`}
                         key={playlist._id}
                         className="space-y-2 rounded-xl p-2 hover:bg-muted"
                     >
                         <PlaylistCard
                             playlistThumbnail={
-                                playlist.videos.length > 0
-                                    ? playlist.videos[0].thumbnail
-                                    : null
+                                playlist.thumbnail
                             }
                             videosLength={playlist.videos.length}
                         />

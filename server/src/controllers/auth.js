@@ -1,6 +1,6 @@
 import { User } from "../models/user.js";
-import { ApiError } from "../utils/ApiError.js";
-import { ApiResponse } from "../utils/ApiResponse.js";
+import { ApiError } from "../utils/api-error.js";
+import { ApiResponse } from "../utils/api-response.js";
 import { asyncHandler } from "../utils/handler.js";
 import jwt from "jsonwebtoken";
 class AuthController {

@@ -1,16 +1,16 @@
 import { Loader2 } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
-import { IPlaylist } from "@/interfaces";
 import { useQuery } from "@tanstack/react-query";
-import { playlistService } from "@/services/Playlist";
+import { playlistService } from "@/services/playlist";
 import { PlaylistCard } from "../../private/playlist/playlist-card";
 import { VideoTitle2 } from "../video/video-title2";
+import { Playlist } from "../../private/playlist/playlists";
 
 export const ChannelPlaylists = () => {
     const { username } = useParams();
     const { data: playlists, isLoading } = useQuery({
         queryKey: ["playlists", username],
-        queryFn: async (): Promise<IPlaylist[]> => {
+        queryFn: async (): Promise<Playlist[]> => {
             const data = await playlistService.getAllPlaylists(username);
             return data.playlists;
         },
@@ -31,9 +31,7 @@ export const ChannelPlaylists = () => {
                     >
                         <PlaylistCard
                             playlistThumbnail={
-                                playlist.videos.length > 0
-                                    ? playlist.videos[0].thumbnail
-                                    : null
+                                playlist.thumbnail
                             }
                             videosLength={playlist.videos.length}
                         />

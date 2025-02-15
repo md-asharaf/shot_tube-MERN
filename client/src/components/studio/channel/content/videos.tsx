@@ -16,7 +16,7 @@ import {
 import { useState } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useInfiniteQuery } from "@tanstack/react-query";
-import { studioService } from "@/services/Studio";
+import { studioService } from "@/services/studio";
 interface Video {
     _id: string;
     title: string;

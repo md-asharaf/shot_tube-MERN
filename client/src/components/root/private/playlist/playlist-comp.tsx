@@ -6,8 +6,8 @@ import { formatDuration, formatViews } from "@/lib/utils";
 import React, { useEffect, useState } from "react";
 import { ThreeDots } from "@/components/root/three-dots";
 import { useMutation } from "@tanstack/react-query";
-import { playlistService } from "@/services/Playlist";
-import { likeService } from "@/services/Like";
+import { playlistService } from "@/services/playlist";
+import { likeService } from "@/services/like";
 import { toast } from "sonner";
 import ColorThief from "colorthief";
 interface Props {
