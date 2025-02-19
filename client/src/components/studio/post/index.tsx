@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom";
-import { SidebarLayout } from "../sidebar/layout";
-import { PostSection } from "./section";
+import { SidebarLayout } from "../sidebar/sidebar-layout";
+import { PostSection } from "./post-section";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { postService } from "@/services/post";
@@ -23,6 +23,7 @@ export const StudioPost = () => {
                     title={post.content}
                     thumbnail={post.image}
                     id={post._id}
+                    route={`/studio/${post.creator.username}/content`}
                 />
             </SidebarLayout>
             <main className="flex-1 overflow-y-auto">

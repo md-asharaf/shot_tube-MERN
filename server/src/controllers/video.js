@@ -4,74 +4,21 @@ import { ApiError } from "../utils/api-error.js";
 import { Video } from "../models/video.js";
 import { User } from "../models/user.js";
 import { Like } from "../models/like.js";
+import { Subscription } from "../models/subscription.js"
 import { publishNotification } from "../lib/kafka/producer.js";
 import { getCache, setCache } from "../lib/redis.js";
 import { ObjectId } from "mongodb"
 class VideoController {
     publishVideo = asyncHandler(async (req, res) => {
         const user = req.user;
-        const { title, description, source, thumbnail, duration, subtitle, thumbnailPreviews } = req.body;
-        if (!title || !description || !source || !thumbnail || !duration) throw new ApiError(400, "Please provide All required fields")
+        const data = req.body;
         const newVideo = await Video.create({
-            source,
-            thumbnail,
-            duration,
-            title,
-            description,
-            subtitle,
-            thumbnailPreviews,
+            ...data,
             userId: user._id
         })
         if (!newVideo) {
             throw new ApiError(500, "Failed to publish video")
         }
-        //publishing notification
-        const subscribers = await Subscription.aggregate([
-            {
-                $match: {
-                    channelId: user._id
-                }
-            },
-            {
-                $lookup: {
-                    from: "users",
-                    localField: "subscriberId",
-                    foreignField: "_id",
-                    as: "subscriber"
-                }
-            },
-            {
-                $addFields: {
-                    subscriberId: {
-                        $first: "$subscriber._id"
-                    }
-                }
-            },
-            {
-                $project: {
-                    subscriberId: 1,
-                }
-            }
-        ]);
-        const message = `@${user.username} uploaded : "${title}"`;
-        subscribers.forEach((s) => {
-            publishNotification({
-                userId: s.subscriberId,
-                message,
-                video: {
-                    _id: newVideo._id,
-                    thumbnail,
-                },
-                creator: {
-                    _id: user._id,
-                    avatar: user.avatar,
-                    fullname: user.fullname
-                },
-                read: false,
-                createdAt: new Date(Date.now()),
-            });
-        })
-        //end
         return res.status(200).json(new ApiResponse(200, null, "Video published successfully"))
     })
 
@@ -91,22 +38,66 @@ class VideoController {
     })
     updateVideoDetails = asyncHandler(async (req, res) => {
         const { videoId } = req.params;
-        const userId = req.user?._id;
+        const user = req.user;
         if (!videoId) throw new ApiError(400, "videoId is required")
-        const { title, description } = req.body;
-        if (!title && !description) {
-            throw new ApiError(400, "Please provide title or description")
-        }
-        const video = await Video.findById(videoId);
+        const body = req.body;
+        const video = await Video.findByIdAndUpdate({ _id: new ObjectId(videoId), userId: user._id }, {
+            $set: {
+                ...body
+            }
+        });
         if (!video) {
             throw new ApiError(500, "Invalid videoId")
         }
-        if (video.userId.toString() !== userId.toString()) {
-            throw new ApiError(400, "You are not authorized to update this video")
+        if (!video.title && body.title) {
+            //publishing notification
+            const subscribers = await Subscription.aggregate([
+                {
+                    $match: {
+                        channelId: user._id
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "users",
+                        localField: "subscriberId",
+                        foreignField: "_id",
+                        as: "subscriber"
+                    }
+                },
+                {
+                    $addFields: {
+                        subscriberId: {
+                            $first: "$subscriber._id"
+                        }
+                    }
+                },
+                {
+                    $project: {
+                        subscriberId: 1,
+                    }
+                }
+            ]);
+            const message = `@${user.username} uploaded : "${body.title}"`;
+            subscribers.forEach((s) => {
+                publishNotification({
+                    userId: s.subscriberId,
+                    message,
+                    video: {
+                        _id: video._id,
+                        thumbnail,
+                    },
+                    creator: {
+                        _id: user._id,
+                        avatar: user.avatar,
+                        fullname: user.fullname
+                    },
+                    read: false,
+                    createdAt: new Date(Date.now()),
+                });
+            })
+            //end
         }
-        if (title) video.title = title;
-        if (description) video.description = description;
-        await video.save({ validateBeforeSave: false });
         return res.status(200).json(new ApiResponse(200, null, "Video updated successfully"))
     })
     getLikedVideos = asyncHandler(async (req, res) => {
@@ -218,7 +209,9 @@ class VideoController {
         const videos = await Video.aggregate([
             {
                 $match: {
-                    userId: user._id
+                    userId: user._id,
+                    visibility: "public",
+                    sourceStatus: "READY"
                 }
             },
             {
@@ -265,6 +258,8 @@ class VideoController {
                         { title: { $regex: query, $options: "i" } },
                         { description: { $regex: query, $options: "i" } },
                     ],
+                    visibility: "public",
+                    sourceStatus: "READY",
                 },
             },
             // Lookup stage: Fetch creator details
@@ -359,6 +354,8 @@ class VideoController {
                 if (video) {
                     const videosBySameCreator = await Video.find({
                         userId: video.userId,
+                        visibility: "public",
+                        sourceStatus: "READY",
                         _id: { $nin: notToBeRecommended }
                     }).populate("userId", "username fullname avatar")
                     if (videosBySameCreator.length) {
@@ -367,14 +364,16 @@ class VideoController {
                     }
                 }
 
-                if (video?.tags?.length) {
-                    const videosBySameTags = await Video.find({
-                        tags: { $in: video.tags },
+                if (video?.categories?.length) {
+                    const videosBySameCategories = await Video.find({
+                        visibility: "public",
+                        sourceStatus: "READY",
+                        categories: { $in: video.categories },
                         _id: { $nin: notToBeRecommended }
                     }).populate("userId", "username fullname avatar")
-                    if (videosBySameTags.length) {
-                        recommendations.push(...videosBySameTags);
-                        notToBeRecommended.push(...videosBySameTags.map(v => v._id.toString()));
+                    if (videosBySameCategories.length) {
+                        recommendations.push(...videosBySameCategories);
+                        notToBeRecommended.push(...videosBySameCategories.map(v => v._id.toString()));
                     }
                 }
 
@@ -392,7 +391,9 @@ class VideoController {
                                 },
                                 _id: {
                                     $in: similarUser.watchHistory?.videoIds || []
-                                }
+                                },
+                                visibility: "public",
+                                sourceStatus: "READY"
                             }
                         }
                     ]).populate("userId", "username fullname avatar")
@@ -409,6 +410,8 @@ class VideoController {
                 let split2 = remainingSlots - split1;
 
                 let recentVideos = await Video.find({
+                    visibility: "public",
+                    sourceStatus: "READY",
                     _id: { $nin: notToBeRecommended }
                 })
                     .sort({ createdAt: -1 }).limit(split1).populate("userId", "username fullname avatar")
@@ -418,7 +421,7 @@ class VideoController {
                     notToBeRecommended.push(...recentVideos.map(v => v._id.toString()));
                 }
 
-                let popularVideos = await Video.find({ _id: { $nin: notToBeRecommended } })
+                let popularVideos = await Video.find({ _id: { $nin: notToBeRecommended }, visibility: "public", sourceStatus: "READY" })
                     .sort({ views: -1 }).limit(split2).populate("userId", "username fullname avatar")
                 if (popularVideos.length) {
                     recommendations.push(...popularVideos);
@@ -443,12 +446,12 @@ class VideoController {
                 const daysSincePosted = (new Date() - new Date(video.createdAt)) / (1000 * 3600 * 24);
                 score += Math.max(0, 30 - daysSincePosted) * 1;
             }
-            if (video.tags?.length && userId) {
+            if (video.categories?.length && userId) {
                 // Assume some custom logic here to calculate similarity score with user's watch history
                 const user = await User.findById(userId);
-                const watchedTags = user.watchHistory.tags || [];
-                const commonTags = video.tags.filter(tag => watchedTags.includes(tag));
-                score += commonTags.length * 2; // Boost score for videos with common tags
+                const watchedCategories = user.watchHistory.categories || [];
+                const commonCategories = video.categories.filter(tag => watchedCategories.includes(tag));
+                score += commonCategories.length * 2; // Boost score for videos with common categories
             }
 
             return score;

@@ -90,14 +90,16 @@ export const abortMultipartUpload = async (uploadId, fileKey) => {
   }
 }
 
-export const putObjectUrl = async (fileKey, contentType) => {
+export const putObjectUrl = async (fileKey, contentType, type = "", id = "") => {
   try {
+    const metadata = type === 'video' ? { "videoid": String(id) } : type === 'short' ? { "shortid": String(id) } : {};
     const command = new PutObjectCommand({
       Bucket: BUCKET_NAME,
       Key: fileKey,
       ContentType: contentType,
+      Metadata: metadata
     });
-    const url = await getSignedUrl(s3Client, command, { expiresIn: 60 });
+    const url = await getSignedUrl(s3Client, command, { expiresIn: 60 * 10 });
     return url;
   } catch (error) {
     throw error;

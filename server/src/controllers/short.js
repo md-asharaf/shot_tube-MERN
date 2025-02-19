@@ -4,73 +4,21 @@ import { ApiError } from "../utils/api-error.js";
 import { Short } from "../models/short.js";
 import { User } from "../models/user.js";
 import { Like } from "../models/like.js";
+import { Subscription } from "../models/subscription.js";
 import { publishNotification } from "../lib/kafka/producer.js";
 import { getCache, setCache } from "../lib/redis.js";
+import { ObjectId } from "mongodb";
 class ShortController {
     publishShort = asyncHandler(async (req, res) => {
         const user = req.user;
-        const { title, description, source, thumbnail, subtitle, thumbnailPreviews } = req.body;
-        if (!title || !description || !source || !thumbnail || !duration) throw new ApiError(400, "Please provide All required fields")
+        const data = req.body;
         const newShort = await Short.create({
-            source,
-            thumbnail,
-            duration,
-            title,
-            description,
-            subtitle,
-            thumbnailPreviews,
-            userId: user._id
+            ...data,
+            userId: user._id,
         })
         if (!newShort) {
             throw new ApiError(500, "Failed to publish Short")
         }
-        //publishing notification
-        const subscribers = await Subscription.aggregate([
-            {
-                $match: {
-                    channelId: user._id
-                }
-            },
-            {
-                $lookup: {
-                    from: "users",
-                    localField: "subscriberId",
-                    foreignField: "_id",
-                    as: "subscriber"
-                }
-            },
-            {
-                $addFields: {
-                    subscriberId: {
-                        $first: "$subscriber._id"
-                    }
-                }
-            },
-            {
-                $project: {
-                    subscriberId: 1,
-                }
-            }
-        ]);
-        const message = `@${user.username} uploaded : "${title}"`;
-        subscribers.forEach((s) => {
-            publishNotification({
-                userId: s.subscriberId,
-                message,
-                short: {
-                    _id: newShort._id,
-                    thumbnail,
-                },
-                creator: {
-                    _id: user._id,
-                    avatar: user.avatar,
-                    fullname: user.fullname
-                },
-                read: false,
-                createdAt: new Date(Date.now()),
-            });
-        })
-        //end
         return res.status(200).json(new ApiResponse(200, null, "Short published successfully"))
     })
 
@@ -88,23 +36,81 @@ class ShortController {
         await Short.findByIdAndDelete(short._id);
         return res.status(200).json(new ApiResponse(200, null, "Short deleted successfully"))
     })
+    getRandomShortId = asyncHandler(async (req, res) => {
+        const short = await Short.aggregate([
+            {
+                $match: {
+                    visibility: "public",
+                    sourceStatus: "READY"
+                }
+            },
+            { $sample: { size: 1 } },
+            { $project: { _id: 1 } },
+        ]);
+        return res.status(200).json(new ApiResponse(200, { shortId: short[0]._id }, "Random ShortId fetched successfully"))
+    })
     updateShortDetails = asyncHandler(async (req, res) => {
         const { shortId } = req.params;
-        const userId = req.user?._id;
+        const user = req.user;
         if (!shortId) throw new ApiError(400, "ShortId is required")
-        const { title, description } = req.body;
-        if (!title && !description) {
-            throw new ApiError(400, "Please provide title or description")
-        }
-        const short = await Short.findById(shortId);
+        const body = req.body;
+        const short = await Short.findByIdAndUpdate({ _id: new ObjectId(shortId), userId: user._id }, {
+            $set: {
+                ...body
+            }
+        }); 
         if (!short) {
             throw new ApiError(500, "Invalid ShortId")
         }
-        if (short.userId.toString() !== userId.toString()) {
-            throw new ApiError(400, "You are not authorized to update this Short")
+        if (!short.title && body.title) {
+            //publishing notification
+            const subscribers = await Subscription.aggregate([
+                {
+                    $match: {
+                        channelId: user._id
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "users",
+                        localField: "subscriberId",
+                        foreignField: "_id",
+                        as: "subscriber"
+                    }
+                },
+                {
+                    $addFields: {
+                        subscriberId: {
+                            $first: "$subscriber._id"
+                        }
+                    }
+                },
+                {
+                    $project: {
+                        subscriberId: 1,
+                    }
+                }
+            ]);
+            const message = `@${user.username} uploaded : "${body.title}"`;
+            subscribers.forEach((s) => {
+                publishNotification({
+                    userId: s.subscriberId,
+                    message,
+                    short: {
+                        _id: short._id,
+                        thumbnail,
+                    },
+                    creator: {
+                        _id: user._id,
+                        avatar: user.avatar,
+                        fullname: user.fullname
+                    },
+                    read: false,
+                    createdAt: new Date(Date.now()),
+                });
+            })
+            //end
         }
-        if (title) Short.title = title;
-        if (description) Short.description = description;
         await Short.save({ validateBeforeSave: false });
         return res.status(200).json(new ApiResponse(200, null, "Short updated successfully"))
     })
@@ -208,6 +214,8 @@ class ShortController {
             {
                 $match: {
                     userId: user._id,
+                    visibility: "public",
+                    sourceStatus: "READY"
                 }
             },
             {
@@ -249,6 +257,8 @@ class ShortController {
             // Match stage: Search in title and description
             {
                 $match: {
+                    visibility: "public",
+                    sourceStatus: "READY",
                     $or: [
                         { title: { $regex: query, $options: "i" } },
                         { description: { $regex: query, $options: "i" } },
@@ -345,6 +355,8 @@ class ShortController {
                 // Fetch user-specific recommendations first
                 if (short) {
                     const shortsBySameCreator = await Short.find({
+                        visibility: "public",
+                        sourceStatus: "READY",
                         userId: short.userId,
                         _id: { $nin: notToBeRecommended }
                     }).populate("userId", "username fullname avatar")
@@ -354,15 +366,17 @@ class ShortController {
                     }
                 }
 
-                if (short?.tags?.length) {
-                    const shortsBySameTags = await Short.find({
-                        tags: { $in: short.tags },
+                if (short?.categories?.length) {
+                    const shortsBySameCategories = await Short.find({
+                        visibility: "public",
+                        sourceStatus: "READY",
+                        categories: { $in: short.categories },
                         _id: { $nin: notToBeRecommended }
                     }).populate("userId", "username fullname avatar")
 
-                    if (shortsBySameTags.length) {
-                        recommendations.push(...shortsBySameTags);
-                        notToBeRecommended.push(...shortsBySameTags.map(s => s._id.toString()));
+                    if (shortsBySameCategories.length) {
+                        recommendations.push(...shortsBySameCategories);
+                        notToBeRecommended.push(...shortsBySameCategories.map(s => s._id.toString()));
                     }
                 }
 
@@ -375,6 +389,8 @@ class ShortController {
                     let shorts = await Short.aggregate([
                         {
                             $match: {
+                                visibility: "public",
+                                sourceStatus: "READY",
                                 _id: {
                                     $nin: notToBeRecommended
                                 },
@@ -397,6 +413,8 @@ class ShortController {
                 let split2 = remainingSlots - split1;
 
                 let recentShorts = await Short.find({
+                    visibility: "public",
+                    sourceStatus: "READY",
                     _id: { $nin: notToBeRecommended }
                 })
                     .sort({ createdAt: -1 }).limit(split1).populate("userId", "username fullname avatar")
@@ -406,7 +424,7 @@ class ShortController {
                     notToBeRecommended.push(...recentShorts.map(s => s._id.toString()));
                 }
 
-                let popularShorts = await Short.find({ _id: { $nin: notToBeRecommended } })
+                let popularShorts = await Short.find({ _id: { $nin: notToBeRecommended }, visibility: "public", sourceStatus: "READY" })
                     .sort({ views: -1 }).limit(split2).populate("userId", "username fullname avatar")
 
                 if (popularShorts.length) {
@@ -431,12 +449,12 @@ class ShortController {
                 const daysSincePosted = (new Date() - new Date(short.createdAt)) / (1000 * 3600 * 24);
                 score += Math.max(0, 30 - daysSincePosted) * 1;
             }
-            if (short.tags?.length && userId) {
+            if (short.categories?.length && userId) {
                 // Assume some custom logic here to calculate similarity score with user's watch history
                 const user = await User.findById(userId);
-                const watchedTags = user.watchHistory.tags || [];
-                const commonTags = short.tags.filter(tag => watchedTags.includes(tag));
-                score += commonTags.length * 2; // Boost score for shorts with common tags
+                const watchedCategories = user.watchHistory.categories || [];
+                const commonCategories = short.categories.filter(tag => watchedCategories.includes(tag));
+                score += commonCategories.length * 2; // Boost score for shorts with common categories
             }
 
             return score;

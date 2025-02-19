@@ -2,7 +2,7 @@ import { ApiError } from '../utils/api-error.js';
 import { ApiResponse } from '../utils/api-response.js';
 import { asyncHandler } from '../utils/handler.js';
 import { abortMultipartUpload, completeMultipartUpload, putObjectUrl, startMultipartUploadAndGenerateUrls } from '../lib/s3-client.js';
-
+import { Types } from "mongoose"
 class UploadController {
   startMultipartUpload = asyncHandler(async (req, res) => {
     const { fileKey, contentType, totalParts } = req.body;
@@ -32,12 +32,17 @@ class UploadController {
     return res.status(200).json(new ApiResponse(200, null, 'Multipart upload aborted successfully'));
   })
   generatePresignedUrl = asyncHandler(async (req, res) => {
+    const { type } = req.query;
     const { fileKey, contentType } = req.body;
     if (!fileKey || !contentType) {
       throw new ApiError(400, 'File key and Content Type are required');
     }
-    const url = await putObjectUrl(fileKey, contentType);
-    return res.status(200).json(new ApiResponse(200, { url }, 'Presigned URL generated successfully'));
+    let id;
+    if (type) {
+      id = new Types.ObjectId(); 
+    }
+    const url = await putObjectUrl(fileKey, contentType,type,id);
+    return res.status(200).json(new ApiResponse(200, { url,id }, 'Presigned URL generated successfully'));
   })
 }
 

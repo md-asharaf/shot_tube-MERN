@@ -28,7 +28,6 @@ export const BigDrawer = () => {
         (state: RootState) => state.auth.userData?.username
     );
     const { windowWidth } = useWindowSize();
-    console.log({ username });
     const {
         data: channels,
         isError,
@@ -159,7 +158,7 @@ export const BigDrawer = () => {
     );
     const isSmallScreen = windowWidth < 1315;
     const isVideoPage = location.pathname.startsWith("/video");
-
+    console.log(shortId)
     return (
         <div
             className={`${
@@ -222,7 +221,7 @@ export const BigDrawer = () => {
                 )}
                 <Separator className="my-3" />
                 {isLoading ? (
-                    <div className="space-y-2">
+                    <div className="space-y-2 mr-6">
                         {Array(4)
                             .fill(0)
                             .map((_, i) => (

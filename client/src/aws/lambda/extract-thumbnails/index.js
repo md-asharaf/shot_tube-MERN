@@ -38,15 +38,15 @@ module.exports.handler = async (event) => {
         const file = await s3.getObject({ Bucket: INPUT_BUCKET, Key: INPUT_KEY }).promise();
         fs.writeFileSync(inputPath, file.Body);
 
-        // Generate Thumbnails & VTT
-        await generateThumbnailsAndVTT(inputPath, TEMP_DIR, BASE_NAME, OUTPUT_BUCKET);
-
         // Extract Audio
         await extractAudio(inputPath, audioOutputPath, BASE_NAME, OUTPUT_BUCKET);
 
         // Generate HLS Master Playlist
         await generateHLSMasterPlaylist(BASE_NAME, TEMP_DIR, OUTPUT_BUCKET, WIDTH, HEIGHT);
 
+        // Generate Thumbnails & VTT
+        await generateThumbnailsAndVTT(inputPath, TEMP_DIR, BASE_NAME, OUTPUT_BUCKET);
+        
         console.log("Processing complete.");
         return { status: "SUCCESS" };
     } catch (err) {
@@ -106,6 +106,7 @@ const extractAudio = async (inputPath, outputPath, baseName, outputBucket) => {
         Key: `${baseName}/audio.mp3`,
         Body: fs.readFileSync(outputPath),
         ContentType: "audio/mpeg",
+        Metadata: 
     }).promise();
 
     console.log("Audio uploaded to S3.");

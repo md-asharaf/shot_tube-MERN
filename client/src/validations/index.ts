@@ -1,3 +1,6 @@
+import { categories } from "@/constants";
+import exp from "constants";
+import { title } from "process";
 import { z } from "zod";
 
 export const signUpFormValidation = z
@@ -38,3 +41,13 @@ export const VideoFormValidation = z
             }),
     })
     .required();
+
+export const videoUpdateFormValidation = z.object({
+    title: z.string().nonempty("Title is required").optional(),
+    description: z.string().max(5000, "Description is too long").optional(),
+    thumbnail: z
+            .string().optional(),
+    playlists : z.array(z.string()).optional(),
+    visibility: z.enum(["public", "private"]).default("public"),
+    categories: z.array(z.string()).optional(),
+})

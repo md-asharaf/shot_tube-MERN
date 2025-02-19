@@ -60,7 +60,7 @@ export const ThreeDotContent = ({ videoId, task }) => {
             <ul className="space-y-2">
                 {task && (
                     <li
-                        className="flex items-center space-x-2 cursor-pointer dark:hover:bg-[#535353] hover:bg-[#E5E5E5] py-2 px-4 rounded-md"
+                        className="flex items-center space-x-2 cursor-pointer dark:hover:bg-[#535353] hover:bg-[#E5E5E5] py-2 px-4"
                         onClick={task.handler}
                     >
                         <Trash2 className="h-5 w-5" />
@@ -68,7 +68,7 @@ export const ThreeDotContent = ({ videoId, task }) => {
                     </li>
                 )}
                 <li
-                    className="flex items-center space-x-2 cursor-pointer py-2 px-4 dark:hover:bg-[#535353] hover:bg-[#E5E5E5] rounded-md"
+                    className="flex items-center space-x-2 cursor-pointer py-2 px-4 dark:hover:bg-[#535353] hover:bg-[#E5E5E5]"
                     onClick={() => {
                         if (isSavedToWatchLater) {
                             removeFromWatchLater();
@@ -89,7 +89,7 @@ export const ThreeDotContent = ({ videoId, task }) => {
                     </span>
                 </li>
                 <li
-                    className="cursor-pointer dark:hover:bg-[#535353] hover:bg-[#E5E5E5] rounded-md"
+                    className="cursor-pointer dark:hover:bg-[#535353] hover:bg-[#E5E5E5]"
                     onClick={() =>
                         dispatch(
                             setSaveToPlaylistDialog({ open: true, id: videoId })
@@ -115,7 +115,7 @@ export const ThreeDotContent = ({ videoId, task }) => {
                     </div>
                 </li>
                 <li
-                    className="flex items-center space-x-2 cursor-pointer py-2 px-4 dark:hover:bg-[#535353] hover:bg-[#E5E5E5] rounded-md"
+                    className="flex items-center space-x-2 cursor-pointer py-2 px-4 dark:hover:bg-[#535353] hover:bg-[#E5E5E5]"
                     onClick={() =>
                         dispatch(
                             setShareModalData({

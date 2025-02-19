@@ -18,15 +18,17 @@ export function getVideoMetadata(
         const video = document.createElement("video");
         video.preload = "metadata";
         video.onloadedmetadata = function () {
-            window.URL.revokeObjectURL(video.src);
             resolve({
                 height: video.videoHeight,
                 duration: video.duration,
                 width: video.videoWidth,
             });
+            window.URL.revokeObjectURL(video.src);
+            video.remove();
         };
         video.onerror = function () {
-            reject("Error loading video metadata");
+            reject(new Error("Error loading video metadata"));
+            video.remove();
         };
         video.src = URL.createObjectURL(file);
     });

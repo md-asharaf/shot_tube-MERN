@@ -1,6 +1,17 @@
 export interface IChildren {
     children: React.ReactNode;
 }
+
+export interface Playlist {
+    _id: string;
+    videos: string[];
+    shorts: string[];
+    creator: IUser;
+    name: string;
+    updatedAt: string;
+    description: string;
+    thumbnail: string;
+}
 export interface IUser {
     _id: string;
     username: string;
@@ -44,28 +55,36 @@ export interface IVideoUploadForm {
 }
 export interface IVideoData {
     _id: string;
-    title: string;
-    thumbnailPreviews:string;
+    title?: string;
+    thumbnailPreviews?:string;
     description?: string;
     source?: string;
+    sourceStatus?: string;
     subtitle?: string;
-    thumbnail: string;
+    subtitleStatus?: string;
+    thumbnail?: string;
     creator: IUser;
     views: number;
-    duration: string;
+    visibility: "public" | "private";
+    categories?:[string];
+    duration?: string;
     createdAt?: Date;
     updatedAt?: Date;
 }
 export interface IShortData {
     _id: string;
-    title: string;
-    thumbnailPreviews:string;
+    title?: string;
+    thumbnailPreviews?:string;
     description?: string;
     source?: string;
+    sourceStatus?: string;
     subtitle?: string;
-    thumbnail: string;
+    subtitleStatus?: string;
+    thumbnail?: string;
     creator: IUser;
     views: number;
+    visibility: "public" | "private";
+    categories?:[string];
     createdAt?: Date;
     updatedAt?: Date;
     next:string;

@@ -20,6 +20,7 @@ const playlistSchema = new Schema({
     ],
     visibility:{
         type: String,
+        enum: ["public","private"],
         default: "private"
     },
     shorts:[

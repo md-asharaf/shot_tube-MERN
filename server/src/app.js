@@ -15,6 +15,7 @@ import { notificationRoutes } from "./routes/notification.js";
 import { uploadRoutes } from "./routes/upload.js";
 import { replyRoutes } from "./routes/reply.js"
 import { studioRoutes } from "./routes/studio.js"
+import { webhookRoutes } from "./routes/webhook.js";
 import bodyParser from "body-parser"
 const ORIGIN = process.env.CLIENT_URL
 
@@ -63,6 +64,8 @@ app.use('/api/v1/notifications', notificationRoutes)
 app.use('/api/v1/replies', replyRoutes)
 
 app.use('/api/v1/studio', studioRoutes)
+
+app.use("/api/v1/webhooks",webhookRoutes)
 
 app.use(errorHandler)
 

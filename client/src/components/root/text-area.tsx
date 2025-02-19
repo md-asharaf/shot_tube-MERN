@@ -70,8 +70,8 @@ export const TextArea: React.FC<TextAreaProps> = ({
                 <AvatarImg
                     className={`${
                         submitLabel == "Comment"
-                            ? "h-10 min-w-10"
-                            : "h-8 min-w-8"
+                            ? "h-[40px] w-[40px]"
+                            : "h-[32px] w-[32px]"
                     }`}
                     fullname={fullname}
                     avatar={userAvatar}
@@ -91,7 +91,7 @@ export const TextArea: React.FC<TextAreaProps> = ({
             {(isInputFocused || content) && (
                 <div className="ml-12 flex space-x-2 justify-between items-start">
                     <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
+                        <DropdownMenuTrigger asChild className="focus:outline-none">
                             <Button
                                 variant="ghost"
                                 className="rounded-full h-7 sm:h-9 p-2"

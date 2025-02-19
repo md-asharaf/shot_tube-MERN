@@ -16,5 +16,9 @@ class ShortSevice {
         await Axios.get(
             `/shorts/recommended-shorts?page=${page}${shortId?`&shortId=${shortId}`:""}${userId?`&userId=${userId}`:""}`
         );
+    updateShort = async (shortId: string, data: any) =>
+        await Axios.patch(`/shorts/update-short/${shortId}`, data);
+    randomShort = async () =>
+        await Axios.get("/shorts/random-short");
 }
 export const shortService = new ShortSevice();

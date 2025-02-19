@@ -2,8 +2,8 @@ import { Router } from "express";
 import { verifyJWT } from "../middlewares/auth.js";
 import { shortController } from "../controllers/short.js";
 const router = Router();
-
 router.get("/search-shorts", shortController.getShortsByQuery);
+router.get("/random-short", shortController.getRandomShortId);
 router.get("/recommended-shorts", shortController.getRecommendedShorts);
 router.get("/user-shorts/:username", shortController.getShortsByUsername);
 router.get("/liked-shorts", verifyJWT, shortController.getLikedShorts);

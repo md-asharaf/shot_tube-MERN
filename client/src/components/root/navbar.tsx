@@ -4,12 +4,13 @@ import { ImYoutube } from "react-icons/im";
 import { Button } from "@/components/ui/button";
 import { Profile } from "./profile";
 import { Link } from "react-router-dom";
-import { toggleMenu, toggleVideoModal } from "@/store/reducers/ui";
+import { toggleMenu} from "@/store/reducers/ui";
 import { DarkModeSwitch } from "react-toggle-dark-mode";
 import { toggleTheme } from "@/store/reducers/theme";
-import { Menu, Plus, Search, User } from "lucide-react";
+import { Menu, Search, User } from "lucide-react";
 import { RootState } from "@/store/store";
-import Notifications from "./private/notifications";
+import Notifications from "./notifications";
+import { CreateDropdown } from "./modals/create-dropdown";
 export const NavBar = () => {
     const dispatch = useDispatch();
     const theme = useSelector((state: RootState) => state.theme.mode);
@@ -49,12 +50,7 @@ export const NavBar = () => {
                 </div>
                 {userData ? (
                     <>
-                        <button
-                            className="pl-2 pr-3 py-1 sm:py-1.5 text-sm items-center rounded-full bg-muted hover:bg-muted/80 flex space-x-1"
-                            onClick={() => dispatch(toggleVideoModal())}
-                        >
-                            <Plus /> <span>Create</span>
-                        </button>
+                        <CreateDropdown/>
                         <Notifications />
                         <Profile />
                     </>

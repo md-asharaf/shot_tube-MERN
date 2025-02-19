@@ -19,7 +19,7 @@ export const Profile = () => {
     const dispatch = useDispatch();
     const { username, fullname, avatar } = useSelector(
         (state: RootState) => state.auth.userData
-    );
+    ) || {};
     const navigate = useNavigate();
     const onLogout = async () => {
         try {
@@ -35,7 +35,7 @@ export const Profile = () => {
     };
     return (
         <DropdownMenu>
-            <DropdownMenuTrigger className="h-10 w-10">
+            <DropdownMenuTrigger className="h-10 w-10 focus:outline-none">
                 <AvatarImg fullname={fullname} avatar={avatar} />
             </DropdownMenuTrigger>
             <DropdownMenuContent

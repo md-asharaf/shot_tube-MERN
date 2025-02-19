@@ -109,7 +109,7 @@ class PlaylistController {
         if (!videoId && !shortId) {
             throw new ApiError(400, "VideoId or shortId is required");
         }
-        const playlists = await Playlist.find({ userId: new ObjectId(userId) });
+        const playlists = await Playlist.find({ userId: new ObjectId(userId),visibility: "public" });
         let isSaved = [];
         for (let playlist of playlists) {
             isSaved.push(videoId ? playlist.videos.includes(videoId) : playlist.shorts.includes(shortId))
@@ -121,7 +121,6 @@ class PlaylistController {
         if (!username) {
             throw new ApiError(400, "Username is required")
         }
-        console.log({username})
         const user = await User.findOne({ username });
         if (!user) {
             throw new ApiError(404, "User not found")
@@ -129,6 +128,7 @@ class PlaylistController {
         const playlists = await Playlist.aggregate([
             {
                 $match: {
+                    visibility: "public",
                     userId: user._id
                 }
             },

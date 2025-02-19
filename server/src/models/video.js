@@ -3,11 +3,20 @@ import MAP from "mongoose-aggregate-paginate-v2";
 const videoSchema = new Schema({
     source: {
         type: String,
-        required: true
+        default: ""
+    },
+    sourceStatus:{
+        type: String,
+        enum: ["FAILED","PROCESSING","READY"],
+        default: "PROCESSING"
+    },
+    subtitleStatus:{
+        type: String,
+        enum: ["FAILED","PROCESSING","READY"],
+        default: "PROCESSING"
     },
     thumbnail: {
         type: String,
-        required: true
     },
     subtitle: {
         type: String,
@@ -15,7 +24,7 @@ const videoSchema = new Schema({
     },
     title: {
         type: String,
-        required: true
+        default: ""
     },
     description: {
         type: String,
@@ -23,19 +32,22 @@ const videoSchema = new Schema({
     },
     duration: {
         type: Number,
-        required: true
     },
     views: {
         type: Number,
         default: 0
     },
+    visibility:{
+        type: String,
+        enum: ["public","private"],
+        default: "private"
+    },
     thumbnailPreviews: {
         type: String,
         default: ""
     },
-    tags: {
+    categories: {
         type: [String],
-        required: true
     },
     userId: {
         type: Schema.Types.ObjectId,

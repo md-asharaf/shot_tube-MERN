@@ -18,5 +18,10 @@ class VideoSevice {
         );
     videosCount = async (userId: string) =>
         await Axios.get(`/videos/videos-count/${userId}`);
+    updateVideo = async (videoId: string, data: any) =>
+        await Axios.patch(`/videos/update-video/${videoId}`, data);
+    updateThumbnail = async (videoId: string, thumbnail:string) =>
+        await Axios.patch(`/videos/update-thumbnail/${videoId}`, {thumbnail});
+
 }
 export const videoService = new VideoSevice();

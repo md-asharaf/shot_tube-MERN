@@ -3,23 +3,32 @@ import MAP from "mongoose-aggregate-paginate-v2";
 const shortSchema = new Schema({
     source: {
         type: String,
-        required: true
+        default: ""
     },
     thumbnail: {
         type: String,
-        required: true
+        default: ""
     },
     subtitle: {
         type: String,
         default: ""
     },
+    sourceStatus:{
+        type: String,
+        enum: ["FAILED","PROCESSING","READY"],
+        default: "PROCESSING"
+    },
+    subtitleStatus:{
+        type: String,
+        enum: ["FAILED","PROCESSING","READY"],
+        default: "PROCESSING"
+    },
     duration:{
         type: Number,
-        required: true
     },
     title: {
         type: String,
-        required: true
+        default: ""
     },
     description: {
         type: String,
@@ -29,13 +38,18 @@ const shortSchema = new Schema({
         type: Number,
         default: 0
     },
+    visibility:{
+        type: String,
+        enum: ["public","private"],
+        default: "private"
+    },
     thumbnailPreviews:{
         type: String,
         default: ""
     },
-    tags: {
+    categories: {
         type: [String],
-        required: true
+        default: []
     },
     userId: {
         type: Schema.Types.ObjectId,

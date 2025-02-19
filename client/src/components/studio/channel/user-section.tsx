@@ -11,7 +11,7 @@ import { Link } from "react-router-dom";
 export const UserSection = () => {
     const { avatar, fullname, username } = useSelector(
         (state: RootState) => state.auth.userData
-    );
+    )||{};
     const { state } = useSidebar();
     if (state == "collapsed") {
         return (

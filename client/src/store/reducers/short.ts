@@ -1,6 +1,5 @@
-
 import { IShortData } from "@/interfaces";
-import { createSlice } from "@reduxjs/toolkit";
+import { createSlice, PayloadAction } from "@reduxjs/toolkit";
 interface Short {
     openCard:string;
     shorts: IShortData[];
@@ -18,8 +17,9 @@ const shortSlice = createSlice({
         setShorts:(state, action)=>{
             state.shorts = action.payload;
         },
-        setRandomShortId:(state)=>{
-            state.randomShortId = state.shorts[Math.floor(Math.random() * state.shorts.length)]._id;
+        setRandomShortId:(state,action:PayloadAction<string>)=>{
+            console.log({shortId:action.payload})
+            state.randomShortId = action.payload;
         },
         setOpenCard:(state,action)=>{
             state.openCard=action.payload;

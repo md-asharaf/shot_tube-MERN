@@ -16,7 +16,7 @@ export const downloadImageAndUploadToS3 = async (
         const fileExtension = fileName.split(".").pop() || "bin";
         const file = new File([new Blob([arrayBuffer], { type: fileType })], fileName, { type: fileType });
         const fileKey = `uploads/user-uploads/${uuidv4()}.${fileExtension}`;
-        const { url } = await uploadService.getPutObjectPresignedUrl(fileKey, fileType);
+        const { url } = await uploadService.getPutObjectPresignedUrl(fileKey, fileType,"noauth");
         await uploadToPresignedUrl(url, file);
         return `https://${process.env.AWS_S3_BUCKET_NAME}.s3.amazonaws.com/${fileKey}`;
     } catch (error) {

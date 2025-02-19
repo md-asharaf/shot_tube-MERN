@@ -21,7 +21,7 @@ module.exports.handler = async (event) => {
             transcript = await client.transcripts.transcribe({ audio_url });
         } catch (err) {
             console.error("AssemblyAI Transcription Error:", err);
-            await sendWebhook("FAILED", "");
+            await sendWebhook(id,"FAILED");
             return;
         }
 
@@ -31,7 +31,7 @@ module.exports.handler = async (event) => {
             vttfile = await client.transcripts.subtitles(transcript.id, "vtt");
         } catch (err) {
             console.error("AssemblyAI Subtitle Error:", err);
-            await sendWebhook("FAILED", "");
+            await sendWebhook(id,"FAILED");
             return;
         }
 
@@ -51,24 +51,24 @@ module.exports.handler = async (event) => {
             console.log(`Uploaded to s3://${INPUT_BUCKET}/${outputKey}`);
         } catch (err) {
             console.error("S3 Upload Error:", err);
-            await sendWebhook("FAILED", "");
+            await sendWebhook(id,"FAILED");
             return;
         }
 
         // Notify webhook
         const fileUrl = `https://${INPUT_BUCKET}.s3.ap-south-1.amazonaws.com/${outputKey}`;
-        await sendWebhook("READY", fileUrl);
+        await sendWebhook(id,"READY");
     } catch (err) {
         console.error("Unexpected Error:", err);
-        await sendWebhook("FAILED", "");
+        await sendWebhook(id,"FAILED");
     }
 };
 
 // Send Webhook Notification
-async function sendWebhook(status, url) {
+async function sendWebhook(id,status) {
     try {
-        await axios.post(process.env.WEBHOOK_URL, { status, url });
-        console.log(`Webhook sent: ${status}`);
+        await axios.post(process.env.WEBHOOK_URL, { id, status });
+        console.log(`Webhook sent: ${id}`);
     } catch (err) {
         console.error("Webhook Error:", err);
     }

@@ -397,11 +397,9 @@ class UserController {
     })
     getWatchLater = asyncHandler(async (req, res) => {
         const userId = req.user?._id;
-        const userObjectId = new ObjectId(userId);
-
         const users = await User.aggregate([
             {
-                $match: { _id: userObjectId }
+                $match: { _id: userId }
             },
             {
                 $project: {
@@ -512,20 +510,22 @@ class UserController {
                                 ]
                             }
                         }
-                    }
+                    },
+                    thumbnail: { $arrayElemAt: ["$watchLaterVideos.thumbnail", 0]}
                 }
             },
             {
                 $project: {
                     _id: 0,
                     watchLater: {
+                        thumbnail: "$thumbnail",
                         videos: "$watchLaterVideos",
                         shorts: "$watchLaterShorts"
                     }
                 }
             }
         ]);
-
+        console.log({ users })
         return res.status(200).json(new ApiResponse(200, { watchLater: users[0]?.watchLater || { videos: [], shorts: [] } }, "Watch later found"));
     });
     isSavedToWatchLater = asyncHandler(async (req, res) => {

@@ -1,10 +1,9 @@
 import { Outlet, useParams } from "react-router-dom";
-import { SidebarLayout } from "../sidebar/layout";
-import { VideoSection } from "./section";
+import { SidebarLayout } from "../sidebar/sidebar-layout";
+import { VideoSection } from "./video-section";
 import { IVideoData } from "@/interfaces";
 import { videoService } from "@/services/video";
 import { useQuery } from "@tanstack/react-query";
-import { Loader2 } from "lucide-react";
 export const StudioVideo = () => {
     const { id } = useParams();
     const { data: video, isLoading } = useQuery({
@@ -20,9 +19,10 @@ export const StudioVideo = () => {
         <div className="flex min-h-screen pt-[4rem]">
             <SidebarLayout>
                 <VideoSection
-                    title={video.title}
-                    thumbnail={video.thumbnail}
-                    id={video._id}
+                    title={video?.title}
+                    thumbnail={video?.thumbnail}
+                    id={video?._id}
+                    route={`/studio/${video?.creator.username}/content`}
                 />
             </SidebarLayout>
             <main className="flex-1 overflow-y-auto">

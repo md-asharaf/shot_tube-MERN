@@ -1,6 +1,6 @@
 import { Outlet } from "react-router-dom";
-import { SidebarLayout } from "../sidebar/layout";
-import { PlaylistSection } from "./section";
+import { SidebarLayout } from "../sidebar/sidebar-layout";
+import { PlaylistSection } from "./playlist-section";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { playlistService } from "@/services/playlist";
@@ -23,6 +23,7 @@ export const StudioPlaylist = () => {
                     title={playlist.name}
                     thumbnail={playlist.videos[0].thumbnail}
                     id={playlist._id}
+                    route={`/studio/${playlist.creator.username}/content`}
                 />
             </SidebarLayout>
             <main className="flex-1 overflow-y-auto">

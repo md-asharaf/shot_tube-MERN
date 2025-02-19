@@ -1,11 +1,10 @@
 import { Outlet } from "react-router-dom";
-import { SidebarLayout } from "../sidebar/layout";
-import { ShortSection } from "./section";
+import { SidebarLayout } from "../sidebar/sidebar-layout";
+import { ShortSection } from "./short-section";
 import { useParams } from "react-router-dom";
 import { useQuery } from "@tanstack/react-query";
 import { shortService } from "@/services/short";
 import { IShortData } from "@/interfaces";
-import { Loader2 } from "lucide-react";
 export const StudioShort = () => {
     const { id } = useParams();
     const { data: short, isLoading } = useQuery({
@@ -24,6 +23,7 @@ export const StudioShort = () => {
                     title={short.title}
                     thumbnail={short.thumbnail}
                     id={short._id}
+                    route={`/studio/${short?.creator?.username}/content`}
                 />
             </SidebarLayout>
             <main className="flex-1 overflow-y-auto">

@@ -106,7 +106,7 @@ class StudioController {
                     comments: 1,
                     views: 1,
                     duration: 1,
-                    tags: 1,
+                    categories: 1,
                 }
             }
         ]);
@@ -208,7 +208,7 @@ class StudioController {
                     comments: 1,
                     views: 1,
                     duration: 1,
-                    tags: 1,
+                    categories: 1,
                 }
             }
         ]);

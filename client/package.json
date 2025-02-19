@@ -65,6 +65,7 @@
         "react": "^18.3.1",
         "react-day-picker": "8.10.1",
         "react-dom": "^18.3.1",
+        "react-dropzone": "^14.3.5",
         "react-hook-form": "^7.54.2",
         "react-icons": "^5.4.0",
         "react-redux": "^9.2.0",
@@ -92,7 +93,7 @@
         "eslint-plugin-react-hooks": "^5.1.0",
         "eslint-plugin-react-refresh": "^0.4.16",
         "tailwindcss": "^3.4.16",
-        "typescript": "^5.7.2",
+        "typescript": "^5.7.3",
         "vite": "^6.0.5"
     },
     "module": "index.ts",
