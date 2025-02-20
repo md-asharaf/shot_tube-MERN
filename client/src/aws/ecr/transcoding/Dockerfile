@@ -1,7 +1,7 @@
 FROM alpine:latest
 
 # Install required packages and dependencies for the build
-RUN apk update && apk add ffmpeg aws-cli && rm -rf /var/cache/apk/* 
+RUN apk update && apk add ffmpeg aws-cli curl && rm -rf /var/cache/apk/* 
 
 # Set working directory
 WORKDIR /home/app

@@ -8,17 +8,21 @@ import { Subscription } from "../models/subscription.js"
 import { publishNotification } from "../lib/kafka/producer.js";
 import { getCache, setCache } from "../lib/redis.js";
 import { ObjectId } from "mongodb"
+import { setCache } from "../lib/redis.js"
 class VideoController {
     publishVideo = asyncHandler(async (req, res) => {
         const user = req.user;
         const data = req.body;
-        const newVideo = await Video.create({
-            ...data,
+        const { height, ...rest } = data;
+        await Video.create({
+            ...rest,
             userId: user._id
         })
-        if (!newVideo) {
-            throw new ApiError(500, "Failed to publish video")
-        }
+        let cache = {};
+        [360, 480, 720, 1080]
+            .filter(h => h <= height)
+            .forEach(res => (cache[res] = false));
+        await setCache(rest._id, cache)
         return res.status(200).json(new ApiResponse(200, null, "Video published successfully"))
     })
 

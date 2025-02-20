@@ -1,4 +1,4 @@
-import { Divide, Loader2, X } from "lucide-react";
+import { Loader2, X } from "lucide-react";
 import { Card, CardContent, CardFooter, CardTitle } from "@/components/ui/card";
 import { useDispatch, useSelector } from "react-redux";
 import { setOpenCard } from "@/store/reducers/short";

@@ -19,6 +19,14 @@ export const getCache = async (key) => {
         return null;
     }
 };
+export const  removeCache = async (key) => {
+    try {
+        await client.del(key);
+    } catch (err) {
+        console.error('Error deleting cache from Redis:', err.message);
+    }
+}
+
 export const deleteAllCache = async () => {
     try {
         await client.flushall();

@@ -6,7 +6,16 @@ const util = require('util');
 
 const s3 = new AWS.S3();
 const execPromise = util.promisify(exec);
+async function getVideoMetadata(videoKey) {
+    const params = {
+        Bucket: "shot-tube-videos",
+        Key: videoKey,
+    };
 
+    const data = await s3.headObject(params).promise();
+    console.log("Metadata:", data.Metadata);
+    return data.Metadata;
+}
 module.exports.handler = async (event) => {
     try {
         const eventBody = JSON.parse(event.Records[0].body);
@@ -17,7 +26,8 @@ module.exports.handler = async (event) => {
         const TEMP_DIR = `/tmp/${BASE_NAME}`;
         const inputPath = `/tmp/${path.basename(INPUT_KEY)}`;
         const audioOutputPath = `/tmp/${BASE_NAME}.mp3`;
-
+        const metadata = await getVideoMetadata(INPUT_KEY);
+        const id = metadata.shortid || metadata.videoid;
         // Extract width & height from filename
         const filenameParts = BASE_NAME.split('_');
         const WIDTH = parseInt(filenameParts[filenameParts.length - 2], 10);
@@ -39,14 +49,14 @@ module.exports.handler = async (event) => {
         fs.writeFileSync(inputPath, file.Body);
 
         // Extract Audio
-        await extractAudio(inputPath, audioOutputPath, BASE_NAME, OUTPUT_BUCKET);
+        await extractAudio(inputPath, audioOutputPath, BASE_NAME, OUTPUT_BUCKET,id);
 
         // Generate HLS Master Playlist
         await generateHLSMasterPlaylist(BASE_NAME, TEMP_DIR, OUTPUT_BUCKET, WIDTH, HEIGHT);
 
         // Generate Thumbnails & VTT
         await generateThumbnailsAndVTT(inputPath, TEMP_DIR, BASE_NAME, OUTPUT_BUCKET);
-        
+
         console.log("Processing complete.");
         return { status: "SUCCESS" };
     } catch (err) {
@@ -96,7 +106,7 @@ const generateThumbnailsAndVTT = async (inputPath, tempDir, baseName, outputBuck
 };
 
 // Extract Audio
-const extractAudio = async (inputPath, outputPath, baseName, outputBucket) => {
+const extractAudio = async (inputPath, outputPath, baseName, outputBucket, id) => {
     console.log("Extracting audio...");
 
     await execPromise(`ffmpeg -i ${inputPath} -vn -acodec libmp3lame ${outputPath}`);
@@ -106,7 +116,9 @@ const extractAudio = async (inputPath, outputPath, baseName, outputBucket) => {
         Key: `${baseName}/audio.mp3`,
         Body: fs.readFileSync(outputPath),
         ContentType: "audio/mpeg",
-        Metadata: 
+        Metadata: {
+            "id": id
+        }
     }).promise();
 
     console.log("Audio uploaded to S3.");

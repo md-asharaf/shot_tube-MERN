@@ -5,8 +5,8 @@ echo "main.sh execution starting...."
 set -e
 
 # Ensure required environment variables are set
-if [ -z "$FILE_KEY" ] || [ -z "$INPUT_BUCKET" ] || [ -z "$OUTPUT_BUCKET" ] || [ -z "$HEIGHT" ] || [ -z "$WIDTH" ] || [ -z "$BANDWIDTH" ]; then
-  echo "Error: FILE_KEY, INPUT_BUCKET, OUTPUT_BUCKET, HEIGHT, WIDTH, and BANDWIDTH must be set."
+if [ -z "$FILE_KEY" ] || [ -z "$INPUT_BUCKET" ] || [ -z "$OUTPUT_BUCKET" ] || [ -z "$HEIGHT" ] || [ -z "$WIDTH" ] || [ -z "$BANDWIDTH" ] || [ -z "$WEBHOOK_URL" ] || [ -z "$ID" ]; then
+  echo "Error: FILE_KEY, INPUT_BUCKET, OUTPUT_BUCKET, HEIGHT, WIDTH, BANDWIDTH, WEBHOOK_URL, and ID must be set."
   exit 1
 fi
 
@@ -40,6 +40,12 @@ transcode_and_upload_to_s3() {
   for file in "${TEMP_DIR}/${PLAYLIST_NAME%.*}"*.ts "${TEMP_DIR}/${PLAYLIST_NAME}"; do
     aws s3 cp "$file" "${OUTPUT_PATH}/$(basename "$file")" || { echo "Error uploading $(basename "$file")"; exit 1; }
   done
+
+  # Send notification to webhook
+  echo "Notifying webhook..."
+  curl -X POST "$WEBHOOK_URL" \
+    -H "Content-Type: application/json" \
+    -d '{"id": "'"$ID"'", "resolution": "'"$HEIGHT"'"}'
 }
 
 # Process the transcoding for the given HEIGHT and WIDTH

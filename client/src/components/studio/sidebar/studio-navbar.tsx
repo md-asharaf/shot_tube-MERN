@@ -1,10 +1,7 @@
-import { PlusIcon } from "lucide-react";
 import { SidebarTrigger } from "../../ui/sidebar";
-import { Link, useNavigate } from "react-router-dom";
 import { ImYoutube } from "react-icons/im";
 import { SearchBar } from "../../root/search-bar";
 import { Profile } from "../../root/profile";
-import { Button } from "../../ui/button";
 import { DarkModeSwitch } from "react-toggle-dark-mode";
 import { toggleTheme } from "@/store/reducers/theme";
 import { useDispatch, useSelector } from "react-redux";

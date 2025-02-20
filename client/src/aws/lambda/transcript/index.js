@@ -6,7 +6,16 @@ const s3 = new AWS.S3();
 const client = new AssemblyAI({
     apiKey: process.env.ASSEMBLYAI_API_KEY,
 });
+async function getVideoMetadata(audioKey) {
+    const params = {
+        Bucket: "shot-tube-videos",
+        Key: audioKey,
+    };
 
+    const data = await s3.headObject(params).promise();
+    console.log("Metadata:", data.Metadata);
+    return data.Metadata;
+}
 module.exports.handler = async (event) => {
     try {
         const eventBody = event.Records[0];
@@ -14,7 +23,8 @@ module.exports.handler = async (event) => {
         const INPUT_BUCKET = eventBody.s3.bucket.name;
         const audio_url = `https://${INPUT_BUCKET}.s3.amazonaws.com/${FILE_KEY}`;
         console.log(`Processing file: ${audio_url}`);
-
+        const metadata = await getVideoMetadata(FILE_KEY);
+        const id = metadata.shortid || metadata.videoid;
         // Request transcription
         let transcript;
         try {

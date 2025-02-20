@@ -8,17 +8,21 @@ import { Subscription } from "../models/subscription.js";
 import { publishNotification } from "../lib/kafka/producer.js";
 import { getCache, setCache } from "../lib/redis.js";
 import { ObjectId } from "mongodb";
+import { setCache } from "../lib/redis.js";
 class ShortController {
     publishShort = asyncHandler(async (req, res) => {
         const user = req.user;
         const data = req.body;
-        const newShort = await Short.create({
-            ...data,
-            userId: user._id,
+        const { height, ...rest } = data;
+        await Short.create({
+            ...rest,
+            userId: user._id
         })
-        if (!newShort) {
-            throw new ApiError(500, "Failed to publish Short")
-        }
+        let cache = {};
+        [360, 480, 720, 1080]
+            .filter(h => h <= height)
+            .forEach(res => (cache[res] = false));
+        await setCache(rest._id, cache)
         return res.status(200).json(new ApiResponse(200, null, "Short published successfully"))
     })
 
@@ -58,7 +62,7 @@ class ShortController {
             $set: {
                 ...body
             }
-        }); 
+        });
         if (!short) {
             throw new ApiError(500, "Invalid ShortId")
         }

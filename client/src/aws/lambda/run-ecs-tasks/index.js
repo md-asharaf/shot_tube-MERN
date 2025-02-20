@@ -1,12 +1,22 @@
 const AWS = require('aws-sdk');
 const ecs = new AWS.ECS({ region: 'ap-south-1' });
-
+const s3 = new AWS.S3({ region: 'ap-south-1' });
 const resolutions = [
   { height: 360, bandwidth: 500, width: 640 },
   { height: 480, bandwidth: 1000, width: 854 },
   { height: 720, bandwidth: 2500, width: 1280 },
   { height: 1080, bandwidth: 5000, width: 1920 },
 ];
+async function getVideoMetadata(videoKey) {
+  const params = {
+    Bucket: "shot-tube-videos",
+    Key: videoKey,
+  };
+
+  const data = await s3.headObject(params).promise();
+  console.log("Metadata:", data.Metadata);
+  return data.Metadata;
+}
 
 module.exports.handler = async (event) => {
   const eventBody = JSON.parse(event.Records[0].body);
@@ -23,14 +33,15 @@ module.exports.handler = async (event) => {
   const splittedFileKeyArray = FILE_KEY.split(".")[0].split("_");
   const maxHeight = splittedFileKeyArray[splittedFileKeyArray.length - 1];
   const maxWidth = splittedFileKeyArray[splittedFileKeyArray.length - 2];
-
+  const metadata = await getVideoMetadata(FILE_KEY);
+  const id = isShort ? metadata.shortid : metadata.videoid;
   console.log(`File Key: ${FILE_KEY}, Input Bucket: ${INPUT_BUCKET}`);
   console.log(`Max Height: ${maxHeight}, Max Width: ${maxWidth}`);
 
   try {
     if (isShort) {
       console.log(`Video is a Short, starting transcoding task with the uploaded resolution...`);
-      const shortParams = getTranscodingParams(parseInt(maxHeight), 2500, parseInt(maxWidth), FILE_KEY, INPUT_BUCKET);
+      const shortParams = getTranscodingParams(parseInt(maxHeight), 2500, parseInt(maxWidth), FILE_KEY, INPUT_BUCKET, id);
       await ecs.runTask(shortParams).promise().then(
         (data) => {
           const taskArn = data.tasks[0]?.taskArn;
@@ -57,7 +68,8 @@ module.exports.handler = async (event) => {
           resolution.bandwidth,
           resolution.width,
           FILE_KEY,
-          INPUT_BUCKET
+          INPUT_BUCKET,
+          id
         );
         console.log(
           `Starting transcoding task for ${resolution.width}X${resolution.height} resolution...`
@@ -104,7 +116,7 @@ module.exports.handler = async (event) => {
   }
 };
 
-const getTranscodingParams = (height, bandwidth, width, fileKey, inputBucket) => ({
+const getTranscodingParams = (height, bandwidth, width, fileKey, inputBucket, id) => ({
   cluster: process.env.CLUSTER_ARN,
   taskDefinition: process.env.TRANSCODING_TASK_ARN,
   count: 1,
@@ -125,6 +137,7 @@ const getTranscodingParams = (height, bandwidth, width, fileKey, inputBucket) =>
           { name: 'HEIGHT', value: height.toString() },
           { name: 'BANDWIDTH', value: bandwidth.toString() },
           { name: 'WIDTH', value: width.toString() },
+          { name: 'ID', value: id.toString() },
         ],
       },
     ],

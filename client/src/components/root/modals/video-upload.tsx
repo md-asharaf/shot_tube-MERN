@@ -39,10 +39,9 @@ export default function UploadVideo() {
       let video: File = Array.isArray(file) ? file[0] : file;
       const { duration, height, width } = await getVideoMetadata(video);
       const isShort = duration <= 90 && height > width;
-      const videoExtension = video.name.split(".")[1];
       const videoKey = `uploads/${
         isShort ? "shorts" : "videos"
-      }/${uuid()}_${width}_${height}.${videoExtension}`;
+      }/${uuid()}_${width}_${height}`;
       const contentType = video.type || "application/octet-stream";
 
       const { url, id } = await uploadService.getPutObjectPresignedUrl(
@@ -59,16 +58,13 @@ export default function UploadVideo() {
 
       const videoData = {
         _id: id,
-        source: `https://${BUCKET}.s3.ap-south-1.amazonaws.com/${
-          videoKey.split(".")[0]
-        }/${isShort ? height + "p.m3u8" : "master.m3u8"}`,
+        source: `https://${BUCKET}.s3.ap-south-1.amazonaws.com/${videoKey}/${
+          isShort ? height + "p.m3u8" : "master.m3u8"
+        }`,
         duration,
-        subtitle: `https://${BUCKET}.s3.ap-south-1.amazonaws.com/${
-          videoKey.split(".")[0]
-        }/subtitle.vtt`,
-        thumbnailPreviews: `https://${BUCKET}.s3.ap-south-1.amazonaws.com/${
-          videoKey.split(".")[0]
-        }/thumbnails/thumbnails.vtt`,
+        subtitle: `https://${BUCKET}.s3.ap-south-1.amazonaws.com/${videoKey}/subtitle.vtt`,
+        thumbnailPreviews: `https://${BUCKET}.s3.ap-south-1.amazonaws.com/${videoKey}/thumbnails/thumbnails.vtt`,
+        height,
       };
 
       isShort

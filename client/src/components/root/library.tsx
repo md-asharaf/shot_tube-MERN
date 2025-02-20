@@ -1,4 +1,4 @@
-import { IVideoData, IPlaylist, Playlist } from "@/interfaces";
+import { IVideoData, Playlist } from "@/interfaces";
 import { Link } from "react-router-dom";
 import { VideoCard } from "@/components/root/video/video-card";
 import { VideoTitle2 } from "@/components/root/video/video-title2";
