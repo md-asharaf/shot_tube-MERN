@@ -38,7 +38,7 @@ export const CreatePlaylist = () => {
             onOpenChange={closeDialog}
             open={open}
             title="Create Playlist"
-            width={80}
+            className="max-w-80"
         >
             <div className="flex flex-col items-start space-y-4">
                 <Input

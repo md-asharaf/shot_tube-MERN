@@ -23,7 +23,7 @@ export const StudioPlaylist = () => {
                     title={playlist.name}
                     thumbnail={playlist.videos[0].thumbnail}
                     id={playlist._id}
-                    route={`/studio/${playlist.creator.username}/content`}
+                    route="playlists"
                 />
             </SidebarLayout>
             <main className="flex-1 overflow-y-auto">

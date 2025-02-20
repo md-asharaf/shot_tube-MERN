@@ -6,6 +6,8 @@ import {
 } from "../ui/sidebar";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowLeftIcon } from "lucide-react";
+import { useSelector } from "react-redux";
+import { RootState } from "@/store/store";
 
 interface UserSectionProps {
   title: string;
@@ -23,6 +25,7 @@ export const MainSection = ({
   type,
   route,
 }: UserSectionProps) => {
+  const {username} = useSelector((state:RootState) => state.auth.userData) || {};
   const { state } = useSidebar();
   const navigate = useNavigate();
   const link = `/${type}/${id}`;
@@ -43,7 +46,7 @@ export const MainSection = ({
   }
   return (
     <SidebarHeader className="flex items-center pb-4">
-      <SidebarMenuItem className="w-full" onClick={() => navigate(route)}>
+      <SidebarMenuItem className="w-full" onClick={() => navigate(`/studio/${username}/content/${route}`)}>
         <SidebarMenuButton size="lg">
           <div className="flex items-center gap-4">
             <ArrowLeftIcon className="size-6" />

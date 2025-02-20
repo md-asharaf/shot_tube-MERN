@@ -23,7 +23,7 @@ export const StudioShort = () => {
                     title={short.title}
                     thumbnail={short.thumbnail}
                     id={short._id}
-                    route={`/studio/${short?.creator?.username}/content`}
+                    route="shorts"
                 />
             </SidebarLayout>
             <main className="flex-1 overflow-y-auto">

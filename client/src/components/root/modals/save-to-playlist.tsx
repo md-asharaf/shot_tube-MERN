@@ -180,7 +180,7 @@ export const SaveToPlaylist = () => {
       open={open}
       onOpenChange={closeDialog}
       title="Save video to..."
-      width={60}
+      className="max-w-60"
     >
       <div className="space-y-4">
         <div className="space-y-4">

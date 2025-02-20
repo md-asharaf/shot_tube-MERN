@@ -2,16 +2,15 @@ const AWS = require("aws-sdk");
 const { AssemblyAI } = require("assemblyai");
 const axios = require("axios");
 
-const s3 = new AWS.S3();
+const s3 = new AWS.S3({ region: "ap-south-1" });
 const client = new AssemblyAI({
     apiKey: process.env.ASSEMBLYAI_API_KEY,
 });
-async function getVideoMetadata(audioKey) {
+async function getVideoMetadata(Bucket,Key) {
     const params = {
-        Bucket: "shot-tube-videos",
-        Key: audioKey,
+        Bucket,
+        Key,
     };
-
     const data = await s3.headObject(params).promise();
     console.log("Metadata:", data.Metadata);
     return data.Metadata;
@@ -22,10 +21,16 @@ module.exports.handler = async (event) => {
         const FILE_KEY = eventBody.s3.object.key;
         const INPUT_BUCKET = eventBody.s3.bucket.name;
         const audio_url = `https://${INPUT_BUCKET}.s3.amazonaws.com/${FILE_KEY}`;
-        console.log(`Processing file: ${audio_url}`);
-        const metadata = await getVideoMetadata(FILE_KEY);
+        const metadata = await getVideoMetadata(INPUT_BUCKET,FILE_KEY);
         const id = metadata.shortid || metadata.videoid;
+        console.log({
+            FILE_KEY,
+            INPUT_BUCKET,
+            audio_url,
+            id
+        })
         // Request transcription
+        console.log(`Processing file: ${audio_url}`);
         let transcript;
         try {
             transcript = await client.transcripts.transcribe({ audio_url });
@@ -75,11 +80,29 @@ module.exports.handler = async (event) => {
 };
 
 // Send Webhook Notification
-async function sendWebhook(id,status) {
-    try {
-        await axios.post(process.env.WEBHOOK_URL, { id, status });
-        console.log(`Webhook sent: ${id}`);
-    } catch (err) {
-        console.error("Webhook Error:", err);
+const axios = require("axios");
+
+async function sendWebhook(id, status) {
+    if (!process.env.WEBHOOK_URL) {
+        console.error("Webhook URL is missing!");
+        return;
+    }
+    const MAX_RETRIES = 3;
+    let attempt = 0;
+    while (attempt < MAX_RETRIES) {
+        try {
+            await axios.patch(process.env.WEBHOOK_URL, { id, status });
+            console.log(`✅ Webhook sent successfully: ${id}`);
+            return;
+        } catch (err) {
+            attempt++;
+            console.error(`❌ Webhook Error (Attempt ${attempt}):`, err.message || err);
+            if (attempt === MAX_RETRIES) {
+                console.error("🚨 Failed to send webhook after multiple attempts.");
+            } else {
+                await new Promise(resolve => setTimeout(resolve, 2000)); // Wait before retrying
+            }
+        }
     }
 }
+

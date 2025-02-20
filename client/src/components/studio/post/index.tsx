@@ -23,7 +23,7 @@ export const StudioPost = () => {
                     title={post.content}
                     thumbnail={post.image}
                     id={post._id}
-                    route={`/studio/${post.creator.username}/content`}
+                    route="posts"
                 />
             </SidebarLayout>
             <main className="flex-1 overflow-y-auto">

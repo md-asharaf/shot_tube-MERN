@@ -7,12 +7,11 @@ const resolutions = [
   { height: 720, bandwidth: 2500, width: 1280 },
   { height: 1080, bandwidth: 5000, width: 1920 },
 ];
-async function getVideoMetadata(videoKey) {
+async function getVideoMetadata(Bucket,Key) {
   const params = {
-    Bucket: "shot-tube-videos",
-    Key: videoKey,
+      Bucket,
+      Key,
   };
-
   const data = await s3.headObject(params).promise();
   console.log("Metadata:", data.Metadata);
   return data.Metadata;
@@ -23,21 +22,21 @@ module.exports.handler = async (event) => {
   const FILE_KEY = eventBody.Records[0].s3.object.key;
   const INPUT_BUCKET = eventBody.Records[0].s3.bucket.name;
   const isShort = FILE_KEY.startsWith('uploads/shorts');
-  if (!FILE_KEY || !INPUT_BUCKET) {
-    console.error('Missing S3 file key or bucket name');
-    return {
-      statusCode: 400,
-      body: JSON.stringify({ message: 'Invalid input data' }),
-    };
-  }
   const splittedFileKeyArray = FILE_KEY.split(".")[0].split("_");
   const maxHeight = splittedFileKeyArray[splittedFileKeyArray.length - 1];
   const maxWidth = splittedFileKeyArray[splittedFileKeyArray.length - 2];
-  const metadata = await getVideoMetadata(FILE_KEY);
+  const metadata = await getVideoMetadata(INPUT_BUCKET,FILE_KEY);
   const id = isShort ? metadata.shortid : metadata.videoid;
-  console.log(`File Key: ${FILE_KEY}, Input Bucket: ${INPUT_BUCKET}`);
-  console.log(`Max Height: ${maxHeight}, Max Width: ${maxWidth}`);
 
+  console.log({
+    FILE_KEY,
+    INPUT_BUCKET,
+    isShort,
+    maxHeight,
+    maxWidth,
+    id,
+  })
+  console.log('Starting ECS tasks...');
   try {
     if (isShort) {
       console.log(`Video is a Short, starting transcoding task with the uploaded resolution...`);

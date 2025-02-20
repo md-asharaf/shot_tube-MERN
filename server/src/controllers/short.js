@@ -8,7 +8,6 @@ import { Subscription } from "../models/subscription.js";
 import { publishNotification } from "../lib/kafka/producer.js";
 import { getCache, setCache } from "../lib/redis.js";
 import { ObjectId } from "mongodb";
-import { setCache } from "../lib/redis.js";
 class ShortController {
     publishShort = asyncHandler(async (req, res) => {
         const user = req.user;

@@ -15,10 +15,12 @@ import { getVideoMetadata } from "@/lib/utils";
 import { uploadToPresignedUrl } from "@/lib/upload";
 import { shortService } from "@/services/short";
 import { videoService } from "@/services/video";
+import { useNavigate } from "react-router-dom";
 
 const BUCKET = process.env.S3_BUCKET;
 
 export default function UploadVideo() {
+  const navigate = useNavigate();
   const dispatch = useDispatch();
   const inputRef = useRef(null);
   const [isUploading, setIsUploading] = useState(false);
@@ -26,7 +28,6 @@ export default function UploadVideo() {
     useState<AbortController | null>(null);
   const [progress, setProgress] = useState(0);
   const open = useSelector((state: RootState) => state.ui.isVideoModalOpen);
-
   const { getRootProps, getInputProps } = useDropzone({
     accept: { "video/*": [] },
     onDrop: (acceptedFile) => onFileChange(acceptedFile),
@@ -45,7 +46,7 @@ export default function UploadVideo() {
       const contentType = video.type || "application/octet-stream";
 
       const { url, id } = await uploadService.getPutObjectPresignedUrl(
-        videoKey,
+        `${videoKey}.${video.name.split(".").pop()}`,
         contentType,
         isShort ? "short" : "video"
       );
@@ -71,6 +72,8 @@ export default function UploadVideo() {
         ? await shortService.upload(videoData)
         : await videoService.upload(videoData);
       toast.success(`${isShort ? "Short" : "Video"} post created successfully`);
+      dispatch(toggleVideoModal(false));
+      navigate(`/studio/${isShort ? "short" : "video"}/${id}`);
     } catch (err) {
       console.log(err);
       if (err.name !== "CanceledError") toast.error(err.message);
@@ -97,7 +100,7 @@ export default function UploadVideo() {
       title="Upload video"
       open={open}
       onOpenChange={closeDialog}
-      width={800}
+      className="max-w-xl"
     >
       <div
         {...getRootProps()}

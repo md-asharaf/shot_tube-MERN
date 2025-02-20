@@ -22,7 +22,7 @@ export const StudioVideo = () => {
                     title={video?.title}
                     thumbnail={video?.thumbnail}
                     id={video?._id}
-                    route={`/studio/${video?.creator.username}/content`}
+                    route="videos"
                 />
             </SidebarLayout>
             <main className="flex-1 overflow-y-auto">

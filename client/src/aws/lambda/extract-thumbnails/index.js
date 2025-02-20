@@ -4,14 +4,13 @@ const fs = require('fs');
 const path = require('path');
 const util = require('util');
 
-const s3 = new AWS.S3();
+const s3 = new AWS.S3({region: 'ap-south-1'});
 const execPromise = util.promisify(exec);
-async function getVideoMetadata(videoKey) {
+async function getVideoMetadata(Bucket,Key) {
     const params = {
-        Bucket: "shot-tube-videos",
-        Key: videoKey,
+        Bucket,
+        Key,
     };
-
     const data = await s3.headObject(params).promise();
     console.log("Metadata:", data.Metadata);
     return data.Metadata;
@@ -26,7 +25,7 @@ module.exports.handler = async (event) => {
         const TEMP_DIR = `/tmp/${BASE_NAME}`;
         const inputPath = `/tmp/${path.basename(INPUT_KEY)}`;
         const audioOutputPath = `/tmp/${BASE_NAME}.mp3`;
-        const metadata = await getVideoMetadata(INPUT_KEY);
+        const metadata = await getVideoMetadata(INPUT_BUCKET,INPUT_KEY);
         const id = metadata.shortid || metadata.videoid;
         // Extract width & height from filename
         const filenameParts = BASE_NAME.split('_');
@@ -36,9 +35,18 @@ module.exports.handler = async (event) => {
         if (isNaN(WIDTH) || isNaN(HEIGHT)) {
             throw new Error("Invalid filename format. Expected format: <UUID>_<title>_<width>_<height>.mp4");
         }
-
-        console.log(`Detected Width: ${WIDTH}, Height: ${HEIGHT}`);
-
+        console.log({
+            INPUT_KEY,
+            INPUT_BUCKET,
+            OUTPUT_BUCKET,
+            BASE_NAME,
+            TEMP_DIR,
+            inputPath,
+            audioOutputPath,
+            WIDTH,
+            HEIGHT,
+            id
+        })
         // Ensure TEMP_DIR exists
         fs.mkdirSync(TEMP_DIR, { recursive: true });
 

@@ -16,7 +16,7 @@ const s3Client = new S3Client({
   },
 });
 
-const BUCKET_NAME = process.env.AWS_S3_BUCKET_NAME;
+const BUCKET_NAME = process.env.S3_BUCKET;
 
 const generatePresignedUrlForPartUpload = async (uploadId, partNumber, Key) => {
   try {

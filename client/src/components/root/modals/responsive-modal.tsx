@@ -16,7 +16,7 @@ interface ResponsiveModalProps {
     children: React.ReactNode;
     title: string;
     open: boolean;
-    width?: number;
+    className?: string;
     onOpenChange: (open: boolean) => void;
 }
 export const ResponsiveModal: React.FC<ResponsiveModalProps> = ({
@@ -24,10 +24,9 @@ export const ResponsiveModal: React.FC<ResponsiveModalProps> = ({
     title,
     open,
     onOpenChange,
-    width,
+    className="",
 }) => {
     const isMobile = useIsMobile();
-
     if (isMobile) {
         return (
             <Drawer open={open} onOpenChange={onOpenChange}>
@@ -40,11 +39,10 @@ export const ResponsiveModal: React.FC<ResponsiveModalProps> = ({
             </Drawer>
         );
     }
-    const widthClass = width ? `min-w-${width.toString()}` : "";
     return (
         <Dialog open={open} onOpenChange={onOpenChange}>
             <DialogContent
-                className={`p-4 flex-1 overflow-y-auto ${widthClass} shadow-md dark:bg-[#282828]`}
+                className={`p-4 flex-1 overflow-y-auto shadow-md dark:bg-[#282828] ${className}`}
             >
                 <DialogHeader>
                     <DialogTitle>{title}</DialogTitle>

@@ -25,7 +25,7 @@ export const CreateDropdown = ({ isPlaylist = false }: CreateDropdownProps) => {
   const navigate = useNavigate();
   const onVideoUploadClick = () => {
     if (!window.location.pathname.startsWith("/studio"))
-      navigate(`/studio/${username}`);
+      navigate(`/studio/${username}/content`);
     dispatch(toggleVideoModal());
   }
   const onCreatePostClick = () => {}
