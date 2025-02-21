@@ -17,10 +17,7 @@ class ShortController {
             ...rest,
             userId: user._id
         })
-        let cache = {};
-        [360, 480, 720, 1080]
-            .filter(h => h <= height)
-            .forEach(res => (cache[res] = false));
+        const cache = { [height]: false };
         await setCache(rest._id, cache)
         return res.status(200).json(new ApiResponse(200, null, "Short published successfully"))
     })

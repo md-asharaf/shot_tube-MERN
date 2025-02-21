@@ -43,7 +43,7 @@ transcode_and_upload_to_s3() {
 
   # Send notification to webhook
   echo "Notifying webhook..."
-  curl -X POST "$WEBHOOK_URL" \
+  curl -X PATCH "$WEBHOOK_URL" \
     -H "Content-Type: application/json" \
     -d '{"id": "'"$ID"'", "resolution": "'"$HEIGHT"'"}'
 }

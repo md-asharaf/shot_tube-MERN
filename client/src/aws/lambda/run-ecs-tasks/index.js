@@ -1,46 +1,77 @@
 const AWS = require('aws-sdk');
+const fs = require('fs');
+const path = require('path');
+const util = require('util');
+const { exec } = require('child_process');
+const execPromise = util.promisify(exec)
 const ecs = new AWS.ECS({ region: 'ap-south-1' });
 const s3 = new AWS.S3({ region: 'ap-south-1' });
+
+module.exports.handler = async (event) => {
+  try {
+    const eventBody = JSON.parse(event.Records[0].body);
+    const FILE_KEY = eventBody.Records[0].s3.object.key;
+    const INPUT_BUCKET = eventBody.Records[0].s3.bucket.name;
+    const OUTPUT_BUCKET = process.env.OUTPUT_BUCKET;
+    const BASE_NAME = path.parse(FILE_KEY).name;
+    const TEMP_DIR = `/tmp/${BASE_NAME}`;
+    const inputPath = `/tmp/${path.basename(INPUT_KEY)}`;
+    const audioOutputPath = `/tmp/${BASE_NAME}.mp3`;
+    const metadata = await getVideoMetadata(INPUT_BUCKET, FILE_KEY);
+    const id = metadata.shortid || metadata.videoid;
+    const filenameParts = BASE_NAME.split('_');
+    const WIDTH = parseInt(filenameParts[filenameParts.length - 2], 10);
+    const HEIGHT = parseInt(filenameParts[filenameParts.length - 1], 10);
+    const isShort = FILE_KEY.startsWith('uploads/shorts');
+
+    console.log({
+      FILE_KEY,
+      INPUT_BUCKET,
+      OUTPUT_BUCKET,
+      BASE_NAME,
+      TEMP_DIR,
+      inputPath,
+      audioOutputPath,
+      WIDTH,
+      HEIGHT,
+      id,
+      isShort
+    })
+    // start ecs tasks
+    await startEcsTasks(isShort, HEIGHT, WIDTH, FILE_KEY, INPUT_BUCKET, id);
+    // extract audio 
+    await extractAudio(inputPath, audioOutputPath, BASE_NAME, OUTPUT_BUCKET, id);
+    // generate HLS master playlist
+    await generateHLSMasterPlaylist(BASE_NAME, TEMP_DIR, OUTPUT_BUCKET, WIDTH, HEIGHT);
+    // generate thumbnails & VTT
+    await generateThumbnailsAndVTT(inputPath, TEMP_DIR, BASE_NAME, OUTPUT_BUCKET);
+    return {
+      statusCode: 200,
+      body: JSON.stringify({ message: 'Processing started...' }),
+    }
+  } catch (error) {
+    console.error('Error:', error);
+    return {
+      statusCode: 500,
+      body: JSON.stringify({ message: error.message }),
+    }
+  };
+}
+
+// Resolutions for transcoding
 const resolutions = [
   { height: 360, bandwidth: 500, width: 640 },
   { height: 480, bandwidth: 1000, width: 854 },
   { height: 720, bandwidth: 2500, width: 1280 },
   { height: 1080, bandwidth: 5000, width: 1920 },
 ];
-async function getVideoMetadata(Bucket,Key) {
-  const params = {
-      Bucket,
-      Key,
-  };
-  const data = await s3.headObject(params).promise();
-  console.log("Metadata:", data.Metadata);
-  return data.Metadata;
-}
-
-module.exports.handler = async (event) => {
-  const eventBody = JSON.parse(event.Records[0].body);
-  const FILE_KEY = eventBody.Records[0].s3.object.key;
-  const INPUT_BUCKET = eventBody.Records[0].s3.bucket.name;
-  const isShort = FILE_KEY.startsWith('uploads/shorts');
-  const splittedFileKeyArray = FILE_KEY.split(".")[0].split("_");
-  const maxHeight = splittedFileKeyArray[splittedFileKeyArray.length - 1];
-  const maxWidth = splittedFileKeyArray[splittedFileKeyArray.length - 2];
-  const metadata = await getVideoMetadata(INPUT_BUCKET,FILE_KEY);
-  const id = isShort ? metadata.shortid : metadata.videoid;
-
-  console.log({
-    FILE_KEY,
-    INPUT_BUCKET,
-    isShort,
-    maxHeight,
-    maxWidth,
-    id,
-  })
-  console.log('Starting ECS tasks...');
+// Start ECS tasks
+const startEcsTasks = async (isShort, height, width, file_key, input_bucket, id) => {
   try {
+    console.log('Starting ECS tasks...');
     if (isShort) {
       console.log(`Video is a Short, starting transcoding task with the uploaded resolution...`);
-      const shortParams = getTranscodingParams(parseInt(maxHeight), 2500, parseInt(maxWidth), FILE_KEY, INPUT_BUCKET, id);
+      const shortParams = getTranscodingParams(parseInt(height), 2500, parseInt(width), file_key, input_bucket, id);
       await ecs.runTask(shortParams).promise().then(
         (data) => {
           const taskArn = data.tasks[0]?.taskArn;
@@ -66,8 +97,8 @@ module.exports.handler = async (event) => {
           resolution.height,
           resolution.bandwidth,
           resolution.width,
-          FILE_KEY,
-          INPUT_BUCKET,
+          file_key,
+          input_bucket,
           id
         );
         console.log(
@@ -97,24 +128,28 @@ module.exports.handler = async (event) => {
       });
       await Promise.all(transcodingPromises);
     }
-    return {
-      statusCode: 200,
-      body: JSON.stringify({
-        message: 'ECS tasks triggered successfully.',
-      }),
-    };
+    console.log('ECS tasks triggered successfully.');
   } catch (error) {
-    console.error('Error starting ECS tasks: ', error);
-    return {
-      statusCode: 500,
-      body: JSON.stringify({
-        message: 'Failed to trigger ECS tasks.',
-        error: error.message,
-      }),
-    };
+    throw error;
   }
-};
+}
 
+// Get video metadata
+const getVideoMetadata = async (Bucket, Key) => {
+  try {
+    const params = {
+      Bucket,
+      Key,
+    };
+    const data = await s3.headObject(params).promise();
+    console.log("Metadata:", data.Metadata);
+    return data.Metadata;
+  } catch (error) {
+    throw error;
+  }
+}
+
+// Get transcoding params
 const getTranscodingParams = (height, bandwidth, width, fileKey, inputBucket, id) => ({
   cluster: process.env.CLUSTER_ARN,
   taskDefinition: process.env.TRANSCODING_TASK_ARN,
@@ -142,3 +177,115 @@ const getTranscodingParams = (height, bandwidth, width, fileKey, inputBucket, id
     ],
   },
 });
+
+// Generate Thumbnails & VTT
+const generateThumbnailsAndVTT = async (inputPath, tempDir, baseName, outputBucket) => {
+  try {
+    console.log("Generating thumbnails and VTT...");
+
+    const VTT_FILE = path.join(tempDir, 'thumbnails.vtt');
+    fs.writeFileSync(VTT_FILE, "WEBVTT\n\n");
+
+    // Generate thumbnails at 1 frame per second
+    await execPromise(`ffmpeg -i ${inputPath} -vf "fps=1,scale=320:-1" -q:v 2 ${tempDir}/thumb_%03d.jpg`);
+
+    console.log("Uploading thumbnails and VTT to S3...");
+
+    const thumbnailFiles = fs.readdirSync(tempDir).filter(file => file.startsWith('thumb_') && file.endsWith('.jpg'));
+
+    thumbnailFiles.forEach((file, index) => {
+      const timestamp = formatTimestamp(index);
+      fs.appendFileSync(VTT_FILE, `${timestamp} --> ${formatTimestamp(index + 1)}\n${file}\n\n`);
+    });
+
+    // Upload thumbnails to S3
+    for (const file of thumbnailFiles) {
+      await s3.putObject({
+        Bucket: outputBucket,
+        Key: `${baseName}/thumbnails/${file}`,
+        Body: fs.readFileSync(path.join(tempDir, file)),
+        ContentType: "image/jpeg",
+      }).promise();
+    }
+
+    // Upload VTT file
+    await s3.putObject({
+      Bucket: outputBucket,
+      Key: `${baseName}/thumbnails/thumbnails.vtt`,
+      Body: fs.readFileSync(VTT_FILE),
+      ContentType: "text/vtt",
+    }).promise();
+
+    console.log(`Uploaded thumbnails and VTT to s3://${outputBucket}/${baseName}/thumbnails/`);
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Extract Audio
+const extractAudio = async (inputPath, outputPath, baseName, outputBucket, id) => {
+  try {
+    console.log("Extracting audio...");
+
+    await execPromise(`ffmpeg -i ${inputPath} -vn -acodec libmp3lame ${outputPath}`);
+
+    await s3.putObject({
+      Bucket: outputBucket,
+      Key: `${baseName}/audio.mp3`,
+      Body: fs.readFileSync(outputPath),
+      ContentType: "audio/mpeg",
+      Metadata: {
+        "id": id
+      }
+    }).promise();
+
+    console.log("Audio uploaded to S3.");
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Generate HLS Master Playlist
+const generateHLSMasterPlaylist = async (baseName, tempDir, outputBucket, width, height) => {
+  try {
+    console.log("Generating HLS master playlist...");
+
+    const masterPlaylistPath = path.join(tempDir, 'master.m3u8');
+    let masterPlaylistContent = "#EXTM3U\n#EXT-X-VERSION:3\n";
+
+    const resolutions = [
+      { width: 640, height: 360, bitrate: 500000, filename: "360p.m3u8" },
+      { width: 854, height: 480, bitrate: 1000000, filename: "480p.m3u8" },
+      { width: 1280, height: 720, bitrate: 2500000, filename: "720p.m3u8" },
+      { width: 1920, height: 1080, bitrate: 5000000, filename: "1080p.m3u8" },
+    ];
+
+    for (const res of resolutions) {
+      if (width >= res.width && height >= res.height) {
+        masterPlaylistContent += `#EXT-X-STREAM-INF:BANDWIDTH=${res.bitrate},RESOLUTION=${res.width}x${res.height}\n${res.filename}\n`;
+      }
+    }
+
+    fs.writeFileSync(masterPlaylistPath, masterPlaylistContent);
+
+    await s3.putObject({
+      Bucket: outputBucket,
+      Key: `${baseName}/master.m3u8`,
+      Body: fs.readFileSync(masterPlaylistPath),
+      ContentType: "application/x-mpegURL",
+    }).promise();
+
+    console.log(`Uploaded master.m3u8 to s3://${outputBucket}/${baseName}/hls/master.m3u8`);
+  } catch (error) {
+    throw error;
+  }
+};
+
+// Format timestamps for VTT (e.g., "00:00:01.000")
+const formatTimestamp = (index) => {
+  const seconds = index;
+  const hh = String(Math.floor(seconds / 3600)).padStart(2, '0');
+  const mm = String(Math.floor((seconds % 3600) / 60)).padStart(2, '0');
+  const ss = String(seconds % 60).padStart(2, '0');
+  return `${hh}:${mm}:${ss}.000`;
+};
