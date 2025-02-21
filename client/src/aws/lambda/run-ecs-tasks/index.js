@@ -15,7 +15,7 @@ module.exports.handler = async (event) => {
     const OUTPUT_BUCKET = process.env.OUTPUT_BUCKET;
     const BASE_NAME = path.parse(FILE_KEY).name;
     const TEMP_DIR = `/tmp/${BASE_NAME}`;
-    const inputPath = `/tmp/${path.basename(INPUT_KEY)}`;
+    const inputPath = `/tmp/${path.basename(FILE_KEY)}`;
     const audioOutputPath = `/tmp/${BASE_NAME}.mp3`;
     const metadata = await getVideoMetadata(INPUT_BUCKET, FILE_KEY);
     const id = metadata.shortid || metadata.videoid;

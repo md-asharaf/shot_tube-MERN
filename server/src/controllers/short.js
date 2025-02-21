@@ -98,7 +98,7 @@ class ShortController {
                     message,
                     short: {
                         _id: short._id,
-                        thumbnail,
+                        thumbnail: short.thumbnail,
                     },
                     creator: {
                         _id: user._id,
@@ -111,7 +111,6 @@ class ShortController {
             })
             //end
         }
-        await Short.save({ validateBeforeSave: false });
         return res.status(200).json(new ApiResponse(200, null, "Short updated successfully"))
     })
 

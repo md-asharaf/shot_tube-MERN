@@ -88,7 +88,7 @@ class VideoController {
                     message,
                     video: {
                         _id: video._id,
-                        thumbnail,
+                        thumbnail:video.thumbnail,
                     },
                     creator: {
                         _id: user._id,
