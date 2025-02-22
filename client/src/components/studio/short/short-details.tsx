@@ -45,7 +45,7 @@ import { PlyrPlayer } from "@/components/root/video-player";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import { playlistService } from "@/services/playlist";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { uploadService } from "@/services/upload";
@@ -66,7 +66,7 @@ export const ShortDetails = () => {
   const {
     data: short,
     isLoading: isShortLoading,
-    refetch,
+    refetch: refetchShort,
   } = useQuery({
     queryKey: ["short", id],
     queryFn: async (): Promise<IShortData> => {
@@ -76,7 +76,11 @@ export const ShortDetails = () => {
     enabled: !!id,
   });
   const shortLink = `https://shot-tube.live/short/${short?._id}`;
-  const { data: playlists, isLoading: isPlaylistsLoading } = useQuery({
+  const {
+    data: playlists,
+    isLoading: isPlaylistsLoading,
+    refetch: refetchPlaylists,
+  } = useQuery({
     queryKey: ["playlists", username],
     queryFn: async (): Promise<Playlist[]> => {
       const data = await playlistService.getAllPlaylists(username);
@@ -87,14 +91,30 @@ export const ShortDetails = () => {
   const form = useForm<z.infer<typeof videoUpdateFormValidation>>({
     resolver: zodResolver(videoUpdateFormValidation),
     defaultValues: {
-      title: short?.title || "",
-      description: short?.description || "",
-      categories: short?.categories || [],
-      playlists: playlists?.map((p) => p._id) || [],
-      visibility: short?.visibility || "public",
+      title: "",
+      description: "",
+      categories: [],
+      playlists: [],
+      visibility: "public",
       thumbnail: "",
     },
   });
+  useEffect(() => {
+    if (!short) return;
+    form.setValue("title", short.title || "");
+    form.setValue("description", short.description || "");
+    form.setValue("categories", short.categories || []);
+    form.setValue("visibility", short.visibility || "public");
+  }, [short]);
+  useEffect(() => {
+    if (!playlists) return;
+    form.setValue(
+      "playlists",
+      playlists
+        ?.filter((p) => p.shorts.includes(short._id))
+        .map((p) => p._id) || []
+    );
+  }, [playlists]);
   const onCopy = () => {
     navigator.clipboard.writeText(shortLink);
     setIsCopied(true);
@@ -134,8 +154,9 @@ export const ShortDetails = () => {
         ...data,
         thumbnail: data.thumbnail || short.thumbnail,
       });
-      refetch();
       toast.success("Short updated successfully");
+      refetchShort();
+      refetchPlaylists();
     } catch (error) {
       toast.error(error.message);
     }

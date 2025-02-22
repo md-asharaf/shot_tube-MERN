@@ -18,7 +18,7 @@ export const RootLayOut = () => {
             <div className="flex flex-1 overflow-hidden mt-12 sm:mt-16 sm:space-x-4">
                 <Drawer />
                 <div
-                    className="flex-1 overflow-y-auto pt-1"
+                    className="flex-1 overflow-y-auto"
                     style={{
                         paddingBottom: "38px",
                         WebkitOverflowScrolling: "touch",

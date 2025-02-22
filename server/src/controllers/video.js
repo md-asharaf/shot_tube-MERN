@@ -4,6 +4,7 @@ import { ApiError } from "../utils/api-error.js";
 import { Video } from "../models/video.js";
 import { User } from "../models/user.js";
 import { Like } from "../models/like.js";
+import { Playlist } from "../models/playlist.js";
 import { Subscription } from "../models/subscription.js"
 import { publishNotification } from "../lib/kafka/producer.js";
 import { getCache, setCache } from "../lib/redis.js";
@@ -43,15 +44,22 @@ class VideoController {
         const { videoId } = req.params;
         const user = req.user;
         if (!videoId) throw new ApiError(400, "videoId is required")
-        const body = req.body;
+        const { playlists, ...rest } = req.body;
         const video = await Video.findByIdAndUpdate({ _id: new ObjectId(videoId), userId: user._id }, {
             $set: {
-                ...body
+                ...rest
             }
         });
         if (!video) {
             throw new ApiError(500, "Invalid videoId")
         }
+        await Promise.all(playlists.map(async (playlistId) => (
+            await Playlist.findByIdAndUpdate(playlistId, {
+                $push: {
+                    videos: video._id
+                }
+            })
+        )))
         if (!video.title && body.title) {
             //publishing notification
             const subscribers = await Subscription.aggregate([
@@ -88,7 +96,7 @@ class VideoController {
                     message,
                     video: {
                         _id: video._id,
-                        thumbnail:video.thumbnail,
+                        thumbnail: video.thumbnail,
                     },
                     creator: {
                         _id: user._id,
@@ -332,14 +340,14 @@ class VideoController {
     });
 
     getRecommendedVideos = asyncHandler(async (req, res) => {
-        const { videoId, userId, page = 1, limit = 12 } = req.query;
+        const { videoId, userId, category, page = 1, limit = 12 } = req.query;
         let video;
-
+        let user;
         if (videoId) {
             video = await Video.findById(videoId);
         }
-
-        const cacheKey = `recommendedVideos:${userId}:${videoId}:allVideos`;
+        let categoryQuery = category === 'All' ? {} : { categories: { $in: [category] } };
+        const cacheKey = `recommended-videos:${category}:${userId}:${videoId}`;
         let allVideos = await getCache(cacheKey);
         if (!allVideos) {
             let recommendations = [];
@@ -349,13 +357,14 @@ class VideoController {
             }
 
             if (userId) {
-                const user = await User.findById(userId);
+                user = await User.findById(userId);
                 if (user.watchHistory.videoIds) {
                     notToBeRecommended.push(...user.watchHistory.videoIds);
                 }
                 // Fetch user-specific recommendations first
                 if (video) {
                     const videosBySameCreator = await Video.find({
+                        ...categoryQuery,
                         userId: video.userId,
                         visibility: "public",
                         sourceStatus: "READY",
@@ -369,6 +378,7 @@ class VideoController {
 
                 if (video?.categories?.length) {
                     const videosBySameCategories = await Video.find({
+                        ...categoryQuery,
                         visibility: "public",
                         sourceStatus: "READY",
                         categories: { $in: video.categories },
@@ -386,9 +396,10 @@ class VideoController {
                 })
 
                 for (let similarUser of usersWithSimilarHistory) {
-                    let videos = await Video.aggregate([
+                    let videos = await Video.find(
                         {
                             $match: {
+                                ...categoryQuery,
                                 _id: {
                                     $nin: notToBeRecommended
                                 },
@@ -399,7 +410,7 @@ class VideoController {
                                 sourceStatus: "READY"
                             }
                         }
-                    ]).populate("userId", "username fullname avatar")
+                    ).populate("userId", "username fullname avatar")
                     if (videos.length) {
                         recommendations.push(...videos);
                         notToBeRecommended.push(...videos.map(v => v._id.toString()));
@@ -413,6 +424,7 @@ class VideoController {
                 let split2 = remainingSlots - split1;
 
                 let recentVideos = await Video.find({
+                    ...categoryQuery,
                     visibility: "public",
                     sourceStatus: "READY",
                     _id: { $nin: notToBeRecommended }
@@ -424,7 +436,7 @@ class VideoController {
                     notToBeRecommended.push(...recentVideos.map(v => v._id.toString()));
                 }
 
-                let popularVideos = await Video.find({ _id: { $nin: notToBeRecommended }, visibility: "public", sourceStatus: "READY" })
+                let popularVideos = await Video.find({ _id: { $nin: notToBeRecommended }, visibility: "public", sourceStatus: "READY", ...categoryQuery })
                     .sort({ views: -1 }).limit(split2).populate("userId", "username fullname avatar")
                 if (popularVideos.length) {
                     recommendations.push(...popularVideos);
@@ -436,11 +448,11 @@ class VideoController {
                 delete r._doc.userId;
                 return r._doc;
             });
-            setCache(cacheKey, recommendations);
+            await setCache(cacheKey, recommendations);
             allVideos = recommendations;
         }
 
-        const scoreVideo = async (video, userId) => {
+        const scoreVideo = async (video, user) => {
             let score = 0;
             if (video.views) {
                 score += video.views * 0.3;
@@ -449,9 +461,8 @@ class VideoController {
                 const daysSincePosted = (new Date() - new Date(video.createdAt)) / (1000 * 3600 * 24);
                 score += Math.max(0, 30 - daysSincePosted) * 1;
             }
-            if (video.categories?.length && userId) {
+            if (video.categories?.length && user) {
                 // Assume some custom logic here to calculate similarity score with user's watch history
-                const user = await User.findById(userId);
                 const watchedCategories = user.watchHistory.categories || [];
                 const commonCategories = video.categories.filter(tag => watchedCategories.includes(tag));
                 score += commonCategories.length * 2; // Boost score for videos with common categories
@@ -460,12 +471,12 @@ class VideoController {
             return score;
         };
 
-        const getVideoScores = async (videos, userId) => {
-            const scores = await Promise.all(videos.map(v => scoreVideo(v, userId)));
+        const getVideoScores = async (videos) => {
+            const scores = await Promise.all(videos.map(v => scoreVideo(v, user)));
             return videos.map((v, i) => ({ ...v, score: scores[i] }));
         };
 
-        allVideos = await getVideoScores(allVideos, userId);
+        allVideos = await getVideoScores(allVideos);
         allVideos.sort((a, b) => b.score - a.score);
 
         const startIndex = (page - 1) * limit;

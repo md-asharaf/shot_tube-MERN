@@ -45,7 +45,7 @@ import { PlyrPlayer } from "@/components/root/video-player";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import { playlistService } from "@/services/playlist";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { uploadService } from "@/services/upload";
@@ -65,7 +65,7 @@ export const VideoDetails = () => {
   const {
     data: video,
     isLoading: isVideoLoading,
-    refetch,
+    refetch: refetchVideo,
   } = useQuery({
     queryKey: ["video", id],
     queryFn: async (): Promise<IVideoData> => {
@@ -75,11 +75,14 @@ export const VideoDetails = () => {
     enabled: !!id,
   });
   const videoLink = `${window.location.origin}/video/${video._id}`;
-  const { data: playlists, isLoading: isPlaylistsLoading } = useQuery({
+  const {
+    data: playlists,
+    isLoading: isPlaylistsLoading,
+    refetch: refetchPlaylists,
+  } = useQuery({
     queryKey: ["playlists", username],
     queryFn: async (): Promise<Playlist[]> => {
       const data = await playlistService.getAllPlaylists(username);
-      console.log({ playlists: data.playlists });
       return data.playlists;
     },
     enabled: !!username,
@@ -87,17 +90,30 @@ export const VideoDetails = () => {
   const form = useForm<z.infer<typeof videoUpdateFormValidation>>({
     resolver: zodResolver(videoUpdateFormValidation),
     defaultValues: {
-      title: video?.title || "",
-      description: video?.description || "",
-      categories: video?.categories || [],
-      playlists:
-        playlists
-          ?.filter((p) => p.videos.includes(video._id))
-          .map((p) => p._id) || [],
-      visibility: video?.visibility || "public",
+      title: "",
+      description: "",
+      categories: [],
+      playlists: [],
+      visibility: "public",
       thumbnail: "",
     },
   });
+  useEffect(() => {
+    if (!video) return;
+    form.setValue("title", video.title || "");
+    form.setValue("description", video.description || "");
+    form.setValue("categories", video.categories || []);
+    form.setValue("visibility", video.visibility || "public");
+  }, [video]);
+  useEffect(() => {
+    if (!playlists) return;
+    form.setValue(
+      "playlists",
+      playlists
+        ?.filter((p) => p.videos.includes(video._id))
+        .map((p) => p._id) || []
+    );
+  }, [playlists]);
   const onCopy = () => {
     navigator.clipboard.writeText(videoLink);
     setIsCopied(true);
@@ -136,8 +152,9 @@ export const VideoDetails = () => {
         ...data,
         thumbnail: data.thumbnail || video.thumbnail,
       });
-      refetch();
       toast.success("Video updated successfully");
+      refetchVideo();
+      refetchPlaylists();
     } catch (error) {
       toast.error(error.message);
     }

@@ -4,6 +4,7 @@ import { ApiError } from "../utils/api-error.js";
 import { Short } from "../models/short.js";
 import { User } from "../models/user.js";
 import { Like } from "../models/like.js";
+import { Playlist } from "../models/playlist.js";
 import { Subscription } from "../models/subscription.js";
 import { publishNotification } from "../lib/kafka/producer.js";
 import { getCache, setCache } from "../lib/redis.js";
@@ -53,15 +54,22 @@ class ShortController {
         const { shortId } = req.params;
         const user = req.user;
         if (!shortId) throw new ApiError(400, "ShortId is required")
-        const body = req.body;
+        const { playlists, ...rest } = req.body;
         const short = await Short.findByIdAndUpdate({ _id: new ObjectId(shortId), userId: user._id }, {
             $set: {
-                ...body
+                ...rest
             }
         });
         if (!short) {
             throw new ApiError(500, "Invalid ShortId")
         }
+        await Promise.all(playlists.map(async (playlistId) => (
+            await Playlist.findByIdAndUpdate(playlistId, {
+                $push: {
+                    shorts: short._id
+                }
+            })
+        )))
         if (!short.title && body.title) {
             //publishing notification
             const subscribers = await Subscription.aggregate([
@@ -332,11 +340,11 @@ class ShortController {
     getRecommendedShorts = asyncHandler(async (req, res) => {
         const { shortId, userId, page = 1, limit = 12 } = req.query;
         let short;
+        let user;
         if (shortId) {
             short = await Short.findById(shortId);
         }
-
-        const cacheKey = `recommendedShorts:${userId}:${shortId}:allShorts`;
+        const cacheKey = `recommended-shorts:${userId}:${shortId}`;
 
         let allShorts = await getCache(cacheKey);
         if (!allShorts) {
@@ -347,7 +355,7 @@ class ShortController {
             }
 
             if (userId) {
-                const user = await User.findById(userId);
+                user = await User.findById(userId);
                 if (user.watchHistory.shortIds) {
                     notToBeRecommended.push(...user.watchHistory.shortIds);
                 }
@@ -436,10 +444,10 @@ class ShortController {
                 delete r._doc.userId;
                 return r._doc;
             });
-            setCache(cacheKey, recommendations);
+            await setCache(cacheKey, recommendations);
             allShorts = recommendations;
         }
-        const scoreShort = async (short, userId) => {
+        const scoreShort = async (short, user) => {
             let score = 0;
             if (short.views) {
                 score += short.views * 0.3;
@@ -448,9 +456,8 @@ class ShortController {
                 const daysSincePosted = (new Date() - new Date(short.createdAt)) / (1000 * 3600 * 24);
                 score += Math.max(0, 30 - daysSincePosted) * 1;
             }
-            if (short.categories?.length && userId) {
+            if (short.categories?.length && user) {
                 // Assume some custom logic here to calculate similarity score with user's watch history
-                const user = await User.findById(userId);
                 const watchedCategories = user.watchHistory.categories || [];
                 const commonCategories = short.categories.filter(tag => watchedCategories.includes(tag));
                 score += commonCategories.length * 2; // Boost score for shorts with common categories
@@ -459,12 +466,12 @@ class ShortController {
             return score;
         };
 
-        const getShortScores = async (shorts, userId) => {
-            const scores = await Promise.all(shorts.map(s => scoreShort(s, userId)));
+        const getShortScores = async (shorts) => {
+            const scores = await Promise.all(shorts.map(s => scoreShort(s, user)));
             return shorts.map((s, i) => ({ ...s, score: scores[i] }));
         };
 
-        allShorts = await getShortScores(allShorts, userId);
+        allShorts = await getShortScores(allShorts);
         allShorts.sort((a, b) => b.score - a.score);
 
         const startIndex = (page - 1) * limit;

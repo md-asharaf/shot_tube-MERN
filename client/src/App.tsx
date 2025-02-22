@@ -1,6 +1,6 @@
 import { AuthLayOut } from "./components/auth/auth-layout";
 import { Routes, Route, BrowserRouter, Navigate } from "react-router-dom";
-import { Home } from "./components/root/home";
+import { Home } from "./components/root/home/home";
 import { SignIn } from "./components/auth/signin";
 import { SignUp } from "./components/auth/signup";
 import { Video } from "./components/root/video/video";

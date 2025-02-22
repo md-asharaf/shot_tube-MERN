@@ -191,7 +191,7 @@ export const BigDrawer = () => {
                         </button>
                     </div>
                 )}
-                <div className="flex-col pr-6 pt-3">
+                <div className="flex-col pr-6 pt-2">
                     <SidebarLink to="/" label="Home" icon={<GoHome />} />
                     <SidebarLink
                         to={`/short/${shortId}`}

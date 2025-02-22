@@ -48,6 +48,7 @@ const videoSchema = new Schema({
     },
     categories: {
         type: [String],
+        default: []
     },
     userId: {
         type: Schema.Types.ObjectId,

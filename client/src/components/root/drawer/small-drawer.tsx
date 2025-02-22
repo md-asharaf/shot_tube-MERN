@@ -18,7 +18,7 @@ export const SmallDrawer = () => {
         (state: RootState) => state.short.randomShortId
     );
     return (
-        <div className="w-full pl-1 pt-1">
+        <div className="w-full pl-1">
             <div className={`flex-col cursor-pointer`}>
                 <NavLink to={"/"}>
                     {({ isActive }) => (
