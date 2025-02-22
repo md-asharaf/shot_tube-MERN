@@ -80,7 +80,7 @@ class VideoController {
             }
             await Promise.all(updatePromises);
         }
-        if (!video.title && body.title) {
+        if (!video.title && rest.title) {
             //publishing notification
             const subscribers = await Subscription.aggregate([
                 {
@@ -109,7 +109,7 @@ class VideoController {
                     }
                 }
             ]);
-            const message = `@${user.username} uploaded : "${body.title}"`;
+            const message = `@${user.username} uploaded : "${rest.title}"`;
             subscribers.forEach((s) => {
                 publishNotification({
                     userId: s.subscriberId,

@@ -91,7 +91,7 @@ class ShortController {
             await Promise.all(updatePromises);
         }
 
-        if (!short.title && body.title) {
+        if (!short.title && rest.title) {
             //publishing notification
             const subscribers = await Subscription.aggregate([
                 {
@@ -120,7 +120,7 @@ class ShortController {
                     }
                 }
             ]);
-            const message = `@${user.username} uploaded : "${body.title}"`;
+            const message = `@${user.username} uploaded : "${rest.title}"`;
             subscribers.forEach((s) => {
                 publishNotification({
                     userId: s.subscriberId,
