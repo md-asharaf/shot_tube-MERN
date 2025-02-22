@@ -158,7 +158,6 @@ export const BigDrawer = () => {
     );
     const isSmallScreen = windowWidth < 1315;
     const isVideoPage = location.pathname.startsWith("/video");
-    console.log(shortId)
     return (
         <div
             className={`${

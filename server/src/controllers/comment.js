@@ -244,7 +244,6 @@ class CommentController {
         if (!commentId || !content) {
             throw new ApiError(400, "comment ID and content are required")
         }
-        console.log("commentId", commentId)
         const comment = await Comment.findOne({ _id: new ObjectId(commentId), userId });
         if (!comment) {
             throw new ApiError(404, "Comment not found or you are not authorized to update it")

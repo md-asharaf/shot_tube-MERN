@@ -6,15 +6,17 @@ import { useEffect } from "react";
 import { shortService } from "@/services/short";
 import { setRandomShortId } from "@/store/reducers/short";
 export const Drawer = () => {
-    const dispatch = useDispatch();
-    const isMenuOpen = useSelector((state: RootState) => state.ui.isMenuOpen);
-    useEffect(()=>{
-        shortService.randomShort().then((data)=>dispatch(setRandomShortId(data?.shortId))).catch((err)=>console.error(err))
-        console.log("okay")
-    },[])
-    return (
-        <div className="hidden sm:flex">
-            {isMenuOpen ? <BigDrawer /> : <SmallDrawer />}
-        </div>
-    );
+  const dispatch = useDispatch();
+  const isMenuOpen = useSelector((state: RootState) => state.ui.isMenuOpen);
+  useEffect(() => {
+    shortService
+      .randomShort()
+      .then((data) => dispatch(setRandomShortId(data?.shortId)))
+      .catch((err) => console.error(err));
+  }, []);
+  return (
+    <div className="hidden sm:flex">
+      {isMenuOpen ? <BigDrawer /> : <SmallDrawer />}
+    </div>
+  );
 };

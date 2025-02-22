@@ -14,7 +14,6 @@ export default function useNotification() {
         });
 
         socket.on("notification", (notification) => {
-            console.log("New notification received:", notification);
             dispatch(addNotification(notification));
         });
 

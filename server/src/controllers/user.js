@@ -525,7 +525,6 @@ class UserController {
                 }
             }
         ]);
-        console.log({ users })
         return res.status(200).json(new ApiResponse(200, { watchLater: users[0]?.watchLater || { videos: [], shorts: [] } }, "Watch later found"));
     });
     isSavedToWatchLater = asyncHandler(async (req, res) => {

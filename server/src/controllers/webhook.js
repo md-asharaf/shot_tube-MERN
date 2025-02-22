@@ -4,14 +4,14 @@ import { getCache, removeCache, setCache } from "../lib/redis.js";
 class WebhookController {
     updateTranscodingStatus = async (req) => {
         try {
-            const { res, id } = req.body;
+            const { resolution, id } = req.body;
             const cache = await getCache(id);
-            cache[res] = true;
+            cache[resolution] = true;
             //check if all true
             for (const key in cache) {
                 if (!cache[key]) {
                     setCache(id, cache);
-                    return { success: true, message: `${res} resolution cached successfully` }
+                    return { success: true, message: `${resolution} resolution cached successfully` }
                 }
             }
             //all true

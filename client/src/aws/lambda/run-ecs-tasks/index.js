@@ -37,6 +37,9 @@ module.exports.handler = async (event) => {
       id,
       isShort
     })
+    fs.mkdirSync(TEMP_DIR, { recursive: true });
+    // download video first
+    await downloadVideo(INPUT_BUCKET, FILE_KEY,inputPath);
     // start ecs tasks
     await startEcsTasks(isShort, HEIGHT, WIDTH, FILE_KEY, INPUT_BUCKET, id);
     // extract audio 
@@ -65,6 +68,17 @@ const resolutions = [
   { height: 720, bandwidth: 2500, width: 1280 },
   { height: 1080, bandwidth: 5000, width: 1920 },
 ];
+// Download video
+const downloadVideo = async (inputBucket, inputKey,inputPath) => {
+  try {
+    console.log(`Downloading from S3: ${inputBucket}/${inputKey}`);
+    const file = await s3.getObject({ Bucket: inputBucket, Key: inputKey }).promise();
+    fs.writeFileSync(inputPath, file.Body);
+  } catch (error) {
+    throw error;
+  }
+}
+
 // Start ECS tasks
 const startEcsTasks = async (isShort, height, width, file_key, input_bucket, id) => {
   try {

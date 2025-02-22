@@ -42,26 +42,29 @@ import {
   Undo2Icon,
 } from "lucide-react";
 import { PlyrPlayer } from "@/components/root/video-player";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import { playlistService } from "@/services/playlist";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { uploadService } from "@/services/upload";
 import { v4 as uuid } from "uuid";
 import { uploadToPresignedUrl } from "@/lib/upload";
 import { toast } from "sonner";
+import { setCreatePlaylistDialog } from "@/store/reducers/ui";
 export const VideoDetails = () => {
+  const dispatch = useDispatch();
+  const [open, setOpen] = useState(false);
+  const { id } = useParams();
+  const { username } = useSelector((state: RootState) => state.auth.userData);
   const inputRef = useRef(null);
+  const playerRef = useRef(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isThumbnailUploaded, setIsThumbnailUploaded] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const BUCKET = process.env.S3_BUCKET;
-  const playerRef = useRef(null);
   const [isCopied, setIsCopied] = useState(false);
-  const { username } = useSelector((state: RootState) => state.auth.userData);
-  const { id } = useParams();
+  const BUCKET = process.env.S3_BUCKET;
   const {
     data: video,
     isLoading: isVideoLoading,
@@ -90,30 +93,17 @@ export const VideoDetails = () => {
   const form = useForm<z.infer<typeof videoUpdateFormValidation>>({
     resolver: zodResolver(videoUpdateFormValidation),
     defaultValues: {
-      title: "",
-      description: "",
-      categories: [],
-      playlists: [],
-      visibility: "public",
+      title: video.title || "",
+      description: video.description || "",
+      categories: video.categories || [],
+      playlists:
+        playlists
+          ?.filter((p) => p.shorts.includes(video._id))
+          .map((p) => p._id) || [],
+      visibility: video.visibility || "public",
       thumbnail: "",
     },
   });
-  useEffect(() => {
-    if (!video) return;
-    form.setValue("title", video.title || "");
-    form.setValue("description", video.description || "");
-    form.setValue("categories", video.categories || []);
-    form.setValue("visibility", video.visibility || "public");
-  }, [video]);
-  useEffect(() => {
-    if (!playlists) return;
-    form.setValue(
-      "playlists",
-      playlists
-        ?.filter((p) => p.videos.includes(video._id))
-        .map((p) => p._id) || []
-    );
-  }, [playlists]);
   const onCopy = () => {
     navigator.clipboard.writeText(videoLink);
     setIsCopied(true);
@@ -152,14 +142,14 @@ export const VideoDetails = () => {
         ...data,
         thumbnail: data.thumbnail || video.thumbnail,
       });
-      toast.success("Video updated successfully");
+      toast.success("Changes saved");
       refetchVideo();
       refetchPlaylists();
     } catch (error) {
       toast.error(error.message);
     }
   };
-  if (isVideoLoading || isPlaylistsLoading) return null;
+  if (isVideoLoading || isPlaylistsLoading || !video || !playlists) return null;
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -169,13 +159,15 @@ export const VideoDetails = () => {
             <div className="flex gap-2">
               <Button
                 variant="secondary"
+                disabled={!form.formState.isDirty}
                 className="rounded-full"
                 onClick={() => form.reset()}
               >
                 Undo changes
               </Button>
               <Button
-                variant="secondary"
+                variant={form.formState.isDirty ? "default" : "secondary"}
+                disabled={!form.formState.isDirty}
                 className="rounded-full"
                 type="submit"
               >
@@ -371,7 +363,7 @@ export const VideoDetails = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Playlists</FormLabel>
-                    <Select>
+                    <Select open={open} onOpenChange={setOpen}>
                       <FormControl>
                         <SelectTrigger className="max-w-sm">
                           <SelectValue
@@ -411,8 +403,19 @@ export const VideoDetails = () => {
                         })}
                         <Separator />
                         <div className="flex items-center justify-between p-2">
-                          <Button>New playlist</Button>
-                          <Button variant="outline">Done</Button>
+                          <Button
+                            onClick={() =>
+                              dispatch(setCreatePlaylistDialog(true))
+                            }
+                          >
+                            New playlist
+                          </Button>
+                          <Button
+                            variant="outline"
+                            onClick={() => setOpen(false)}
+                          >
+                            Done
+                          </Button>
                         </div>
                       </SelectContent>
                     </Select>

@@ -65,7 +65,6 @@ const Replies = ({
             queryKey: ["replies-like-status", commentId],
             queryFn: async () => {
                 const data = await likeService.getRepliesLikeStatus(commentId);
-                console.log({ data });
                 return data.likedStatus;
             },
             enabled: !!userData && !!replies,

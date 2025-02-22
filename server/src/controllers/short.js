@@ -63,13 +63,34 @@ class ShortController {
         if (!short) {
             throw new ApiError(500, "Invalid ShortId")
         }
-        await Promise.all(playlists.map(async (playlistId) => (
-            await Playlist.findByIdAndUpdate(playlistId, {
-                $push: {
-                    shorts: short._id
-                }
-            })
-        )))
+        if (playlists.length) {
+            const allPlaylists = await Playlist.find({ userId: user._id });
+            const playlistsToRemove = allPlaylists
+                .filter(playlist => playlist.shorts.includes(short._id) && !playlists.includes(playlist._id))
+                .map(playlist => playlist._id);
+            const playlistsToAdd = allPlaylists
+                .filter(playlist => !playlist.shorts.includes(short._id) && playlists.includes(playlist._id))
+                .map(playlist => playlist._id);
+            const updatePromises = [];
+            if (playlistsToRemove.length) {
+                updatePromises.push(
+                    Playlist.updateMany(
+                        { _id: { $in: playlistsToRemove } },
+                        { $pull: { shorts: short._id } }
+                    )
+                );
+            }
+            if (playlistsToAdd.length) {
+                updatePromises.push(
+                    Playlist.updateMany(
+                        { _id: { $in: playlistsToAdd } },
+                        { $push: { shorts: short._id } }
+                    )
+                );
+            }
+            await Promise.all(updatePromises);
+        }
+
         if (!short.title && body.title) {
             //publishing notification
             const subscribers = await Subscription.aggregate([

@@ -4,6 +4,7 @@ import { Navigate, Outlet } from "react-router-dom";
 import UploadVideo from "../root/modals/video-upload";
 import { useSelector } from "react-redux";
 import { RootState } from "@/store/store";
+import { CreatePlaylist } from "../root/modals/create-playlist";
 
 export const StudioLayout = () => {
     const userData = useSelector((state: RootState) => state.auth.userData);
@@ -13,6 +14,7 @@ export const StudioLayout = () => {
             <div className="w-full overflow-y-auto h-screen">
                 <StudioNavbar />
                 <Outlet />
+                <CreatePlaylist/>
                 <UploadVideo/>
             </div>
         </SidebarProvider>

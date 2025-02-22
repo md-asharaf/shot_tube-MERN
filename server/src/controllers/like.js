@@ -64,7 +64,6 @@ class LikeController {
             // publishing notification
             const video = await Video.findById(videoId)
             if (like && !video.userId.equals(user._id)) {
-                console.log(video.userId, user._id)
                 const message = `@${user.username} liked your video: "${video.title}"`;
                 publishNotification({
                     userId: video.userId,
@@ -102,7 +101,6 @@ class LikeController {
             // publishing notification
             const short = await Short.findById(shortId)
             if (like && !short.userId.equals(user._id)) {
-                console.log(short.userId, user._id)
                 const message = `@${user.username} liked your short: "${short.title}"`;
                 publishNotification({
                     userId: short.userId,
@@ -293,7 +291,6 @@ class LikeController {
         for (let reply of replies) {
             likedStatus.push(await Like.findOne({ replyId: reply._id, userId }) ?? false)
         }
-        console.log({ likedStatus })
         return res.status(200).json(new ApiResponse(200, { likedStatus }, "liked status of comment replies fetched successfully"))
     })
 }

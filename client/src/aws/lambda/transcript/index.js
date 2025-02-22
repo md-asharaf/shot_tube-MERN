@@ -1,6 +1,5 @@
 const AWS = require("aws-sdk");
 const { AssemblyAI } = require("assemblyai");
-const axios = require("axios");
 
 const s3 = new AWS.S3({ region: "ap-south-1" });
 const client = new AssemblyAI({
@@ -69,9 +68,6 @@ module.exports.handler = async (event) => {
             await sendWebhook(id,"FAILED");
             return;
         }
-
-        // Notify webhook
-        const fileUrl = `https://${INPUT_BUCKET}.s3.ap-south-1.amazonaws.com/${outputKey}`;
         await sendWebhook(id,"READY");
     } catch (err) {
         console.error("Unexpected Error:", err);
@@ -79,30 +75,43 @@ module.exports.handler = async (event) => {
     }
 };
 
-// Send Webhook Notification
-const axios = require("axios");
-
 async function sendWebhook(id, status) {
-    if (!process.env.WEBHOOK_URL) {
-        console.error("Webhook URL is missing!");
+    const webhookUrl = process.env.WEBHOOK_URL;
+    if (!webhookUrl) {
+        console.error("❌ Webhook URL is missing!");
         return;
     }
+
     const MAX_RETRIES = 3;
     let attempt = 0;
+    let delay = 2000; // Start with 2s delay
+
     while (attempt < MAX_RETRIES) {
         try {
-            await axios.patch(process.env.WEBHOOK_URL, { id, status });
+            const response = await fetch(webhookUrl, {
+                method: "PATCH",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ id, status }),
+            });
+
+            if (!response.ok) {
+                throw new Error(`HTTP ${response.status}: ${await response.text()}`);
+            }
+
             console.log(`✅ Webhook sent successfully: ${id}`);
             return;
         } catch (err) {
             attempt++;
             console.error(`❌ Webhook Error (Attempt ${attempt}):`, err.message || err);
+
             if (attempt === MAX_RETRIES) {
                 console.error("🚨 Failed to send webhook after multiple attempts.");
             } else {
-                await new Promise(resolve => setTimeout(resolve, 2000)); // Wait before retrying
+                await new Promise(resolve => setTimeout(resolve, delay));
+                delay *= 2; // Exponential backoff
             }
         }
     }
 }
+
 

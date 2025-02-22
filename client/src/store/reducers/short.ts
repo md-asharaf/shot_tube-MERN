@@ -18,7 +18,6 @@ const shortSlice = createSlice({
             state.shorts = action.payload;
         },
         setRandomShortId:(state,action:PayloadAction<string>)=>{
-            console.log({shortId:action.payload})
             state.randomShortId = action.payload;
         },
         setOpenCard:(state,action)=>{

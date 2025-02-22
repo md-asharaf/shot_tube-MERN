@@ -42,10 +42,10 @@ import {
   Undo2Icon,
 } from "lucide-react";
 import { PlyrPlayer } from "@/components/root/video-player";
-import { useSelector } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { RootState } from "@/store/store";
 import { playlistService } from "@/services/playlist";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import { Checkbox } from "@/components/ui/checkbox";
 import { Separator } from "@/components/ui/separator";
 import { uploadService } from "@/services/upload";
@@ -53,8 +53,11 @@ import { v4 as uuid } from "uuid";
 import { uploadToPresignedUrl } from "@/lib/upload";
 import { toast } from "sonner";
 import { resizeImage } from "@/lib/pica";
+import { setCreatePlaylistDialog } from "@/store/reducers/ui";
 export const ShortDetails = () => {
+  const dispatch = useDispatch();
   const inputRef = useRef(null);
+  const [open, setOpen] = useState(false);
   const [isUploading, setIsUploading] = useState(false);
   const [isThumbnailUploaded, setIsThumbnailUploaded] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
@@ -91,30 +94,17 @@ export const ShortDetails = () => {
   const form = useForm<z.infer<typeof videoUpdateFormValidation>>({
     resolver: zodResolver(videoUpdateFormValidation),
     defaultValues: {
-      title: "",
-      description: "",
-      categories: [],
-      playlists: [],
-      visibility: "public",
+      title: short.title || "",
+      description: short.description || "",
+      categories: short.categories || [],
+      playlists:
+        playlists
+          ?.filter((p) => p.shorts.includes(short._id))
+          .map((p) => p._id) || [],
+      visibility: short.visibility || "public",
       thumbnail: "",
     },
   });
-  useEffect(() => {
-    if (!short) return;
-    form.setValue("title", short.title || "");
-    form.setValue("description", short.description || "");
-    form.setValue("categories", short.categories || []);
-    form.setValue("visibility", short.visibility || "public");
-  }, [short]);
-  useEffect(() => {
-    if (!playlists) return;
-    form.setValue(
-      "playlists",
-      playlists
-        ?.filter((p) => p.shorts.includes(short._id))
-        .map((p) => p._id) || []
-    );
-  }, [playlists]);
   const onCopy = () => {
     navigator.clipboard.writeText(shortLink);
     setIsCopied(true);
@@ -154,14 +144,14 @@ export const ShortDetails = () => {
         ...data,
         thumbnail: data.thumbnail || short.thumbnail,
       });
-      toast.success("Short updated successfully");
+      toast.success("Changes saved");
       refetchShort();
       refetchPlaylists();
     } catch (error) {
       toast.error(error.message);
     }
   };
-  if (isShortLoading || isPlaylistsLoading) return null;
+  if (isShortLoading || isPlaylistsLoading || !short || !playlists) return null;
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
@@ -172,13 +162,15 @@ export const ShortDetails = () => {
               <Button
                 variant="secondary"
                 className="rounded-full"
+                disabled={!form.formState.isDirty}
                 onClick={() => form.reset()}
               >
                 Undo changes
               </Button>
               <Button
-                variant="secondary"
+                variant={form.formState.isDirty ? "default" : "secondary"}
                 className="rounded-full"
+                disabled={!form.formState.isDirty}
                 type="submit"
               >
                 Save
@@ -373,7 +365,7 @@ export const ShortDetails = () => {
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel>Playlists</FormLabel>
-                    <Select>
+                    <Select open={open} onOpenChange={setOpen}>
                       <FormControl>
                         <SelectTrigger className="max-w-sm">
                           <SelectValue
@@ -413,8 +405,8 @@ export const ShortDetails = () => {
                         })}
                         <Separator />
                         <div className="flex items-center justify-between p-2">
-                          <Button>New playlist</Button>
-                          <Button variant="outline">Done</Button>
+                          <Button onClick={()=>dispatch(setCreatePlaylistDialog(true))}>New playlist</Button>
+                          <Button variant="outline" onClick={()=>setOpen(false)}>Done</Button>
                         </div>
                       </SelectContent>
                     </Select>
