@@ -64,7 +64,7 @@ export const VideoDetails = () => {
   const [isThumbnailUploaded, setIsThumbnailUploaded] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
   const [isCopied, setIsCopied] = useState(false);
-  const BUCKET = process.env.S3_BUCKET;
+  const BUCKET = process.env.INPUT_BUCKET;
   const {
     data: video,
     isLoading: isVideoLoading,

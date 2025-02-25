@@ -289,7 +289,7 @@ const generateHLSMasterPlaylist = async (baseName, tempDir, outputBucket, width,
       ContentType: "application/x-mpegURL",
     }).promise();
 
-    console.log(`Uploaded master.m3u8 to s3://${outputBucket}/${baseName}/hls/master.m3u8`);
+    console.log(`Uploaded master.m3u8 to s3://${outputBucket}/${baseName}/master.m3u8`);
   } catch (error) {
     throw error;
   }

@@ -17,7 +17,7 @@ import { shortService } from "@/services/short";
 import { videoService } from "@/services/video";
 import { useNavigate } from "react-router-dom";
 
-const BUCKET = process.env.S3_BUCKET;
+const BUCKET = process.env.OUTPUT_BUCKET;
 
 export default function UploadVideo() {
   const navigate = useNavigate();
@@ -40,13 +40,13 @@ export default function UploadVideo() {
       let video: File = Array.isArray(file) ? file[0] : file;
       const { duration, height, width } = await getVideoMetadata(video);
       const isShort = duration <= 90 && height > width;
+      const file_name = `${uuid()}_${width}_${height}`;
       const videoKey = `uploads/${
         isShort ? "shorts" : "videos"
-      }/${uuid()}_${width}_${height}`;
+      }/${file_name}.${video.name.split(".").pop()}`;
       const contentType = video.type || "application/octet-stream";
-
       const { url, id } = await uploadService.getPutObjectPresignedUrl(
-        `${videoKey}.${video.name.split(".").pop()}`,
+        videoKey,
         contentType,
         isShort ? "short" : "video"
       );
@@ -59,12 +59,12 @@ export default function UploadVideo() {
 
       const videoData = {
         _id: id,
-        source: `https://${BUCKET}.s3.ap-south-1.amazonaws.com/${videoKey}/${
+        source: `https://${BUCKET}.s3.ap-south-1.amazonaws.com/${file_name}/${
           isShort ? height + "p.m3u8" : "master.m3u8"
         }`,
         duration,
-        subtitle: `https://${BUCKET}.s3.ap-south-1.amazonaws.com/${videoKey}/subtitle.vtt`,
-        thumbnailPreviews: `https://${BUCKET}.s3.ap-south-1.amazonaws.com/${videoKey}/thumbnails/thumbnails.vtt`,
+        subtitle: `https://${BUCKET}.s3.ap-south-1.amazonaws.com/${file_name}/subtitle.vtt`,
+        thumbnailPreviews: `https://${BUCKET}.s3.ap-south-1.amazonaws.com/${file_name}/thumbnails/thumbnails.vtt`,
         height,
       };
 

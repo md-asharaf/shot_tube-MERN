@@ -61,7 +61,7 @@ export const ShortDetails = () => {
   const [isUploading, setIsUploading] = useState(false);
   const [isThumbnailUploaded, setIsThumbnailUploaded] = useState(false);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const BUCKET = process.env.S3_BUCKET;
+  const BUCKET = process.env.INPUT_BUCKET;
   const playerRef = useRef(null);
   const [isCopied, setIsCopied] = useState(false);
   const { username } = useSelector((state: RootState) => state.auth.userData);
