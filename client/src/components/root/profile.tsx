@@ -15,7 +15,9 @@ import { logout } from "@/store/reducers/auth";
 import { AvatarImg } from "./avatar-image";
 import { ClapperboardIcon, LogOutIcon, SettingsIcon } from "lucide-react";
 import { useNavigate } from "react-router-dom";
+import { useState } from "react";
 export const Profile = () => {
+    const [open, setOpen] = useState(false);
     const dispatch = useDispatch();
     const { username, fullname, avatar } = useSelector(
         (state: RootState) => state.auth.userData
@@ -34,13 +36,14 @@ export const Profile = () => {
         }
     };
     return (
-        <DropdownMenu>
+        <DropdownMenu open={open} onOpenChange={setOpen}>
             <DropdownMenuTrigger className="h-10 w-10 focus:outline-none">
                 <AvatarImg fullname={fullname} avatar={avatar} />
             </DropdownMenuTrigger>
             <DropdownMenuContent
                 className="min-w-[300px] p-0 m-0"
                 collisionPadding={20}
+                onClick={() => setOpen(false)}
             >
                 <DropdownMenuItem className="p-2">
                     <Link to={`/channel/${username}`} className="w-full">

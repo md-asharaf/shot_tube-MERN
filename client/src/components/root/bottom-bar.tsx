@@ -50,7 +50,7 @@ export const BottomBar = () => {
                 )}
             </NavLink>
             {username && (
-                <NavLink to={`/playlist-n-history?u=${username}`}>
+                <NavLink to={`/library?u=${username}`}>
                     {({ isActive }) => (
                         <div className="flex flex-col items-center">
                             {isActive ? (

@@ -95,7 +95,7 @@ function App() {
             <Route path="/watch-later" element={<WatchLater />} />
             <Route path="/playlists" element={<PlayLists />} />
             <Route path="/playlist/:id" element={<Playlist />} />
-            <Route path="/playlist-n-history" element={<PlaylistNhistory />} />
+            <Route path="/library" element={<PlaylistNhistory />} />
             <Route path="/subscriptions" element={<Subscriptions />} />
             <Route path="/your-videos" element={<YourVideos />} />
           </Route>

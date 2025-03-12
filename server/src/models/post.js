@@ -5,7 +5,7 @@ const options = { discriminatorKey: "type", timestamps: true };
 const postSchema = new mongoose.Schema(
     {
         userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
-        content: { type: String },
+        text: { type: String },
         visibility: { type: String, enum: ["public", "private"], default: "private" }
     },
     options

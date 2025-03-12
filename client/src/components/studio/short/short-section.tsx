@@ -16,11 +16,6 @@ export const ShortSection = ({ title, thumbnail, id,route }: ShortSectionProps) 
             icon:EditIcon
         },
         {
-            title:"Analytics",
-            url:"analytics",
-            icon: ChartNoAxesCombined
-        },
-        {
             title:"Comments",
             url:"comments",
             icon:MessageSquareMore

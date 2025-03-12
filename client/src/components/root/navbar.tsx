@@ -57,8 +57,7 @@ export const NavBar = () => {
                 ) : (
                     <Link to={"/login"}>
                         <Button
-                            className="rounded-2xl text-primary gap-1"
-                            variant={"outline"}
+                            className="rounded-full bg-blue-500 hover:bg-blue-600 text-white"
                         >
                             <span>Log in</span>
                             <User

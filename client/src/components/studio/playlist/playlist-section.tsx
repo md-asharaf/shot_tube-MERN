@@ -23,12 +23,7 @@ export const PlaylistSection = ({
             title: "Videos",
             url: "videos",
             icon: VideoIcon,
-        },
-        {
-            title: "Analytics",
-            url: "analytics",
-            icon: ChartNoAxesCombined,
-        },
+        }
     ];
     return (
         <SidebarGroupLayout options={items}>

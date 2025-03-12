@@ -135,7 +135,6 @@ class PostController {
         }
         return res.status(200).json(new ApiResponse(200, {}, "Post deleted successfully"))
     })
-
     getUserPosts = asyncHandler(async (req, res) => {
         const { username } = req.params;
         if (!username) {

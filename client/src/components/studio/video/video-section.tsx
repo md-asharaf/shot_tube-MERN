@@ -16,11 +16,6 @@ export const VideoSection = ({ title, thumbnail, id,route}: VideoSectionProps) =
             icon:EditIcon
         },
         {
-            title:"Analytics",
-            url:"analytics",
-            icon: ChartNoAxesCombined
-        },
-        {
             title:"Comments",
             url:"comments",
             icon:MessageSquareMore

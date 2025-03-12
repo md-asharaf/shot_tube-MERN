@@ -3,13 +3,17 @@ import { Loader2 } from "lucide-react";
 import { Link, useParams } from "react-router-dom";
 import { IPostData } from "@/interfaces";
 import { useQuery } from "@tanstack/react-query";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { postService } from "@/services/post";
 import { PostCard } from "../post/post-card";
 import { CreatePost } from "../post/create-post";
+import { RootState } from "@/store/store";
 export const ChannelPosts = () => {
   const dispatch = useDispatch();
   const { username } = useParams();
+  const { username: uname } = useSelector(
+    (state: RootState) => state.auth.userData
+  );
   const { data: posts, isLoading } = useQuery({
     queryKey: ["posts", username],
     queryFn: async (): Promise<IPostData[]> => {
@@ -20,9 +24,11 @@ export const ChannelPosts = () => {
   });
   return (
     <>
-      <div className="px-2">
-        <CreatePost />
-      </div>
+      {username === uname && (
+        <div className="px-2">
+          <CreatePost />
+        </div>
+      )}
       <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
         {isLoading ? (
           <div className="flex justify-center w-full">

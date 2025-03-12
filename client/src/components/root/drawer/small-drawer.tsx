@@ -57,7 +57,7 @@ export const SmallDrawer = () => {
                     )}
                 </NavLink>
                 {username && (
-                    <NavLink to={`/playlist-n-history?u=${username}`}>
+                    <NavLink to={`/library?u=${username}`}>
                         {({ isActive }) => (
                             <div
                                 className={`flex flex-col items-center rounded-xl py-2 px-1 hover:bg-zinc-200 dark:hover:bg-zinc-800`}

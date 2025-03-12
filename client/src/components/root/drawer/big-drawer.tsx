@@ -207,7 +207,7 @@ export const BigDrawer = () => {
                     <div className="space-y-1">
                         <Separator className="mt-3 mb-1" />
                         <NavLink
-                            to={`/playlist-n-history?u=${username}`}
+                            to={`/library?u=${username}`}
 
                         >
                             <p className="font-bold flex items-center gap-x-2 rounded-xl p-2 hover:bg-zinc-200 dark:hover:bg-zinc-800 mr-6">

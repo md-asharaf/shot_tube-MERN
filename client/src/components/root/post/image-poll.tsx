@@ -1,16 +1,19 @@
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
+import { Textarea } from "@/components/ui/textarea";
 import { ImageIcon, TrashIcon } from "lucide-react";
+import { useEffect } from "react";
 
 interface Data {
-  question: string;
+  text: string;
   options: { image: string; text: string }[];
 }
 
 interface ImagePollProps {
   data: Data;
   setData: React.Dispatch<React.SetStateAction<Data>>;
+  reset: () => void;
 }
 
 interface PollOptionProps {
@@ -21,7 +24,7 @@ interface PollOptionProps {
   onInputChange: (value: string, index: number) => void;
 }
 
-export const ImagePoll = ({ data, setData }: ImagePollProps) => {
+export const ImagePoll = ({ data, setData, reset }: ImagePollProps) => {
   const handleAddOption = () => {
     setData((prev) => {
       const options = [...prev.options];
@@ -59,12 +62,23 @@ export const ImagePoll = ({ data, setData }: ImagePollProps) => {
     });
   };
   const { options } = data;
-  if (options.length === 0) {
-    return null;
-  }
+  useEffect(() => {
+    if (options.length == 0) {
+      reset();
+    }
+  }, [options]);
+  if (options.length === 0) return null;
   return (
     <div className="flex flex-col items-center justify-center w-full">
       <div className="flex flex-col space-y-4 w-full">
+        <Textarea
+          className="resize-none"
+          placeholder="Ask your community..."
+          value={data.text}
+          onChange={(e) =>
+            setData((prev) => ({ ...prev, text: e.target.value }))
+          }
+        />
         {options.map((option, index) => (
           <PollOption
             key={index}
@@ -79,11 +93,11 @@ export const ImagePoll = ({ data, setData }: ImagePollProps) => {
       <Button
         variant="outline"
         disabled={options.length === 4}
-        className="mt-4 rounded-full text-blue-600 hover:bg-yellow-50"
+        className="mt-4 rounded-full text-blue-600 hover:text-blue-600"
         size="lg"
         onClick={handleAddOption}
       >
-        Add Option
+        Add option
       </Button>
     </div>
   );
@@ -128,7 +142,7 @@ const PollOption = ({
               onChange={(e) => onInputChange(e.target.value, index)}
               value={text}
               placeholder="Enter option"
-              className="focus:outline-none"
+              className="focus:outline-none bg-transparent"
             />
           </div>
           <div className="flex items-center space-x-2">

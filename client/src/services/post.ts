@@ -3,8 +3,8 @@ import { IPostData } from "@/interfaces";
 
 class PostService {
     getPostById = async (id: string) => await Axios.get(`/posts/${id}`);
-    createPost = async (post: IPostData) =>
-        await Axios.post("/posts/create-post", post);
+    createPost = async (data:any) =>
+        await Axios.post("/posts/create-post",data);
     updatePost = async (postId: string, post: IPostData) =>
         await Axios.patch(`/posts/update-post/${postId}`, post);
     deletePost = async (postId: string) =>
