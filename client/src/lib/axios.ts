@@ -4,14 +4,14 @@ import { store } from "@/store/store";
 import { setLoginPopoverData } from "@/store/reducers/ui";
 import { logout } from "@/store/reducers/auth";
 import { authService } from "@/services/auth";
+
 const axiosInstance = axios.create({
     baseURL: process.env.BACKEND_BASE_URL,
+    withCredentials: true,
 });
 
 axiosInstance.interceptors.response.use(
-    (response) => {
-        return response.data.data;
-    },
+    (response) => response.data.data,
     (error) => {
         if (
             error.response?.status === 401 &&
@@ -29,36 +29,22 @@ axiosInstance.interceptors.response.use(
         return Promise.reject(error.response?.data as ApiResponse);
     }
 );
-
-const formdataConfig = {
-    headers: {
-        "content-type": "multipart/form-data",
-    },
-    withCredentials: true,
-};
-const jsonConfig = {
-    headers: {
-        "content-type": "application/json",
-    },
-    withCredentials: true,
-};
-const defaultConfig = {
-    withCredentials: true,
-};
-
 class Axios {
-    get = async (url: string): Promise<any> =>
-        await axiosInstance.get(url, defaultConfig);
-    post = async (url: string, data: object | FormData = {}): Promise<any> => {
-        const config = data instanceof FormData ? formdataConfig : jsonConfig;
-        return await axiosInstance.post(url, data, config);
-    };
-    delete = async (url: string): Promise<any> =>
-        await axiosInstance.delete(url, defaultConfig);
-    patch = async (url: string, data: object | FormData = {}): Promise<any> => {
-        const config = data instanceof FormData ? formdataConfig : jsonConfig;
-        return await axiosInstance.patch(url, data, config);
-    };
+    get<T = any>(url: string): Promise<T> {
+        return axiosInstance.get(url);
+    }
+    post<T = any>(url: string, data?: any): Promise<T> {
+        return axiosInstance.post(url, data);
+    }
+    put<T = any>(url: string, data?: any): Promise<T> {
+        return axiosInstance.put(url, data);
+    }
+    patch<T = any>(url: string, data?: any): Promise<T> {
+        return axiosInstance.patch(url, data);
+    }
+    delete<T = any>(url: string): Promise<T> {
+        return axiosInstance.delete(url);
+    }
 }
 
 export default new Axios();

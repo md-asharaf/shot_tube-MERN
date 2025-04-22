@@ -1,6 +1,4 @@
 
-
-
 export const AnalyticsLayout = () => {
     return (
         <div>

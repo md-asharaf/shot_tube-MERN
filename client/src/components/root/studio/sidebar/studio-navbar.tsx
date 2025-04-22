@@ -1,7 +1,7 @@
-import { SidebarTrigger } from "../../ui/sidebar";
+import { SidebarTrigger } from "../../../ui/sidebar";
 import { ImYoutube } from "react-icons/im";
-import { SearchBar } from "../../root/search-bar";
-import { Profile } from "../../root/profile";
+import { SearchBar } from "../../search-bar";
+import { Profile } from "../../profile";
 import { DarkModeSwitch } from "react-toggle-dark-mode";
 import { toggleTheme } from "@/store/reducers/theme";
 import { useDispatch, useSelector } from "react-redux";

@@ -11,10 +11,13 @@ import { RootState } from "@/store/store";
 import { AvatarImg } from "@/components/root/avatar-image";
 import NavigationMenu from "@/components/root/nav-menu";
 import { Loader2 } from "lucide-react";
+import { toast } from "sonner";
+import { queryClient } from "@/main";
 
 export const Channel = () => {
     const userData = useSelector((state: RootState) => state.auth.userData);
-    const {username} = useParams();
+    const userId = userData?._id;
+    const { username } = useParams();
     const { data: userDetails } = useQuery({
         queryKey: ["user-details", username],
         queryFn: async (): Promise<{
@@ -26,16 +29,16 @@ export const Channel = () => {
         },
         enabled: !!username,
     });
-
-    const { data: isSubscribed, refetch } = useQuery({
-        queryKey: ["isSubscribed", userDetails?.user?._id],
+    const channelId = userDetails?.user?._id;
+    const { data: isSubscribed } = useQuery({
+        queryKey: ["is-subscribed", channelId, userId],
         queryFn: async (): Promise<boolean> => {
             const data = await subService.isChannelSubscribed(
                 userDetails?.user?._id
             );
             return data.isSubscribed;
         },
-        enabled: !!userDetails?.user && !!userData,
+        enabled: !!channelId && !!userId,
     });
 
     const { data: videosCount, isLoading } = useQuery({
@@ -51,10 +54,47 @@ export const Channel = () => {
         mutationFn: async () => {
             await subService.toggleSubscription(userDetails?.user?._id);
         },
-        onSuccess: () => {
-            refetch();
-            return true;
+        onMutate: () => {
+            queryClient.cancelQueries({
+                queryKey: ["is-subscribed", channelId, userId],
+            });
+            queryClient.cancelQueries({
+                queryKey: ["subscribers-count", channelId],
+            });
+            queryClient.setQueryData(
+                ["is-subscribed", channelId, userId],
+                (prevData: boolean) => !prevData
+            );
+            queryClient.setQueryData(
+                ["subscribers-count", channelId],
+                (prevData: number) =>
+                    isSubscribed ? prevData - 1 : prevData + 1
+            );
         },
+        onError: () => {
+            queryClient.cancelQueries({
+                queryKey: ["is-subscribed", channelId, userId],
+            });
+            queryClient.cancelQueries({
+                queryKey: ["subscribers-count", channelId],
+            });
+            queryClient.setQueryData(
+                ["is-subscribed", channelId, userId],
+                (prevData: boolean) => !prevData
+            );
+            queryClient.setQueryData(
+                ["subscribers-count", channelId],
+                (prevData: number) =>
+                    isSubscribed ? prevData - 1 : prevData + 1
+            );
+        },
+        onSuccess: () => {
+            if (isSubscribed) {
+                toast.success('Subscription added')
+            } else {
+                toast.success('Subscription removed')
+            }
+        }
     });
     const items = [
         { name: "Home", path: "" },
@@ -88,11 +128,9 @@ export const Channel = () => {
                     <h2 className="text-xl sm:text-2xl font-bold">
                         {userDetails?.user?.fullname}
                     </h2>
-                    <p className="text-muted-foreground text-sm sm:text-base">{`@${
-                        userDetails?.user?.username
-                    } • ${userDetails?.subscribersCount} subscribers • ${
-                        videosCount || 0
-                    } videos`}</p>
+                    <p className="text-muted-foreground text-sm sm:text-base">{`@${userDetails?.user?.username
+                        } • ${userDetails?.subscribersCount} subscribers • ${videosCount || 0
+                        } videos`}</p>
                     {userData?.username !== username && (
                         <div className="flex space-x-2">
                             <Button

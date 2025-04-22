@@ -377,9 +377,6 @@ class ShortController {
 
             if (userId) {
                 user = await User.findById(userId);
-                if (user.watchHistory.shortIds) {
-                    notToBeRecommended.push(...user.watchHistory.shortIds);
-                }
                 // Fetch user-specific recommendations first
                 if (short) {
                     const shortsBySameCreator = await Short.find({

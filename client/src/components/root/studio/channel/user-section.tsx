@@ -6,7 +6,7 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
     useSidebar,
-} from "../../ui/sidebar";
+} from "../../../ui/sidebar";
 import { Link } from "react-router-dom";
 export const UserSection = () => {
     const { avatar, fullname, username } = useSelector(

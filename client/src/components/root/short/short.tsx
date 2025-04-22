@@ -33,6 +33,7 @@ import { ShortComments } from "@/components/root/short/short-comments";
 import { setOpenCard } from "@/store/reducers/short";
 import { queryClient } from "@/main";
 import { useIsMobile } from "@/hooks/use-mobile";
+import { toast } from "sonner";
 export const Short = () => {
     const isMobile = useIsMobile();
     const [open, setOpen] = useState(false);
@@ -129,6 +130,13 @@ export const Short = () => {
                     isSubscribed ? prevData - 1 : prevData + 1
             );
         },
+        onSuccess: () => {
+            if (isSubscribed) {
+                toast.success('Subscription added')
+            } else {
+                toast.success('Subscription removed')
+            }
+        }
     });
     const { mutate: toggleLike } = useMutation({
         mutationFn: async () => {
@@ -216,8 +224,8 @@ export const Short = () => {
                         minWatchTime={10}
                         source={short.source}
                         playerRef={playerRef}
-                        onViewTracked={() => {}}
-                        controls={["progress", "fullscreen"]}
+                        onViewTracked={() => { }}
+                        controls={["play", "progress", "fullscreen"]}
                         className="aspect-[9/16]"
                         subtitle={short.subtitle}
                     />
@@ -326,12 +334,12 @@ export const Short = () => {
                                 <div className="font-bold">{`@${short.creator.username}`}</div>
                             </Link>
 
-                            <button
+                            {userId !== short.creator._id && <button
                                 className="rounded-full font-semibold bg-white text-black px-2 py-1"
                                 onClick={() => toggleSubscription()}
                             >
                                 {isSubscribed ? "Subscribed" : "Subscribe"}
-                            </button>
+                            </button>}
                         </div>
                         <div className="font-semibold">{short.title}</div>
                     </div>
@@ -349,8 +357,8 @@ export const Short = () => {
                                         ? "white"
                                         : "black"
                                     : theme == "dark"
-                                    ? "black"
-                                    : "white"
+                                        ? "black"
+                                        : "white"
                             }
                         />
                     </div>

@@ -8,13 +8,14 @@ import { postService } from "@/services/post";
 import { PostCard } from "../post/post-card";
 import { CreatePost } from "../post/create-post";
 import { RootState } from "@/store/store";
+import { Separator } from "@/components/ui/separator";
 export const ChannelPosts = () => {
   const dispatch = useDispatch();
   const { username } = useParams();
   const { username: uname } = useSelector(
     (state: RootState) => state.auth.userData
   );
-  const { data: posts, isLoading } = useQuery({
+  const { data: posts = [], isLoading } = useQuery({
     queryKey: ["posts", username],
     queryFn: async (): Promise<IPostData[]> => {
       const data = await postService.getUserPosts(username);
@@ -23,13 +24,14 @@ export const ChannelPosts = () => {
     enabled: !!username,
   });
   return (
-    <>
+    <div className="p-2 space-y-12">
       {username === uname && (
-        <div className="px-2">
+        <>
           <CreatePost />
-        </div>
+          <Separator className="max-w-4xl" />
+        </>
       )}
-      <div className="grid grid-cols-2 gap-2 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 xl:grid-cols-5">
+      <div className="grid grid-cols-1 gap-4">
         {isLoading ? (
           <div className="flex justify-center w-full">
             <Loader2 className="h-10 w-10 animate-spin" strokeWidth={1.5} />
@@ -47,6 +49,6 @@ export const ChannelPosts = () => {
           ))
         )}
       </div>
-    </>
+    </div>
   );
 };

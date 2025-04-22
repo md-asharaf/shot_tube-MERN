@@ -1,16 +1,16 @@
-import Axios from "@/lib/axios";
+import axios from "@/lib/axios";
 import { ILoginForm, IRegisterForm } from "@/interfaces";
 
 class AuthService {
-    login = async (data: ILoginForm) => await Axios.post("/users/login", data);
-    logout = async () => await Axios.get("/users/logout");
+    login = async (data: ILoginForm) => await axios.post("/users/login", data);
+    logout = async () => await axios.get("/users/logout");
     register = async (data: IRegisterForm) =>
-        await Axios.post("/users/register", data);
+        await axios.post("/users/register", data);
     googleLogin = async (data: object) =>
-        await Axios.post("/users/google-login", data);
+        await axios.post("/users/google-login", data);
     sendResetLinkOnEmail = async (email: string) =>
-        await Axios.post("/users/forget-password", { email });
-    loginViaRefreshToken = async () => await Axios.get("/users/refresh-tokens");
+        await axios.post("/users/forget-password", { email });
+    loginViaRefreshToken = async () => await axios.get("/users/refresh-tokens");
 }
 
 export const authService = new AuthService();

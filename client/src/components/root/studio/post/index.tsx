@@ -20,8 +20,8 @@ export const StudioPost = () => {
         <div className="flex min-h-screen pt-[4rem]">
             <SidebarLayout>
                 <PostSection
-                    title={post.content}
-                    thumbnail={post.image}
+                    title={post.text}
+                    thumbnail={post.images?.[0]}
                     id={post._id}
                     route="posts"
                 />

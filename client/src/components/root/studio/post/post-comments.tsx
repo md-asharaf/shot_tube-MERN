@@ -1,6 +1,4 @@
 
-
-
 export const PostComments = () => {
     return (
         <div>

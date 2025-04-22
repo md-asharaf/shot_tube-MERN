@@ -1,4 +1,4 @@
-import { Sidebar, SidebarContent } from "../../ui/sidebar";
+import { Sidebar, SidebarContent } from "../../../ui/sidebar";
 
 export const SidebarLayout = ({ children }: { children: React.ReactNode }) => {
     return (

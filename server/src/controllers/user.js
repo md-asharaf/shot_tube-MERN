@@ -6,6 +6,7 @@ import { User } from '../models/user.js';
 import { ApiResponse } from '../utils/api-response.js';
 import { ObjectId } from "mongodb";
 import { sendEmail } from '../lib/resend.js';
+import { deleteAllCache, deleteCacheUsingPattern } from "../lib/redis.js";
 class UserController {
     forgetPassword = asyncHandler(async (req, res) => {
         const { email }
@@ -351,6 +352,8 @@ class UserController {
                 }
             }
         }, { new: true });
+        await Promise.all([deleteCacheUsingPattern(`recommended-shorts-${userId}*`),
+        deleteCacheUsingPattern(`recommended-videos-${userId}*`)]);
         return res.status(200).json(new ApiResponse(200, null, "Watch history cleared"))
     })
     saveToWatchLater = asyncHandler(async (req, res) => {
@@ -511,7 +514,7 @@ class UserController {
                             }
                         }
                     },
-                    thumbnail: { $arrayElemAt: ["$watchLaterVideos.thumbnail", 0]}
+                    thumbnail: { $arrayElemAt: ["$watchLaterVideos.thumbnail", 0] }
                 }
             },
             {

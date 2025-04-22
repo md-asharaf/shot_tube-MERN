@@ -39,10 +39,10 @@ class UploadController {
     }
     let id;
     if (type) {
-      id = new Types.ObjectId(); 
+      id = new Types.ObjectId();
     }
-    const url = await putObjectUrl(fileKey, contentType,type,id);
-    return res.status(200).json(new ApiResponse(200, { url,id }, 'Presigned URL generated successfully'));
+    const url = await putObjectUrl(fileKey, contentType, type, id);
+    return res.status(200).json(new ApiResponse(200, { url, id }, 'Presigned URL generated successfully'));
   })
 }
 

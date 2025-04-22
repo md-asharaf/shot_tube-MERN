@@ -28,7 +28,9 @@ export const CreateDropdown = ({ isPlaylist = false }: CreateDropdownProps) => {
       navigate(`/studio/${username}/content`);
     dispatch(toggleVideoModal());
   }
-  const onCreatePostClick = () => {}
+  const onCreatePostClick = () => {
+    navigate(`/channel/${username}/posts`)
+  }
   const onNewPlaylistClick = () => {}
   return (
     <DropdownMenu>

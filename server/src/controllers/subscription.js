@@ -12,6 +12,9 @@ class SubscriptionController {
         if (!channelId) {
             throw new ApiError(400, "Channel Id is required")
         }
+        if (channelId === subscriberId.toString()) {
+            throw new ApiError(403, "You cannot subscribe to your own channel")
+        }
         let subscription = await Subscription.findOne({ channelId: new ObjectId(channelId), subscriberId });
         if (subscription) {
             await Subscription.findByIdAndDelete(subscription._id, { new: true });
@@ -31,7 +34,8 @@ class SubscriptionController {
         const subscribers = await Subscription.aggregate([
             {
                 $match: {
-                    channelId: new ObjectId(channelId)
+                    channelId: new ObjectId(channelId),
+                    _id: { $ne: new ObjectId(channelId) }
                 }
             },
             {

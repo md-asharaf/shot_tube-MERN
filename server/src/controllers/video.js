@@ -377,9 +377,6 @@ class VideoController {
 
             if (userId) {
                 user = await User.findById(userId);
-                if (user.watchHistory.videoIds) {
-                    notToBeRecommended.push(...user.watchHistory.videoIds);
-                }
                 // Fetch user-specific recommendations first
                 if (video) {
                     const videosBySameCreator = await Video.find({

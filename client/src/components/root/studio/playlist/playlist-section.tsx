@@ -1,4 +1,4 @@
-import { EditIcon, VideoIcon, ChartNoAxesCombined } from "lucide-react";
+import { EditIcon, VideoIcon } from "lucide-react";
 import { MainSection } from "../main-section";
 import { Option, SidebarGroupLayout } from "../sidebar/sidebar-group-layout";
 interface PlaylistSectionProps {

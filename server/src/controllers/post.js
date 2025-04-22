@@ -18,22 +18,28 @@ const postModels = {
     short: ShortPost,
     text: TextPost,
     quiz: QuizPost,
-    "image poll": ImagePollPost,
-    "text poll": TextPollPost,
+    "image-poll": ImagePollPost,
+    "text-poll": TextPollPost,
 };
 class PostController {
     createPost = asyncHandler(async (req, res) => {
+        console.log({
+            body: req.body
+        });
         const { type, ...data } = req.body;
         const user = req.user;
         let post;
         switch (type) {
+            case "text":
+                post = await TextPost.create({ userId: user._id, ...data });
+                break;
             case "quiz":
                 post = await QuizPost.create({ userId: user._id, ...data });
                 break;
-            case "text poll":
+            case "text-poll":
                 post = await TextPollPost.create({ userId: user._id, ...data });
                 break;
-            case "image poll":
+            case "image-poll":
                 post = await ImagePollPost.create({ userId: user._id, ...data });
                 break;
             case "video":
@@ -77,7 +83,7 @@ class PostController {
             }
         ]);
         const message = `@${user.username} posted: "${post.content}"`;
-        const image = post.type === "image" ? post.imageUrl : post.type === "image poll" ? post.images[0] : (post.type === "video" || post.type === "short") ? post.thumbnailUrl : null;
+        const image = post.type === "image" ? post.images[0] : post.type === "image-poll" ? post.images[0] : null;
 
         subscribers.forEach((s) => {
             publishNotification({
@@ -148,32 +154,6 @@ class PostController {
             {
                 $match: {
                     userId: user._id
-                }
-            },
-            {
-                $lookup: {
-                    from: "users",
-                    localField: "userId",
-                    foreignField: "_id",
-                    as: "creator"
-                }
-            },
-            {
-                $addFields: {
-                    creator: {
-                        _id: {
-                            $first: "$creator._id"
-                        },
-                        username: {
-                            $first: "$creator.username"
-                        },
-                        fullname: {
-                            $first: "$creator.fullname"
-                        },
-                        avatar: {
-                            $first: "$creator.avatar"
-                        }
-                    }
                 }
             }
         ])

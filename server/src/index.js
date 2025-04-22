@@ -9,7 +9,6 @@ const BACKEND_PORT = process.env.BACKEND_PORT;
 const WEB_SOCKET_PORT = process.env.WEB_SOCKET_PORT;
 const startServers = async () => {
     try {
-        await deleteAllCache();
         await connectDB();
         app.on('error', (err) => {
             console.error('Backend server error:\n', err);

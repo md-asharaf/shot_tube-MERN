@@ -19,7 +19,7 @@ export const getCache = async (key) => {
         return null;
     }
 };
-export const  removeCache = async (key) => {
+export const removeCache = async (key) => {
     try {
         await client.del(key);
     } catch (err) {
@@ -35,3 +35,22 @@ export const deleteAllCache = async () => {
         console.error("Error deleting cache:", err);
     }
 };
+export const deleteCacheUsingPattern = async (pattern) =>{
+    try {
+        const streanm = client.scanStream({
+            match: pattern,
+            count: 1
+        })
+
+        streanm.on('data', async (keys) => {
+            for (const key of keys) {
+                await client.del(key);
+            }
+        });
+        streanm.on('end', () => {
+            console.log('Finished deleting keys matching pattern:', pattern);
+        });
+    } catch (error) {
+        console.error('Error deleting keys:', error);
+    }
+}

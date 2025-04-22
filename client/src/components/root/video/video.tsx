@@ -23,6 +23,7 @@ import {
 import { AvatarImg } from "@/components/root/avatar-image";
 import { VideoComments } from "@/components/root/video/video-comments";
 import { queryClient } from "@/main";
+import { toast } from "sonner";
 export const Video = () => {
     const theme = useSelector((state: RootState) => state.theme.mode);
     const dispatch = useDispatch();
@@ -176,6 +177,13 @@ export const Video = () => {
                     isSubscribed ? prevData - 1 : prevData + 1
             );
         },
+        onSuccess: () => {
+            if (isSubscribed) {
+                toast.success('Subscription added')
+            } else {
+                toast.success('Subscription removed')
+            }
+        }
     });
 
     const { mutate: addToWatchHistory } = useMutation({

@@ -6,7 +6,7 @@ const postSchema = new mongoose.Schema(
     {
         userId: { type: mongoose.Schema.Types.ObjectId, ref: "User", required: true },
         text: { type: String },
-        visibility: { type: String, enum: ["public", "private"], default: "private" }
+        visibility: { type: String, enum: ["public", "private"], default: "public" }
     },
     options
 );

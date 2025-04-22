@@ -5,9 +5,9 @@ import {
     SidebarMenuButton,
     SidebarMenuItem,
     useSidebar,
-} from "../../ui/sidebar";
+} from "../../../ui/sidebar";
 import { LogOutIcon } from "lucide-react";
-import { Separator } from "../../ui/separator";
+import { Separator } from "../../../ui/separator";
 export interface Option {
     title: string;
     url: string;
