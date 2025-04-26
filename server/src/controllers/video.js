@@ -13,11 +13,62 @@ class VideoController {
     publishVideo = asyncHandler(async (req, res) => {
         const user = req.user;
         const data = req.body;
-        const { height, ...rest } = data;
-        await Video.create({
+        const { height, size, ...rest } = data;
+        const video = await Video.create({
             ...rest,
             userId: user._id
         })
+        user.limit -= size;
+        await user.save({ validateBeforeSave: false })
+        if (!video.title && rest.title) {
+            //publishing notification
+            const subscribers = await Subscription.aggregate([
+                {
+                    $match: {
+                        channelId: user._id
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "users",
+                        localField: "subscriberId",
+                        foreignField: "_id",
+                        as: "subscriber"
+                    }
+                },
+                {
+                    $addFields: {
+                        subscriberId: {
+                            $first: "$subscriber._id"
+                        }
+                    }
+                },
+                {
+                    $project: {
+                        subscriberId: 1,
+                    }
+                }
+            ]);
+            const message = `@${user.username} uploaded : "${rest.title}"`;
+            subscribers.forEach((s) => {
+                publishNotification({
+                    userId: s.subscriberId,
+                    message,
+                    video: {
+                        _id: video._id,
+                        thumbnail: video.thumbnail,
+                    },
+                    creator: {
+                        _id: user._id,
+                        avatar: user.avatar,
+                        fullname: user.fullname
+                    },
+                    read: false,
+                    createdAt: new Date(Date.now()),
+                });
+            })
+            //end
+        }
         let cache = {};
         [360, 480, 720, 1080]
             .filter(h => h <= height)
@@ -79,55 +130,6 @@ class VideoController {
                 );
             }
             await Promise.all(updatePromises);
-        }
-        if (!video.title && rest.title) {
-            //publishing notification
-            const subscribers = await Subscription.aggregate([
-                {
-                    $match: {
-                        channelId: user._id
-                    }
-                },
-                {
-                    $lookup: {
-                        from: "users",
-                        localField: "subscriberId",
-                        foreignField: "_id",
-                        as: "subscriber"
-                    }
-                },
-                {
-                    $addFields: {
-                        subscriberId: {
-                            $first: "$subscriber._id"
-                        }
-                    }
-                },
-                {
-                    $project: {
-                        subscriberId: 1,
-                    }
-                }
-            ]);
-            const message = `@${user.username} uploaded : "${rest.title}"`;
-            subscribers.forEach((s) => {
-                publishNotification({
-                    userId: s.subscriberId,
-                    message,
-                    video: {
-                        _id: video._id,
-                        thumbnail: video.thumbnail,
-                    },
-                    creator: {
-                        _id: user._id,
-                        avatar: user.avatar,
-                        fullname: user.fullname
-                    },
-                    read: false,
-                    createdAt: new Date(Date.now()),
-                });
-            })
-            //end
         }
         return res.status(200).json(new ApiResponse(200, null, "Video updated successfully"))
     })

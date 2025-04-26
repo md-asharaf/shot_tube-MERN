@@ -27,6 +27,7 @@ export default function UploadVideo() {
   const [abortController, setAbortController] =
     useState<AbortController | null>(null);
   const [progress, setProgress] = useState(0);
+  const { limit = 100 } = useSelector((state: RootState) => state.auth.userData) || {};
   const open = useSelector((state: RootState) => state.ui.isVideoModalOpen);
   const { getRootProps, getInputProps } = useDropzone({
     accept: { "video/*": [] },
@@ -38,12 +39,15 @@ export default function UploadVideo() {
     setProgress(0);
     try {
       let video: File = Array.isArray(file) ? file[0] : file;
+      if (video.size >= limit * 1024 * 1024) {
+        toast.error(`File size exceeds your limit of ${limit}MB`);
+        return;
+      }
       const { duration, height, width } = await getVideoMetadata(video);
       const isShort = duration <= 90 && height > width;
       const file_name = `${uuid()}_${width}_${height}`;
-      const videoKey = `uploads/${
-        isShort ? "shorts" : "videos"
-      }/${file_name}.${video.name.split(".").pop()}`;
+      const videoKey = `uploads/${isShort ? "shorts" : "videos"
+        }/${file_name}.${video.name.split(".").pop()}`;
       const contentType = video.type || "application/octet-stream";
       const { url, id } = await uploadService.getPutObjectPresignedUrl(
         videoKey,
@@ -59,10 +63,10 @@ export default function UploadVideo() {
 
       const videoData = {
         _id: id,
-        source: `https://${BUCKET}.s3.ap-south-1.amazonaws.com/${file_name}/${
-          isShort ? height + "p.m3u8" : "master.m3u8"
-        }`,
+        source: `https://${BUCKET}.s3.ap-south-1.amazonaws.com/${file_name}/${isShort ? height + "p.m3u8" : "master.m3u8"
+          }`,
         duration,
+        size: Math.floor(video.size / 1024 / 1024),
         subtitle: `https://${BUCKET}.s3.ap-south-1.amazonaws.com/${file_name}/subtitle.vtt`,
         thumbnailPreviews: `https://${BUCKET}.s3.ap-south-1.amazonaws.com/${file_name}/thumbnails/thumbnails.vtt`,
         height,

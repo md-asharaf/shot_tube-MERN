@@ -28,7 +28,7 @@ const shortSchema = new Schema({
     },
     title: {
         type: String,
-        default: ""
+        required: true,
     },
     description: {
         type: String,

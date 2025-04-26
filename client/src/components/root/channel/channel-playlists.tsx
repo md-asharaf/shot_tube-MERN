@@ -23,7 +23,7 @@ export const ChannelPlaylists = () => {
                     <Loader2 className="h-10 w-10 animate-spin" />
                 </div>
             ) : (
-                playlists?.map((playlist) => (
+                playlists?.length >0 ? playlists?.map((playlist) => (
                     <Link
                         to={`/playlist/${playlist._id}`}
                         key={playlist._id}
@@ -41,7 +41,7 @@ export const ChannelPlaylists = () => {
                             fullname={playlist.creator.fullname}
                         />
                     </Link>
-                ))
+                )):"No playlists"
             )}
         </div>
     );

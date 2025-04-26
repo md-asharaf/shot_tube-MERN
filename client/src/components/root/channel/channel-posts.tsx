@@ -37,7 +37,7 @@ export const ChannelPosts = () => {
             <Loader2 className="h-10 w-10 animate-spin" strokeWidth={1.5} />
           </div>
         ) : (
-          posts?.map((post, index) => (
+          posts?.length > 0 ? posts.map((post, index) => (
             <Link
               to={`/post/${post._id}`}
               onClick={() => dispatch(toggleMenu())}
@@ -46,7 +46,7 @@ export const ChannelPosts = () => {
             >
               <PostCard post={post} />
             </Link>
-          ))
+          )):"No posts"
         )}
       </div>
     </div>

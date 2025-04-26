@@ -13,11 +13,62 @@ class ShortController {
     publishShort = asyncHandler(async (req, res) => {
         const user = req.user;
         const data = req.body;
-        const { height, ...rest } = data;
-        await Short.create({
+        const { height, size=0, ...rest } = data;
+        const short = await Short.create({
             ...rest,
             userId: user._id
         })
+        user.limit -= size;
+        if (!short.title && rest.title) {
+            //publishing notification
+            const subscribers = await Subscription.aggregate([
+                {
+                    $match: {
+                        channelId: user._id
+                    }
+                },
+                {
+                    $lookup: {
+                        from: "users",
+                        localField: "subscriberId",
+                        foreignField: "_id",
+                        as: "subscriber"
+                    }
+                },
+                {
+                    $addFields: {
+                        subscriberId: {
+                            $first: "$subscriber._id"
+                        }
+                    }
+                },
+                {
+                    $project: {
+                        subscriberId: 1,
+                    }
+                }
+            ]);
+            const message = `@${user.username} uploaded : "${rest.title}"`;
+            subscribers.forEach((s) => {
+                publishNotification({
+                    userId: s.subscriberId,
+                    message,
+                    short: {
+                        _id: short._id,
+                        thumbnail: short.thumbnail,
+                    },
+                    creator: {
+                        _id: user._id,
+                        avatar: user.avatar,
+                        fullname: user.fullname
+                    },
+                    read: false,
+                    createdAt: new Date(Date.now()),
+                });
+            })
+            //end
+        }
+        await user.save({ validateBeforeSave: false });
         const cache = { [height]: false };
         await setCache(rest._id, cache)
         return res.status(200).json(new ApiResponse(200, null, "Short published successfully"))
@@ -89,56 +140,6 @@ class ShortController {
                 );
             }
             await Promise.all(updatePromises);
-        }
-
-        if (!short.title && rest.title) {
-            //publishing notification
-            const subscribers = await Subscription.aggregate([
-                {
-                    $match: {
-                        channelId: user._id
-                    }
-                },
-                {
-                    $lookup: {
-                        from: "users",
-                        localField: "subscriberId",
-                        foreignField: "_id",
-                        as: "subscriber"
-                    }
-                },
-                {
-                    $addFields: {
-                        subscriberId: {
-                            $first: "$subscriber._id"
-                        }
-                    }
-                },
-                {
-                    $project: {
-                        subscriberId: 1,
-                    }
-                }
-            ]);
-            const message = `@${user.username} uploaded : "${rest.title}"`;
-            subscribers.forEach((s) => {
-                publishNotification({
-                    userId: s.subscriberId,
-                    message,
-                    short: {
-                        _id: short._id,
-                        thumbnail: short.thumbnail,
-                    },
-                    creator: {
-                        _id: user._id,
-                        avatar: user.avatar,
-                        fullname: user.fullname
-                    },
-                    read: false,
-                    createdAt: new Date(Date.now()),
-                });
-            })
-            //end
         }
         return res.status(200).json(new ApiResponse(200, null, "Short updated successfully"))
     })

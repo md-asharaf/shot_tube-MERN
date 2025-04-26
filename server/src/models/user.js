@@ -30,25 +30,29 @@ const userSchema = new Schema({
     coverImage: {
         type: String
     },
+    limit: {
+        type: Number,
+        default: 100
+    },
     watchHistory: {
-        videoIds:{
+        videoIds: {
             type: [Schema.Types.ObjectId],
             ref: "Video",
             default: []
         },
-        shortIds:{
+        shortIds: {
             type: [Schema.Types.ObjectId],
             ref: "Short",
             default: []
         }
     },
     watchLater: {
-        videoIds:{
+        videoIds: {
             type: [Schema.Types.ObjectId],
             ref: "Video",
             default: []
         },
-        shortIds:{
+        shortIds: {
             type: [Schema.Types.ObjectId],
             ref: "Short",
             default: []

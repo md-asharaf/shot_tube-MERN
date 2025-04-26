@@ -27,7 +27,7 @@ export const ChannelShorts = () => {
                     <Loader2 className="h-10 w-10 animate-spin" />
                 </div>
             ) : (
-                shorts?.map((short, index) => (
+                shorts?.length > 0 ? shorts?.map((short, index) => (
                     <Link
                         to={`/short/${short._id}`}
                         onClick={() => dispatch(toggleMenu())}
@@ -36,7 +36,7 @@ export const ChannelShorts = () => {
                     >
                         <ShortCard short={short} playerRef={playerRef} />
                     </Link>
-                ))
+                )) : "No shorts"
             )}
         </div>
     );

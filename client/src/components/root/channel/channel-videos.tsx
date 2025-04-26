@@ -25,7 +25,7 @@ export const ChannelVideos = () => {
                     <Loader2 className="h-10 w-10 animate-spin" />
                 </div>
             ) : (
-                videos?.map((video, index) => (
+                videos?.length>0 ? videos?.map((video, index) => (
                     <Link
                         to={`/video/${video._id}`}
                         onClick={() => dispatch(toggleMenu())}
@@ -34,7 +34,7 @@ export const ChannelVideos = () => {
                     >
                         <VideoCard video={video} />
                     </Link>
-                ))
+                )):"No videos"
             )}
         </div>
     );

@@ -95,6 +95,7 @@ export const SignIn = () => {
                                             type="email"
                                             placeholder="Email address"
                                             {...field}
+                                            className="bg-white"
                                         />
                                     </FormControl>
                                     <FormMessage />
@@ -143,11 +144,13 @@ export const SignIn = () => {
                         id="google-signin-btn"
                         onClick={googleSignIn}
                     >
-                        <img
-                            src="https://cdn-teams-slug.flaticon.com/google.jpg"
-                            className={`w-8 h-8 mr-3 ${googleLoading && "animate-spin"}`}
-                        />
-                        {!googleLoading && <span className="text-lg">Continue with Google</span>}
+                        {!googleLoading ? <div className="flex space-x-2 justify-center items-center">
+                            <img
+                                src="https://cdn-teams-slug.flaticon.com/google.jpg"
+                                className={`w-8 h-8 mr-3`}
+                            />
+                            <span className="text-lg">Continue with Google</span>
+                        </div> : <Loader2 className="h-6 w-6 animate-spin" />}
                     </button>
                 </div>
 

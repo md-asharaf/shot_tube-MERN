@@ -72,6 +72,7 @@ export const SignUp = () => {
                                             type="text"
                                             placeholder="Fullname"
                                             {...field}
+                                            className="bg-white"
                                         />
                                     </FormControl>
                                     <FormMessage />
@@ -87,6 +88,7 @@ export const SignUp = () => {
                                         <Input
                                             placeholder="Username"
                                             {...field}
+                                            className="bg-white"
                                         />
                                     </FormControl>
                                     <FormMessage />
@@ -103,6 +105,7 @@ export const SignUp = () => {
                                             type="email"
                                             placeholder="Email address"
                                             {...field}
+                                            className="bg-white"
                                         />
                                     </FormControl>
                                     <FormMessage />

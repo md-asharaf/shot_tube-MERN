@@ -160,17 +160,15 @@ export const BigDrawer = () => {
     const isVideoPage = location.pathname.startsWith("/video");
     return (
         <div
-            className={`${
-                (isSmallScreen || isVideoPage) &&
+            className={`${(isSmallScreen || isVideoPage) &&
                 "fixed inset-0  dark:bg-black/50 bg-black/50 z-40"
-            } w-full`}
+                } w-full`}
             onClick={handleSidebarToggle}
         >
             <div
-                className={`pl-6 w-60 overflow-y-auto h-full ${
-                    (isSmallScreen || isVideoPage) &&
+                className={`pl-6 w-60 overflow-y-auto h-full ${(isSmallScreen || isVideoPage) &&
                     "bg-[#FFFFFF] dark:bg-[#0F0F0F]"
-                }`}
+                    }`}
             >
                 {(isSmallScreen || isVideoPage) && (
                     <div className="pb-4 pl-2 pt-[18px] flex items-center gap-x-2 md:gap-x-4">
@@ -203,7 +201,7 @@ export const BigDrawer = () => {
                         icon={<MdOutlineSubscriptions />}
                     />
                 </div>
-                {userId && (
+                {userId && (<>
                     <div className="space-y-1">
                         <Separator className="mt-3 mb-1" />
                         <NavLink
@@ -217,26 +215,27 @@ export const BigDrawer = () => {
                         </NavLink>
                         <SubDrawer options={options} />
                     </div>
-                )}
-                <Separator className="my-3" />
-                {isLoading ? (
-                    <div className="space-y-2 mr-6">
-                        {Array(4)
-                            .fill(0)
-                            .map((_, i) => (
-                                <Skeleton
-                                    key={i}
-                                    className="h-8 w-full"
-                                ></Skeleton>
-                            ))}
-                    </div>
-                ) : (
-                    channels?.length > 0 && (
-                        <>
-                            <p className="font-bold">Subscriptions</p>
-                            <SubDrawer options={data} />
-                        </>
-                    )
+                    <Separator className="my-3" />
+                    {isLoading ? (
+                        <div className="space-y-2 mr-6">
+                            {Array(4)
+                                .fill(0)
+                                .map((_, i) => (
+                                    <Skeleton
+                                        key={i}
+                                        className="h-8 w-full"
+                                    ></Skeleton>
+                                ))}
+                        </div>
+                    ) : (
+                        channels?.length > 0 && (
+                            <>
+                                <p className="font-bold">Subscriptions</p>
+                                <SubDrawer options={data} />
+                            </>
+                        )
+                    )}
+                </>
                 )}
             </div>
         </div>
@@ -256,9 +255,8 @@ const SidebarLink = ({
         <NavLink to={to}>
             {({ isActive }) => (
                 <div
-                    className={`flex gap-x-4 items-center rounded-xl p-2 ${
-                        isActive && "bg-zinc-200 dark:bg-zinc-800"
-                    } hover:bg-zinc-200 dark:hover:bg-zinc-800`}
+                    className={`flex gap-x-4 items-center rounded-xl p-2 ${isActive && "bg-zinc-200 dark:bg-zinc-800"
+                        } hover:bg-zinc-200 dark:hover:bg-zinc-800`}
                 >
                     <div className="text-xl">{icon}</div>
                     <span>{label}</span>

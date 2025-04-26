@@ -3,7 +3,7 @@ import MAP from "mongoose-aggregate-paginate-v2";
 const videoSchema = new Schema({
     source: {
         type: String,
-        default: ""
+        required: true,
     },
     sourceStatus:{
         type: String,
@@ -24,7 +24,7 @@ const videoSchema = new Schema({
     },
     title: {
         type: String,
-        default: ""
+        required: true,
     },
     description: {
         type: String,
